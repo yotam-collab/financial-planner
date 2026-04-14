@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --font-body: 'Heebo', sans-serif;
+  --font-numbers: 'Heebo', sans-serif;
+  --color-glass: rgba(255, 255, 255, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.5);
+  --color-mesh-indigo: rgba(79, 70, 229, 0.15);
+  --color-mesh-violet: rgba(124, 58, 237, 0.12);
+  --color-mesh-pink: rgba(236, 72, 153, 0.12);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  font-family: 'Heebo', sans-serif;
+  font-size: 18px;
+  background: #f1f5f9;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Mesh background */
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 600px 600px at 0% 0%, var(--color-mesh-indigo), transparent),
+    radial-gradient(ellipse 500px 500px at 100% 0%, var(--color-mesh-violet), transparent),
+    radial-gradient(ellipse 600px 600px at 50% 50%, rgba(99, 102, 241, 0.08), transparent),
+    radial-gradient(ellipse 500px 500px at 0% 100%, var(--color-mesh-pink), transparent),
+    radial-gradient(ellipse 600px 600px at 100% 100%, var(--color-mesh-indigo), transparent),
+    #f1f5f9;
+}
+
+/* Glass card */
+.glass-card {
+  background: var(--color-glass);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 2rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px) scale(1.002);
+  box-shadow:
+    0 20px 60px rgba(79, 70, 229, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Number formatting - always LTR */
+.num {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Recharts tooltip */
+.recharts-tooltip-wrapper {
+  direction: rtl;
+}
+
+/* Input styling */
+input[type="number"], input[type="text"], select {
+  direction: ltr;
+  text-align: right;
+}
+
+input[type="range"] {
+  direction: ltr;
+}
