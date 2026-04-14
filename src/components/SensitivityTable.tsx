@@ -18,7 +18,6 @@ export function SensitivityTable({ config }: Props) {
   );
 
   const deltas = ['-2%', '-1%', 'בסיס', '+1%', '+2%'];
-  const incomeDeltas = ['-4K', '-2K', 'בסיס', '+2K', '+4K'];
 
   return (
     <div className="glass-card p-6">

@@ -135,7 +135,7 @@ function AvatarCursor(props: any) {
   // Recharts passes different props depending on chart type
   // For Bar in ComposedChart: x, y, width, height (bar dimensions)
   // For Line: points array
-  const { x, y, width, height, points } = props;
+  const { x, width, height, points } = props;
 
   let cx: number;
   if (points?.length) {
@@ -292,7 +292,7 @@ function ComparisonChart({ allResults }: { allResults: Record<ScenarioType, Simu
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
           <XAxis dataKey="age" tick={{ fontSize: 14, fill: '#94a3b8' }} tickLine={false} />
           <YAxis tick={{ fontSize: 14, fill: '#94a3b8' }} tickLine={false} tickFormatter={fmtK} width={60} mirror />
-          <Tooltip formatter={(v: number) => `${Math.round(v).toLocaleString('he-IL')} ₪`} />
+          <Tooltip formatter={(v: any) => `${Math.round(Number(v) || 0).toLocaleString('he-IL')} ₪`} />
           <Legend />
           <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={2} />
           <Line type="monotone" dataKey="buyNow" stroke="#4f46e5" strokeWidth={3} dot={false} name="קנייה מיידית" />

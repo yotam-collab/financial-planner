@@ -5,7 +5,7 @@ import { SummaryCard } from './components/SummaryCard';
 import { InputPanel } from './components/InputPanel';
 import { ChartsPanel } from './components/ChartsPanel';
 import { DataTable } from './components/DataTable';
-import { SensitivityTable } from './components/SensitivityTable';
+// import { SensitivityTable } from './components/SensitivityTable';
 
 function App() {
   const {

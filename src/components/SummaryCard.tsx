@@ -5,7 +5,7 @@ interface Props {
 }
 
 export function SummaryCard({ result }: Props) {
-  const { earliestRetirementAge, depletionAge, years } = result;
+  const { earliestRetirementAge, years } = result;
 
   const colorClass = earliestRetirementAge === null
     ? 'from-red-500 to-rose-600'
