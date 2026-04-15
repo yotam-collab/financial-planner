@@ -71,6 +71,10 @@ function ChartTooltip({ active, payload }: any) {
           <span className="font-bold">יתרה חודשית</span>
           <span className="num font-black">{d.monthlyBalance >= 0 ? '+' : ''}{d.monthlyBalance?.toLocaleString('he-IL')} ₪</span>
         </div>
+        <div className="flex justify-between text-sm text-slate-400">
+          <span>בערכים של היום</span>
+          <span className="num font-semibold">{d.monthlyBalance >= 0 ? '+' : ''}{Math.round(d.real?.annualCashflow / 12)?.toLocaleString('he-IL')} ₪</span>
+        </div>
       </div>
       {/* ─── Portfolio breakdown ─── */}
       <div className="border-t border-slate-200 mt-3 pt-3">
