@@ -2,7 +2,8 @@ import type { ScenarioConfig, AssetConfig, IncomeConfig, ExpenseConfig, HouseCon
 
 export const DEFAULT_ASSETS: AssetConfig = {
   liquidPortfolio: 1_770_000,
-  pension: 800_000,
+  yotamPension: 800_000,
+  hadasPension: 200_000,
   kerenHishtalmut: 200_000,
   kerenHishtalmutLiquidAge: 47,
   apartmentNetProceeds: 1_180_000,
@@ -14,10 +15,14 @@ export const DEFAULT_ASSETS: AssetConfig = {
 };
 
 export const DEFAULT_INCOME: IncomeConfig = {
-  monthlyGrossBusinessIncome: 100_000,
-  monthlyNetBusinessIncome: 65_000,
-  // Salaried employee at 100K: employee 6% + employer 6.5% + severance 6% = 5,645 (capped)
-  monthlyPensionContribution: 5_645,
+  // Yotam — salaried 100K gross → ~65K net
+  yotamMonthlyNetIncome: 65_000,
+  // Pension: employee 6% + employer 6.5% + severance 6% = 5,645 (capped at max deposit)
+  yotamMonthlyPensionContribution: 5_645,
+  // Hadas — self-employed ~30K gross → ~22K net
+  hadasMonthlyNetIncome: 22_000,
+  // Self-employed mandatory pension: 4.45% on half avg wage + 12.55% on rest = ~1,170
+  hadasMonthlyPensionContribution: 1_170,
   monthlyLiquidContributionRenting: 17_000,
   monthlyLiquidContributionOwning: 10_000,
   monthlyGrossAltIncome: 20_000,
@@ -44,7 +49,7 @@ export const DEFAULT_MARKET: MarketConfig = {
   // BOI target range 1-3%, current (Feb 2026) = 2.0%
   inflationRate: 0.025,
   realHomeAppreciation: 0.02,
-  // Mekaddem hamara: ~216 for current pension funds (balance / 216 = monthly payout)
+  // Mekaddem hamara: ~216 for current pension funds
   pensionConversionFactor: 216,
 };
 
@@ -54,6 +59,8 @@ export function createBuyNowConfig(): ScenarioConfig {
     housePurchaseYear: 1,
     zinukEndAge: 52,
     pensionStartAge: 60,
+    hadasAge: 35,
+    hadasPensionStartAge: 65,
     fullRetirementAge: 67,
     assets: { ...DEFAULT_ASSETS },
     income: { ...DEFAULT_INCOME },
@@ -69,6 +76,8 @@ export function createRentForeverConfig(): ScenarioConfig {
     housePurchaseYear: null,
     zinukEndAge: 52,
     pensionStartAge: 60,
+    hadasAge: 35,
+    hadasPensionStartAge: 65,
     fullRetirementAge: 67,
     assets: { ...DEFAULT_ASSETS },
     income: { ...DEFAULT_INCOME },
@@ -84,6 +93,8 @@ export function createBuyLaterConfig(buyAtAge: number = 52): ScenarioConfig {
     housePurchaseYear: buyAtAge - 44 + 1,
     zinukEndAge: 52,
     pensionStartAge: 60,
+    hadasAge: 35,
+    hadasPensionStartAge: 65,
     fullRetirementAge: 67,
     assets: { ...DEFAULT_ASSETS },
     income: { ...DEFAULT_INCOME },

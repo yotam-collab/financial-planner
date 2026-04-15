@@ -33,34 +33,32 @@ export function deflate(nominal: number, rate: number, years: number): number {
   return nominal / Math.pow(1 + rate, years);
 }
 
-/**
- * 3 life phases:
- * 1. ZINUK: business (zinuk) income, contributing to pension + liquid. Until zinukEndAge.
- * 2. ALT INCOME: alternative income. From zinukEndAge to fullRetirementAge.
- * 3. RETIRED: no earned income. Only 4% from liquid + pension annuity (from 60).
- */
 function runCore(config: ScenarioConfig): YearResult[] {
-  const { startAge, endAge, housePurchaseYear, zinukEndAge, pensionStartAge, fullRetirementAge, assets, income, expenses, house, market } = config;
+  const { startAge, endAge, housePurchaseYear, zinukEndAge, pensionStartAge,
+    hadasAge, hadasPensionStartAge, fullRetirementAge,
+    assets, income, expenses, house, market } = config;
   const totalYears = endAge - startAge + 1;
   const results: YearResult[] = [];
 
   let liquid = assets.liquidPortfolio + assets.apartmentNetProceeds;
-  let pensionBal = assets.pension;
+  let yotamPension = assets.yotamPension;
+  let hadasPension = assets.hadasPension;
   let keren = assets.kerenHishtalmut;
   let kerenMerged = false;
   let ownsHome = false;
   let homeVal = 0, mortBal = 0, mortPayment = 0, mortPrincipal = 0, mortStartYear = 0;
-  let pensionActive = false, pensionPayout = 0;
+  let yotamPensionActive = false, yotamPensionPayout = 0;
+  let hadasPensionActive = false, hadasPensionPayout = 0;
 
   const nomRet = (1 + market.realReturnRate) * (1 + market.inflationRate) - 1;
   const nomHA = (1 + market.realHomeAppreciation) * (1 + market.inflationRate) - 1;
 
   for (let yi = 0; yi < totalYears; yi++) {
     const year = yi + 1;
-    const age = startAge + yi;
+    const age = startAge + yi; // Yotam's age
+    const hadasCurrentAge = hadasAge + yi; // Hadas's age
     const ye = yi;
 
-    // Determine phase
     let phase: 'zinuk' | 'altIncome' | 'retired';
     if (age < zinukEndAge) phase = 'zinuk';
     else if (age < fullRetirementAge) phase = 'altIncome';
@@ -71,7 +69,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const nomRent = inflate(expenses.monthlyRent, market.inflationRate, ye);
     const nomNH = inflate(expenses.monthlyNonHousingExpenses, market.inflationRate, ye);
     const nomAlt = phase === 'altIncome' ? inflate(income.monthlyNetAltIncome, market.inflationRate, ye) : 0;
-    const nomPC = inflate(income.monthlyPensionContribution, market.inflationRate, ye);
+    const nomYPC = inflate(income.yotamMonthlyPensionContribution, market.inflationRate, ye);
+    const nomHPC = inflate(income.hadasMonthlyPensionContribution, market.inflationRate, ye);
     const nomLR = inflate(income.monthlyLiquidContributionRenting, market.inflationRate, ye);
     const nomLO = inflate(income.monthlyLiquidContributionOwning, market.inflationRate, ye);
 
@@ -100,52 +99,58 @@ function runCore(config: ScenarioConfig): YearResult[] {
       mortStartYear = year;
     }
 
-    // Pension at 60
-    if (age >= pensionStartAge && !pensionActive) {
-      pensionActive = true;
-      pensionPayout = calcMonthlyPensionPayout(pensionBal, market.pensionConversionFactor);
+    // Yotam pension activation
+    if (age >= pensionStartAge && !yotamPensionActive) {
+      yotamPensionActive = true;
+      yotamPensionPayout = calcMonthlyPensionPayout(yotamPension, market.pensionConversionFactor);
     }
+
+    // Hadas pension activation
+    if (hadasCurrentAge >= hadasPensionStartAge && !hadasPensionActive) {
+      hadasPensionActive = true;
+      hadasPensionPayout = calcMonthlyPensionPayout(hadasPension, market.pensionConversionFactor);
+    }
+
+    const totalPensionPayout = yotamPensionPayout + hadasPensionPayout;
 
     // Monthly calcs
     const mHousing = ownsHome ? mortPayment : nomRent;
     const mExp = nomNH + mHousing;
     const m4pct = Math.max(0, liquid * 0.04 / 12);
-    const mZinuk = phase === 'zinuk' ? inflate(income.monthlyNetBusinessIncome, market.inflationRate, ye) : 0;
+    const mZinuk = phase === 'zinuk'
+      ? inflate(income.yotamMonthlyNetIncome + income.hadasMonthlyNetIncome, market.inflationRate, ye)
+      : 0;
 
-    // Sustainable income: what you'd have if you stopped working NOW
-    // During zinuk: show business income (actual)
-    // Post-zinuk: alt income + pension + 4% from liquid (theoretical capacity)
     const mSustainable = phase === 'zinuk'
-      ? mZinuk + pensionPayout  // actual income while working
-      : nomAlt + pensionPayout + m4pct; // passive income capacity
+      ? mZinuk + totalPensionPayout
+      : nomAlt + totalPensionPayout + m4pct;
 
-    // Cashflow — the actual money movement
+    // Cashflow
     let cf: number;
     if (phase === 'zinuk') {
-      // Working: contribute to pension + liquid savings
-      pensionBal += nomPC * 12;
+      yotamPension += nomYPC * 12;
+      hadasPension += nomHPC * 12;
       const lc = (ownsHome ? nomLO : nomLR) * 12;
       liquid += lc;
       cf = lc;
     } else {
-      // Post-zinuk: total income = alt income (if not fully retired) + pension annuity
-      // The monthly balance (surplus or deficit) flows into/out of the liquid portfolio
-      const totalMonthlyIncome = nomAlt + pensionPayout;
+      // Post-zinuk: Hadas may still contribute to pension if she's working
+      // For simplicity: Hadas pension contributions also stop when zinuk ends
+      const totalMonthlyIncome = nomAlt + totalPensionPayout;
       const monthlyNet = totalMonthlyIncome - mExp;
-      const annualNet = monthlyNet * 12;
-      liquid += annualNet; // positive = surplus invested, negative = withdrawn
-      cf = annualNet;
+      liquid += monthlyNet * 12;
+      cf = monthlyNet * 12;
     }
 
     // Growth
     if (liquid > 0) liquid *= (1 + nomRet);
-    if (!pensionActive) pensionBal *= (1 + nomRet);
+    if (!yotamPensionActive) yotamPension *= (1 + nomRet);
+    if (!hadasPensionActive) hadasPension *= (1 + nomRet);
     if (!kerenMerged) keren *= (1 + nomRet);
 
     if (ownsHome) {
-      // Don't appreciate in the purchase year itself
       if (year > mortStartYear) homeVal *= (1 + nomHA);
-      const ysp = year - mortStartYear; // 0-indexed: 0 = purchase year
+      const ysp = year - mortStartYear;
       mortBal = ysp < house.mortgageTerm ? remainingMortgageBalance(mortPrincipal, house.mortgageRate, house.mortgageTerm, ysp) : 0;
       if (ysp >= house.mortgageTerm) mortPayment = 0;
     }
@@ -153,15 +158,18 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const hEq = ownsHome ? Math.max(0, homeVal - mortBal) : 0;
     const dep = liquid <= 0;
     if (dep) liquid = 0;
-    const pNW = pensionActive ? 0 : pensionBal;
+    const yPenNW = yotamPensionActive ? 0 : yotamPension;
+    const hPenNW = hadasPensionActive ? 0 : hadasPension;
+    const totalPensionNW = yPenNW + hPenNW;
     const kNW = kerenMerged ? 0 : keren;
-    const nw = liquid + pNW + kNW + hEq;
+    const nw = liquid + totalPensionNW + kNW + hEq;
 
     results.push({
       year, age, phase, isWorking,
       housingStatus: ownsHome ? 'owning' : 'renting',
-      liquidPortfolio: Math.round(liquid), pension: Math.round(pNW),
-      monthlyPensionPayout: Math.round(pensionPayout),
+      liquidPortfolio: Math.round(liquid),
+      pension: Math.round(totalPensionNW),
+      monthlyPensionPayout: Math.round(totalPensionPayout),
       homeEquity: Math.round(hEq), mortgageBalance: Math.round(mortBal),
       monthlyMortgagePayment: Math.round(mortPayment), homeValue: Math.round(homeVal),
       netWorth: Math.round(nw),
@@ -170,7 +178,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       isDepleted: dep,
       monthlyZinukIncome: Math.round(mZinuk),
       monthly4pctWithdrawal: Math.round(m4pct),
-      monthlyPensionIncome: Math.round(pensionPayout),
+      monthlyPensionIncome: Math.round(totalPensionPayout),
       monthlyAltIncome: Math.round(nomAlt),
       monthlySustainableIncome: Math.round(mSustainable),
       monthlyBalance: Math.round(mSustainable - mExp),
@@ -178,7 +186,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       isFullyRetired: phase === 'retired',
       real: {
         liquidPortfolio: Math.round(deflate(liquid, market.inflationRate, ye)),
-        pension: Math.round(deflate(pNW, market.inflationRate, ye)),
+        pension: Math.round(deflate(totalPensionNW, market.inflationRate, ye)),
         homeEquity: Math.round(deflate(hEq, market.inflationRate, ye)),
         netWorth: Math.round(deflate(nw, market.inflationRate, ye)),
         annualIncome: Math.round(deflate(mSustainable * 12, market.inflationRate, ye)),
@@ -190,21 +198,11 @@ function runCore(config: ScenarioConfig): YearResult[] {
   return results;
 }
 
-/**
- * Find earliest age where quitting zinuk is viable.
- * For each possible quit age, run the sim with zinuk ending at that age,
- * then check: does the post-zinuk sustainable income (4% + alt + pension) cover expenses?
- * We check the FIRST post-zinuk year — if it works there, portfolio should grow.
- */
 export function findEarliestRetirementAge(config: ScenarioConfig): number | null {
-  for (let quitAge = config.startAge; quitAge <= config.endAge; quitAge++) {
-    const c: ScenarioConfig = { ...config, zinukEndAge: quitAge };
-    const years = runCore(c);
-    // Check the year right after quitting zinuk
-    const postQuit = years.find(y => y.age === quitAge && y.phase !== 'zinuk');
-    if (postQuit && postQuit.monthlySustainableIncome >= postQuit.monthlyExpenses) {
-      return quitAge;
-    }
+  const c: ScenarioConfig = { ...config, zinukEndAge: config.endAge + 1, fullRetirementAge: config.endAge + 1 };
+  const years = runCore(c);
+  for (const y of years) {
+    if (y.monthlySustainableIncome >= y.monthlyExpenses) return y.age;
   }
   return null;
 }
@@ -213,10 +211,8 @@ export function simulate(config: ScenarioConfig): SimulationResult {
   const earliestRetirementAge = findEarliestRetirementAge(config);
   const years = runCore(config);
   const dep = years.find(y => y.isDepleted && y.phase !== 'zinuk');
-
   const { housePurchaseYear: hpy, startAge } = config;
   const label = hpy === null ? 'שכירות לצמיתות' : hpy === 1 ? 'קנייה מיידית' : `קנייה בגיל ${startAge + hpy - 1}`;
-
   return { years, earliestRetirementAge, depletionAge: dep?.age ?? null, scenarioLabel: label };
 }
 

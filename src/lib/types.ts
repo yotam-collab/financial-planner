@@ -2,7 +2,8 @@
 
 export interface AssetConfig {
   liquidPortfolio: number;
-  pension: number;
+  yotamPension: number;
+  hadasPension: number;
   kerenHishtalmut: number;
   kerenHishtalmutLiquidAge: number;
   apartmentNetProceeds: number;
@@ -14,9 +15,13 @@ export interface AssetConfig {
 }
 
 export interface IncomeConfig {
-  monthlyGrossBusinessIncome: number;
-  monthlyNetBusinessIncome: number;
-  monthlyPensionContribution: number;
+  // Yotam — salaried from own company
+  yotamMonthlyNetIncome: number;
+  yotamMonthlyPensionContribution: number;
+  // Hadas — self-employed
+  hadasMonthlyNetIncome: number;
+  hadasMonthlyPensionContribution: number;
+  // Combined household
   monthlyLiquidContributionRenting: number;
   monthlyLiquidContributionOwning: number;
   monthlyGrossAltIncome: number;
@@ -53,8 +58,12 @@ export interface ScenarioConfig {
   housePurchaseYear: number | null;
   /** Age at which zinuk (business) income stops and alt income begins */
   zinukEndAge: number;
-  /** Age at which pension annuity begins (60-67 in Israel) */
+  /** Age at which Yotam's pension annuity begins (60-67) */
   pensionStartAge: number;
+  /** Hadas's current age */
+  hadasAge: number;
+  /** Age at which Hadas's pension annuity begins (60-65) */
+  hadasPensionStartAge: number;
   /** Age at which user fully retires — no earned income, only 4% + pension */
   fullRetirementAge: number;
   assets: AssetConfig;
