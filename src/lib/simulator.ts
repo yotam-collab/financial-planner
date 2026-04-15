@@ -110,29 +110,31 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const mHousing = ownsHome ? mortPayment : nomRent;
     const mExp = nomNH + mHousing;
     const m4pct = Math.max(0, liquid * 0.04 / 12);
-    // Zinuk income for the current phase
     const mZinuk = phase === 'zinuk' ? inflate(income.monthlyNetBusinessIncome, market.inflationRate, ye) : 0;
-    // Total sustainable/actual income for this phase
-    const mSustainable = mZinuk + m4pct + pensionPayout + nomAlt;
 
-    // Actual income for cashflow
-    let mInc: number;
-    if (phase === 'zinuk') mInc = inflate(income.monthlyNetBusinessIncome, market.inflationRate, ye);
-    else if (phase === 'altIncome') mInc = nomAlt;
-    else mInc = 0;
-    if (pensionActive) mInc += pensionPayout;
+    // Sustainable income: what you'd have if you stopped working NOW
+    // During zinuk: show business income (actual)
+    // Post-zinuk: alt income + pension + 4% from liquid (theoretical capacity)
+    const mSustainable = phase === 'zinuk'
+      ? mZinuk + pensionPayout  // actual income while working
+      : nomAlt + pensionPayout + m4pct; // passive income capacity
 
-    // Cashflow
+    // Cashflow — the actual money movement
     let cf: number;
     if (phase === 'zinuk') {
+      // Working: contribute to pension + liquid savings
       pensionBal += nomPC * 12;
       const lc = (ownsHome ? nomLO : nomLR) * 12;
       liquid += lc;
       cf = lc;
     } else {
-      const gap = (mExp - mInc) * 12;
-      if (gap > 0) { liquid -= gap; cf = -gap; }
-      else { liquid += Math.abs(gap); cf = Math.abs(gap); }
+      // Post-zinuk: total income = alt income (if not fully retired) + pension annuity
+      // The monthly balance (surplus or deficit) flows into/out of the liquid portfolio
+      const totalMonthlyIncome = nomAlt + pensionPayout;
+      const monthlyNet = totalMonthlyIncome - mExp;
+      const annualNet = monthlyNet * 12;
+      liquid += annualNet; // positive = surplus invested, negative = withdrawn
+      cf = annualNet;
     }
 
     // Growth
@@ -163,7 +165,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       homeEquity: Math.round(hEq), mortgageBalance: Math.round(mortBal),
       monthlyMortgagePayment: Math.round(mortPayment), homeValue: Math.round(homeVal),
       netWorth: Math.round(nw),
-      annualIncome: Math.round(mInc * 12), annualExpenses: Math.round(mExp * 12),
+      annualIncome: Math.round(mSustainable * 12), annualExpenses: Math.round(mExp * 12),
       annualHousingCost: Math.round(mHousing * 12), annualCashflow: Math.round(cf),
       isDepleted: dep,
       monthlyZinukIncome: Math.round(mZinuk),
@@ -179,7 +181,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
         pension: Math.round(deflate(pNW, market.inflationRate, ye)),
         homeEquity: Math.round(deflate(hEq, market.inflationRate, ye)),
         netWorth: Math.round(deflate(nw, market.inflationRate, ye)),
-        annualIncome: Math.round(deflate(mInc * 12, market.inflationRate, ye)),
+        annualIncome: Math.round(deflate(mSustainable * 12, market.inflationRate, ye)),
         annualExpenses: Math.round(deflate(mExp * 12, market.inflationRate, ye)),
         annualCashflow: Math.round(deflate(cf, market.inflationRate, ye)),
       },
