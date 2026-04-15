@@ -16,7 +16,8 @@ export const DEFAULT_ASSETS: AssetConfig = {
 export const DEFAULT_INCOME: IncomeConfig = {
   monthlyGrossBusinessIncome: 100_000,
   monthlyNetBusinessIncome: 65_000,
-  monthlyPensionContribution: 3_200,
+  // Salaried employee at 100K: employee 6% + employer 6.5% + severance 6% = 5,645 (capped)
+  monthlyPensionContribution: 5_645,
   monthlyLiquidContributionRenting: 17_000,
   monthlyLiquidContributionOwning: 10_000,
   monthlyGrossAltIncome: 20_000,
@@ -40,9 +41,11 @@ export const DEFAULT_HOUSE: HouseConfig = {
 
 export const DEFAULT_MARKET: MarketConfig = {
   realReturnRate: 0.06,
-  inflationRate: 0.03,
+  // BOI target range 1-3%, current (Feb 2026) = 2.0%
+  inflationRate: 0.025,
   realHomeAppreciation: 0.02,
-  pensionConversionFactor: 220,
+  // Mekaddem hamara: ~216 for current pension funds (balance / 216 = monthly payout)
+  pensionConversionFactor: 216,
 };
 
 export function createBuyNowConfig(): ScenarioConfig {
