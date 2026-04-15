@@ -162,7 +162,7 @@ function AvatarCursor(props: any) {
       <line x1={cx} y1={10} x2={cx} y2={avatarY - r - 4} stroke="rgba(99,102,241,0.3)" strokeWidth={1.5} strokeDasharray="5 3" />
       <circle cx={cx} cy={avatarY} r={r + 2.5} fill="white" />
       <image
-        href="/profile-small.jpeg"
+        href={`${import.meta.env.BASE_URL}profile-small.jpeg`}
         x={cx - r} y={avatarY - r}
         width={r * 2} height={r * 2}
         clipPath={`url(#${clipId})`}

@@ -107,7 +107,7 @@ export function InputPanel({ config, scenario, onChange }: Props) {
     <div className="glass-card p-5 text-right lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto space-y-3">
       {/* Header */}
       <div className="flex items-center gap-3 pb-3 border-b border-slate-200/40">
-        <img src="/profile.jpeg" alt="" className="w-12 h-12 rounded-xl object-cover shadow" />
+        <img src={`${import.meta.env.BASE_URL}profile.jpeg`} alt="" className="w-12 h-12 rounded-xl object-cover shadow" />
         <div>
           <h2 className="text-lg font-bold text-slate-800">פרמטרים</h2>
           <p className="text-xs text-slate-400">כל השדות ניתנים לעריכה</p>

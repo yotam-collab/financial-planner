@@ -31,7 +31,7 @@ function App() {
         {/* Hero Header */}
         <header className="relative overflow-hidden rounded-b-[2rem] md:rounded-b-[3rem] mb-4 md:mb-6">
           <img
-            src="/hero.png"
+            src={`${import.meta.env.BASE_URL}hero.png`}
             alt=""
             className="w-full h-36 md:h-64 lg:h-80 object-cover object-top"
           />
