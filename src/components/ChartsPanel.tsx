@@ -1,7 +1,7 @@
 import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Area, ComposedChart,
-  Cell, Bar,
+  Cell, Bar, Line,
 } from 'recharts';
 import type { SimulationResult, ScenarioConfig } from '../lib/types';
 
@@ -236,7 +236,7 @@ export function ChartsPanel({ result, config }: Props) {
           )}
 
           <Area type="monotone" dataKey="monthlyBalance" fill="url(#posGrad)" stroke="none" />
-          <Bar dataKey="monthlyBalance" radius={[3, 3, 0, 0]}>
+          <Bar dataKey="monthlyBalance" name="יתרה חודשית (נומינלי)" radius={[3, 3, 0, 0]}>
             {data.map((entry, i) => (
               <Cell
                 key={i}
@@ -245,13 +245,51 @@ export function ChartsPanel({ result, config }: Props) {
               />
             ))}
           </Bar>
+
+          {/* Real (today's money) lines */}
+          <Line
+            type="monotone"
+            dataKey="real.monthlyBalance"
+            stroke="#059669"
+            strokeWidth={2.5}
+            strokeDasharray="5 4"
+            dot={false}
+            name="יתרה חודשית (ערכי היום)"
+          />
+          <Line
+            type="monotone"
+            dataKey="real.monthly4pctWithdrawal"
+            stroke="#4f46e5"
+            strokeWidth={2}
+            strokeDasharray="3 3"
+            dot={false}
+            name="4% חודשי (ערכי היום)"
+          />
         </ComposedChart>
       </ResponsiveContainer>
-      <p className="text-sm md:text-base text-slate-500 mt-4 leading-relaxed">
-        <strong className="text-emerald-600">ירוק</strong> = הכנסה ברת-קיימא עולה על הוצאות.
-        <strong className="text-rose-500 mr-2"> אדום</strong> = גירעון.
-        הקו הכחול = סגירת זינוק. הקו הכתום = פרישה מלאה.
-      </p>
+      <div className="text-sm md:text-base text-slate-500 mt-4 leading-relaxed space-y-2">
+        <div className="flex flex-wrap gap-x-5 gap-y-2 items-center">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 bg-emerald-500/70 rounded"></span>
+            יתרה חיובית (נומינלי)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 bg-rose-500/70 rounded"></span>
+            יתרה שלילית (נומינלי)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <svg width="24" height="4"><line x1="0" y1="2" x2="24" y2="2" stroke="#059669" strokeWidth="2.5" strokeDasharray="5 4"/></svg>
+            יתרה בערכי היום
+          </span>
+          <span className="flex items-center gap-1.5">
+            <svg width="24" height="4"><line x1="0" y1="2" x2="24" y2="2" stroke="#4f46e5" strokeWidth="2" strokeDasharray="3 3"/></svg>
+            4% מהתיק בערכי היום
+          </span>
+        </div>
+        <p className="text-xs md:text-sm text-slate-400">
+          הקו הכחול האנכי = סגירת זינוק · הקו הכתום = פרישה מלאה · הקו הירוק = נקודת איזון
+        </p>
+      </div>
     </div>
   );
 }
