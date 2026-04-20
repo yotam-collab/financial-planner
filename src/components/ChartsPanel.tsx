@@ -70,7 +70,7 @@ function ChartTooltip({ active, payload }: any) {
         </div>
         <div className="flex justify-between text-sm text-slate-400">
           <span>בערכים של היום</span>
-          <span className="num font-semibold">{d.monthlyBalance >= 0 ? '+' : ''}{Math.round((d.real?.annualCashflow || 0) / 12)?.toLocaleString('he-IL')} ₪</span>
+          <span className="num font-semibold">{d.real?.monthlyBalance >= 0 ? '+' : ''}{(d.real?.monthlyBalance || 0).toLocaleString('he-IL')} ₪</span>
         </div>
       </div>
       {/* Portfolio breakdown */}

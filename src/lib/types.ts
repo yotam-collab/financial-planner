@@ -110,6 +110,7 @@ export interface YearResult {
     annualExpenses: number;
     annualCashflow: number;
     monthly4pctWithdrawal: number;
+    monthlyBalance: number;
   };
 }
 
