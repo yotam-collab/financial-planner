@@ -119,7 +119,7 @@ export function InputPanel({ config, setConfig }: Props) {
       : `גיל ${config.startAge + housePurchaseSliderValue - 1}`;
 
   return (
-    <div className="widget-card-static p-5 md:p-6 space-y-1 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+    <div className="widget-card-static p-5 md:p-6 space-y-1 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto w-full">
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 mb-2 border-b border-white/60">
         <div className="relative">

@@ -285,9 +285,9 @@ export function ChartsPanel({ result, config }: Props) {
       </div>
 
       {/* Chart */}
-      <div className="-mx-5 md:-mx-8">
+      <div className="w-full">
         <ResponsiveContainer width="100%" height={420}>
-          <ComposedChart data={data} margin={{ top: 30, right: 20, left: 20, bottom: 0 }}>
+          <ComposedChart data={data} margin={{ top: 30, right: 0, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={metricCfg.gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={metricCfg.color} stopOpacity={0.35} />

@@ -15,7 +15,7 @@ function App() {
 
       <div className="relative z-10 min-h-screen">
         {/* ─── Hero image (kept) ─── */}
-        <header className="relative overflow-hidden rounded-b-[3rem] md:rounded-b-[4rem] mb-6 md:mb-10">
+        <header className="relative w-full overflow-hidden">
           <img
             src={`${import.meta.env.BASE_URL}hero.png`}
             alt=""
@@ -23,7 +23,7 @@ function App() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 px-5 md:px-10 pb-6 md:pb-10">
-            <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+            <div className="mx-auto max-w-screen-2xl flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
               <div className="fade-up">
                 <p className="text-white/70 text-[11px] md:text-xs font-bold uppercase tracking-[0.28em] mb-2 md:mb-3">
                   יותם והדס · תכנון פיננסי
@@ -52,34 +52,36 @@ function App() {
           </div>
         </header>
 
-        {/* ─── Main bento ─── */}
-        <main className="max-w-[1400px] mx-auto px-4 md:px-8 pb-12 md:pb-16">
-          {/* Summary hero card */}
-          <div className="fade-up" style={{ animationDelay: '0.15s' }}>
-            <SummaryCard result={result} />
-          </div>
-
-          {/* Grid: Input + Chart */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 mt-5 md:mt-6">
-            <div className="lg:col-span-4 xl:col-span-3 order-2 lg:order-1 fade-up" style={{ animationDelay: '0.25s' }}>
-              <InputPanel config={config} setConfig={setConfig} />
+        {/* ─── Main content ─── */}
+        <main className="mx-auto max-w-screen-2xl w-full px-4 md:px-8 py-6 md:py-10">
+          <div className="space-y-5 md:space-y-6">
+            {/* Summary */}
+            <div className="fade-up" style={{ animationDelay: '0.15s' }}>
+              <SummaryCard result={result} />
             </div>
-            <div className="lg:col-span-8 xl:col-span-9 order-1 lg:order-2 fade-up" style={{ animationDelay: '0.2s' }}>
-              <ChartsPanel result={result} config={config} />
+
+            {/* Grid: chart + inputs */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
+              <div className="lg:col-span-8 xl:col-span-9 order-1 fade-up min-w-0" style={{ animationDelay: '0.2s' }}>
+                <ChartsPanel result={result} config={config} />
+              </div>
+              <div className="lg:col-span-4 xl:col-span-3 order-2 fade-up min-w-0" style={{ animationDelay: '0.25s' }}>
+                <InputPanel config={config} setConfig={setConfig} />
+              </div>
             </div>
-          </div>
 
-          {/* Data table */}
-          <div className="mt-5 md:mt-6 fade-up" style={{ animationDelay: '0.3s' }}>
-            <DataTable result={result} onExportJSON={exportJSON} />
-          </div>
+            {/* Data table */}
+            <div className="fade-up" style={{ animationDelay: '0.3s' }}>
+              <DataTable result={result} onExportJSON={exportJSON} />
+            </div>
 
-          {/* Footer */}
-          <footer className="mt-10 md:mt-12 text-center">
-            <p className="font-body text-sm text-slate-500">
-              מודל פיננסי אישי · אינו תחליף לייעוץ מקצועי
-            </p>
-          </footer>
+            {/* Footer */}
+            <footer className="pt-8 md:pt-10 text-center">
+              <p className="font-body text-sm text-slate-500">
+                מודל פיננסי אישי · אינו תחליף לייעוץ מקצועי
+              </p>
+            </footer>
+          </div>
         </main>
       </div>
     </>
