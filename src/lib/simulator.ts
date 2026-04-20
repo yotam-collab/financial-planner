@@ -133,33 +133,30 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const mZinuk = phase === 'zinuk' ? yotamIncome + hadasIncome : 0;
     const mAlt = phase === 'altIncome' ? yotamIncome + hadasIncome : 0;
 
-    // Sustainable income = ACTUAL current income + 4% from liquid + pension annuity
-    // During zinuk: zinuk income + 4% + pension
-    // During altIncome: alt income + 4% + pension
-    // During retired: just 4% + pension
-    const mSustainable = yotamIncome + hadasIncome + totalPensionPayout + m4pct;
+    // ─── ACTUAL monthly cashflow = income + pension - expenses ───
+    // This is what actually flows in/out of liquid each month.
+    // Compound growth on liquid is applied separately via nomRet (does NOT
+    // double-count the 4% — the 4% is a reference metric, not a cashflow).
+    const mActualBalance = (yotamIncome + hadasIncome) + totalPensionPayout - mExp;
 
-    // Cashflow: actual money movement
-    let cf: number;
+    // Sustainable income (reference metric): actual income + pension + 4%
+    // Used for display only, NOT for cashflow simulation
+    const mSustainable = (yotamIncome + hadasIncome) + totalPensionPayout + m4pct;
+
+    // ─── Pension contributions (separate from liquid cashflow) ───
     if (phase === 'zinuk') {
-      // Both contribute to pension during zinuk
       yotamPension += nomYPC * 12;
       hadasPension += nomHPC * 12;
-      const lc = (ownsHome ? nomLO : nomLR) * 12;
-      liquid += lc;
-      cf = lc;
-    } else {
-      // Pension contribs continue only if person still has income
-      if (phase === 'altIncome') {
-        if (income.yotamNetIncomePostZinuk > 0) yotamPension += nomYPC * 12;
-        if (income.hadasNetIncomePostZinuk > 0) hadasPension += nomHPC * 12;
-      }
-      // Post-zinuk: surplus invested, deficit withdrawn from liquid
-      const monthlyTotalIncome = yotamIncome + hadasIncome + totalPensionPayout;
-      const monthlyNet = monthlyTotalIncome - mExp;
-      liquid += monthlyNet * 12;
-      cf = monthlyNet * 12;
+    } else if (phase === 'altIncome') {
+      if (income.yotamNetIncomePostZinuk > 0) yotamPension += nomYPC * 12;
+      if (income.hadasNetIncomePostZinuk > 0) hadasPension += nomHPC * 12;
     }
+
+    // ─── Liquid cashflow: actual monthly balance → liquid ───
+    // Positive balance = saved (grows liquid)
+    // Negative balance = withdrawn (shrinks liquid)
+    liquid += mActualBalance * 12;
+    const cf = mActualBalance * 12;
 
     // Growth
     if (liquid > 0) liquid *= (1 + nomRet);
@@ -202,7 +199,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       // monthlyAltIncome represents "post-zinuk income if you quit" (for sustainability display)
       monthlyAltIncome: Math.round(mAlt),
       monthlySustainableIncome: Math.round(mSustainable),
-      monthlyBalance: Math.round(mSustainable - mExp),
+      monthlyBalance: Math.round(mActualBalance),
       monthlyExpenses: Math.round(mExp),
       isFullyRetired: phase === 'retired',
       real: {
@@ -214,7 +211,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
         annualExpenses: Math.round(deflate(mExp * 12, market.inflationRate, ye)),
         annualCashflow: Math.round(deflate(cf, market.inflationRate, ye)),
         monthly4pctWithdrawal: Math.round(deflate(m4pct, market.inflationRate, ye)),
-        monthlyBalance: Math.round(deflate(mSustainable - mExp, market.inflationRate, ye)),
+        monthlyBalance: Math.round(deflate(mActualBalance, market.inflationRate, ye)),
         monthlySustainableIncome: Math.round(deflate(mSustainable, market.inflationRate, ye)),
       },
     });
@@ -224,21 +221,20 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
 /**
  * Find the earliest age at which quitting zinuk is sustainable.
- * Criterion: monthly balance is non-negative EVERY year post-zinuk,
- * AND liquid portfolio doesn't deplete before endAge.
+ * Criterion: liquid portfolio survives until endAge (doesn't deplete).
+ * The actual cashflow model naturally accounts for deficit years —
+ * as long as portfolio growth exceeds withdrawals, retirement is viable.
  */
 export function findEarliestRetirementAge(config: ScenarioConfig): number | null {
   for (let quitAge = config.startAge; quitAge <= config.endAge; quitAge++) {
     const testConfig: ScenarioConfig = { ...config, zinukEndAge: quitAge };
     const years = runCore(testConfig);
-    // Check post-zinuk years have non-negative balance
-    const postZinukYears = years.filter(y => y.phase !== 'zinuk');
-    if (postZinukYears.length === 0) continue;
-    const anyNegative = postZinukYears.some(y => y.monthlyBalance < 0);
-    if (anyNegative) continue;
-    // Check no depletion
+    // Portfolio must not deplete in post-zinuk years
     const depleted = years.some(y => y.isDepleted && y.phase !== 'zinuk');
     if (depleted) continue;
+    // Final year liquid must be positive
+    const finalYear = years[years.length - 1];
+    if (finalYear.liquidPortfolio <= 0) continue;
     return quitAge;
   }
   return null;
