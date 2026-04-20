@@ -222,10 +222,10 @@ export function InputPanel({ config, setConfig }: Props) {
       <Section title="הוצאות וחיסכון" icon="📊">
         <NumInput label="הוצאות (ללא דיור)" value={config.expenses.monthlyNonHousingExpenses}
           onChange={v => update('expenses.monthlyNonHousingExpenses', v)} step={1000}
-          rec="22,000 ₪ — משפחה עם 4 ילדים" />
+          rec="30,000 ₪ — משפחה עם 4 ילדים" />
         <NumInput label="שכ״ד" value={config.expenses.monthlyRent}
           onChange={v => update('expenses.monthlyRent', v)} step={500}
-          rec="11,000 ₪ — מחיר שוק בפרדס חנה" />
+          rec="9,500 ₪ — מחיר שוק בפרדס חנה" />
       </Section>
 
       {/* ═══ הנחות שוק ═══ */}
