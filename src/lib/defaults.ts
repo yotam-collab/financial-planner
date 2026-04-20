@@ -39,11 +39,11 @@ export const DEFAULT_HOUSE: HouseConfig = {
   renovationCost: 200_000,
   purchaseTaxRate: 0.03,
   closingCosts: 130_000,
-  mortgageLTV: 0.60,
+  mortgageLTV: 0.70,
   mortgageRate: 0.05,
   mortgageTerm: 25,
-  rentalIncomeFromUnit: 0,
-  solarIncome: 0,
+  rentalIncomeFromUnit: 3_400,
+  solarIncome: 500,
 };
 
 export const DEFAULT_MARKET: MarketConfig = {
