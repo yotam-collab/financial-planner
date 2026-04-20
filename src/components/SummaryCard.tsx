@@ -7,14 +7,6 @@ interface Props {
 export function SummaryCard({ result }: Props) {
   const { earliestRetirementAge, years, scenarioLabel } = result;
 
-  const colorClass = earliestRetirementAge === null
-    ? 'from-red-500 via-rose-500 to-rose-600'
-    : earliestRetirementAge <= 55
-      ? 'from-emerald-500 via-emerald-500 to-teal-600'
-      : earliestRetirementAge <= 62
-        ? 'from-amber-400 via-orange-400 to-orange-500'
-        : 'from-red-500 via-rose-500 to-rose-600';
-
   const retYear = earliestRetirementAge
     ? years.find(y => y.age === earliestRetirementAge)
     : null;
@@ -22,120 +14,125 @@ export function SummaryCard({ result }: Props) {
   const finalYear = years[years.length - 1];
   const pensionYear = years.find(y => y.monthlyPensionPayout > 0);
 
+  // Status color
+  const statusColor =
+    earliestRetirementAge === null ? 'text-[#8a2d3a]'
+    : earliestRetirementAge <= 55 ? 'text-[#3d6e5c]'
+    : earliestRetirementAge <= 62 ? 'text-[#b87333]'
+    : 'text-[#8a2d3a]';
+
+  const statusLabel =
+    earliestRetirementAge === null ? 'לא בר-השגה'
+    : earliestRetirementAge <= 55 ? 'מצוין'
+    : earliestRetirementAge <= 62 ? 'סביר'
+    : 'מאוחר';
+
   return (
-    <div className={`rounded-3xl overflow-hidden bg-gradient-to-l ${colorClass} shadow-lg shadow-emerald-900/10 relative`}>
-      {/* Subtle light accent */}
-      <div className="absolute inset-0 opacity-[0.15] pointer-events-none" style={{
-        background: 'radial-gradient(ellipse 60% 80% at 15% 50%, white, transparent 70%)'
-      }} />
-      {/* Grain texture for depth */}
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none mix-blend-overlay" style={{
-        backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
-      }} />
-
-      <div className="relative z-10 flex flex-col md:flex-row md:items-stretch">
-        {/* ─── Age section (left) ─── */}
-        <div className="px-5 md:px-8 py-5 md:py-6 flex flex-col justify-center md:min-w-[320px]">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/60 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white/80"></span>
-            </span>
-            <span className="text-white/70 text-[11px] md:text-xs font-semibold uppercase tracking-[0.2em]">
-              {scenarioLabel}
-            </span>
-          </div>
-
-          <div className="flex items-baseline gap-3 md:gap-4">
-            <div className="text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tight num leading-none">
-              {earliestRetirementAge ?? '—'}
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-white/90 text-xs md:text-sm font-bold leading-tight">סגירת עסק</span>
-              <span className="text-white/50 text-[10px] md:text-xs font-medium">גיל מינימלי</span>
-            </div>
-          </div>
-
-          {earliestRetirementAge && (
-            <p className="text-white/60 text-xs md:text-sm mt-2.5 md:mt-3 font-medium leading-snug">
-              הכנסה ברת-קיימא ≥ הוצאות מגיל זה ואילך
-            </p>
-          )}
-          {!earliestRetirementAge && (
-            <p className="text-white/60 text-xs md:text-sm mt-2.5 md:mt-3 font-medium leading-snug">
-              לא ניתן לסגור את העסק עם הפרמטרים הנוכחיים
-            </p>
-          )}
+    <article className="ledger-card px-6 md:px-10 py-6 md:py-8 fade-rise">
+      {/* Eyebrow row */}
+      <div className="flex items-center justify-between mb-5 md:mb-6">
+        <div className="flex items-center gap-3">
+          <span className="eyebrow">תרחיש</span>
+          <span className="serif text-base md:text-lg font-medium text-[#1a1c28]">{scenarioLabel}</span>
         </div>
-
-        {/* ─── Divider ─── */}
-        <div className="hidden md:block w-px bg-gradient-to-b from-transparent via-white/25 to-transparent" />
-        <div className="md:hidden h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-
-        {/* ─── Stats grid (right) ─── */}
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-4">
-          {retYear && (
-            <Stat
-              value={Math.round(retYear.monthlySustainableIncome).toLocaleString('he-IL')}
-              label={`הכנסה · גיל ${earliestRetirementAge}`}
-            />
-          )}
-          {retYear && (
-            <Stat
-              value={Math.round(retYear.monthlyExpenses).toLocaleString('he-IL')}
-              label={`הוצאות · גיל ${earliestRetirementAge}`}
-              withBorder
-            />
-          )}
-          {currentYear && (
-            <Stat
-              value={fmtK(currentYear.netWorth)}
-              label="שווי נקי · היום"
-              withBorder
-            />
-          )}
-          {finalYear && (
-            <Stat
-              value={fmtK(finalYear.netWorth)}
-              label={`שווי נקי · גיל ${finalYear.age}`}
-              withBorder
-            />
-          )}
+        <div className={`flex items-center gap-2 ${statusColor}`}>
+          <span className="w-1 h-1 rounded-full bg-current" />
+          <span className="eyebrow !text-current">{statusLabel}</span>
         </div>
       </div>
 
+      {/* Main headline + age */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-8 mb-6 md:mb-8">
+        <div className="flex-1">
+          <h2 className="serif text-2xl md:text-3xl lg:text-4xl font-medium leading-tight text-[#1a1c28] max-w-xl">
+            סגירת העסק אפשרית
+            <br />
+            <span className="text-[#8a8695]">מגיל</span>
+          </h2>
+        </div>
+        <div className="flex items-baseline gap-3 md:gap-4">
+          <span className={`num-display text-[88px] md:text-[120px] lg:text-[144px] leading-[0.85] ${statusColor}`}>
+            {earliestRetirementAge ?? '—'}
+          </span>
+        </div>
+      </div>
+
+      {/* Ornamental divider */}
+      <div className="rule-ornament mb-6 md:mb-8">
+        <svg width="10" height="10" viewBox="0 0 10 10" className="flex-shrink-0">
+          <path d="M5 0 L6 4 L10 5 L6 6 L5 10 L4 6 L0 5 L4 4 Z" fill="currentColor" opacity="0.6" />
+        </svg>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5 md:gap-x-8 md:gap-y-0">
+        {retYear && (
+          <Stat
+            label={`הכנסה · גיל ${earliestRetirementAge}`}
+            value={Math.round(retYear.monthlySustainableIncome).toLocaleString('he-IL')}
+            suffix="₪"
+          />
+        )}
+        {retYear && (
+          <Stat
+            label={`הוצאות · גיל ${earliestRetirementAge}`}
+            value={Math.round(retYear.monthlyExpenses).toLocaleString('he-IL')}
+            suffix="₪"
+          />
+        )}
+        {currentYear && (
+          <Stat
+            label="שווי נקי · היום"
+            value={fmtCompact(currentYear.netWorth)}
+            suffix="₪"
+          />
+        )}
+        {finalYear && (
+          <Stat
+            label={`שווי נקי · גיל ${finalYear.age}`}
+            value={fmtCompact(finalYear.netWorth)}
+            suffix="₪"
+          />
+        )}
+      </div>
+
+      {/* Pension footer */}
       {pensionYear && (
-        <div className="relative z-10 px-5 md:px-8 py-2 md:py-2.5 bg-black/10 border-t border-white/10 flex items-center justify-between">
-          <span className="text-white/60 text-[11px] md:text-xs font-medium">
-            קצבת פנסיה משולבת מגיל {pensionYear.age}
-          </span>
-          <span className="text-white num font-bold text-sm md:text-base">
-            {pensionYear.monthlyPensionPayout.toLocaleString('he-IL')} ₪<span className="text-white/50 text-xs font-medium">/חודש</span>
-          </span>
+        <div className="mt-6 md:mt-8 pt-5 border-t border-[#e8dfc8] flex flex-col md:flex-row md:items-baseline md:justify-between gap-2">
+          <p className="text-sm md:text-base text-[#4a4755]">
+            <span className="serif italic text-[#8a6f36]">קצבת פנסיה משולבת</span> מתחילה בגיל {pensionYear.age}
+          </p>
+          <p className="num font-semibold text-[#1a1c28] text-base md:text-lg">
+            {pensionYear.monthlyPensionPayout.toLocaleString('he-IL')}
+            <span className="text-[#8a8695] font-normal text-sm">
+              {' '}₪/חודש
+            </span>
+          </p>
         </div>
       )}
-    </div>
+    </article>
   );
 }
 
-function Stat({ value, label, withBorder }: { value: string; label: string; withBorder?: boolean }) {
+function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className={`
-      px-3 md:px-5 py-4 md:py-6 text-center md:text-right
-      ${withBorder ? 'border-t md:border-t-0 md:border-r border-white/15' : ''}
-    `}>
-      <div className="text-lg md:text-xl lg:text-2xl font-black text-white num leading-none tracking-tight">
-        {value}
-      </div>
-      <div className="text-white/60 text-[10px] md:text-xs mt-1.5 md:mt-2 font-semibold uppercase tracking-wider">
-        {label}
+    <div>
+      <div className="eyebrow mb-1.5 md:mb-2">{label}</div>
+      <div className="flex items-baseline gap-1.5">
+        <span className="num-display text-[28px] md:text-[36px] lg:text-[42px] leading-none text-[#1a1c28]" style={{ fontVariationSettings: "'opsz' 72, 'wght' 500, 'SOFT' 30" }}>
+          {value}
+        </span>
+        {suffix && <span className="text-sm md:text-base text-[#8a8695] font-medium">{suffix}</span>}
       </div>
     </div>
   );
 }
 
-function fmtK(v: number): string {
-  if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(v) >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+function fmtCompact(v: number): string {
+  if (Math.abs(v) >= 1_000_000) {
+    const m = v / 1_000_000;
+    return m >= 10 ? m.toFixed(0) + 'M' : m.toFixed(1) + 'M';
+  }
+  if (Math.abs(v) >= 1_000) return (v / 1_000).toFixed(0) + 'K';
   return String(Math.round(v));
 }

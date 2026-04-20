@@ -10,16 +10,18 @@ export function DataTable({ result, onExportJSON }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   const exportCSV = () => {
-    const headers = ['שנה', 'גיל', 'תיק נזיל', 'פנסיה', 'הון נדל"ן', 'שווי נקי', 'תזרים שנתי', 'שלב'];
+    const headers = ['שנה', 'גיל', 'שלב', 'תיק נזיל', 'פנסיה', 'הון נדל"ן', 'שווי נקי', 'הכנסה', 'הוצאות', 'יתרה'];
     const rows = result.years.map(y => [
       y.year,
       y.age,
+      y.phase === 'zinuk' ? 'זינוק' : y.phase === 'altIncome' ? 'חלופית' : 'פרישה',
       y.liquidPortfolio,
       y.pension,
       y.homeEquity,
       y.netWorth,
-      y.annualCashflow,
-      y.isWorking ? 'עובד' : 'פרש',
+      y.monthlySustainableIncome,
+      y.monthlyExpenses,
+      y.monthlyBalance,
     ]);
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -32,31 +34,34 @@ export function DataTable({ result, onExportJSON }: Props) {
   };
 
   return (
-    <div className="glass-card overflow-hidden">
+    <div className="ledger-card overflow-hidden fade-rise">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-5 flex items-center justify-between text-right cursor-pointer hover:bg-white/30 transition-colors"
+        className="w-full px-5 md:px-8 py-4 md:py-5 flex items-center justify-between text-right cursor-pointer hover:bg-[#fcf7ec] transition-colors"
       >
-        <h3 className="text-base font-bold text-slate-800">פירוט שנתי</h3>
+        <div>
+          <p className="eyebrow mb-1">נספח</p>
+          <h3 className="serif text-lg md:text-xl font-medium text-[#1a1c28]">פירוט שנתי</h3>
+        </div>
         <div className="flex items-center gap-3">
           {isOpen && (
-            <>
+            <div className="flex gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); onExportJSON(); }}
-                className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-white/50 text-slate-600 hover:bg-white/80 border border-white/60 transition-colors"
+                className="px-3 py-1.5 text-xs md:text-sm font-medium text-[#8a6f36] hover:text-[#1a1c28] border border-[#c9bd9e] hover:border-[#8a6f36] rounded transition-colors"
               >
                 ייצוא JSON
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); exportCSV(); }}
-                className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-white/50 text-slate-600 hover:bg-white/80 border border-white/60 transition-colors"
+                className="px-3 py-1.5 text-xs md:text-sm font-medium text-[#8a6f36] hover:text-[#1a1c28] border border-[#c9bd9e] hover:border-[#8a6f36] rounded transition-colors"
               >
                 ייצוא CSV
               </button>
-            </>
+            </div>
           )}
           <svg
-            className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+            className={`w-5 h-5 text-[#a68a4d] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -65,45 +70,37 @@ export function DataTable({ result, onExportJSON }: Props) {
       </button>
 
       {isOpen && (
-        <div className="px-5 pb-5 overflow-x-auto">
-          <table className="w-full text-sm">
+        <div className="px-5 md:px-8 pb-6 md:pb-8 overflow-x-auto">
+          <table className="w-full text-sm md:text-[15px]">
             <thead>
-              <tr className="border-b-2 border-slate-200/50">
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">שנה</th>
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">גיל</th>
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">תיק נזיל</th>
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">פנסיה</th>
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">הון נדל״ן</th>
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">שווי נקי</th>
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">תזרים שנתי</th>
-                <th className="py-3 px-3 text-right text-xs font-bold text-slate-500">שלב</th>
+              <tr className="border-b-2 border-[#c9bd9e]">
+                <Th>שנה</Th>
+                <Th>גיל</Th>
+                <Th>שלב</Th>
+                <Th align="left">תיק נזיל</Th>
+                <Th align="left">פנסיה</Th>
+                <Th align="left">נדל״ן</Th>
+                <Th align="left">שווי נקי</Th>
+                <Th align="left">יתרה</Th>
               </tr>
             </thead>
             <tbody>
               {result.years.map(y => (
-                <tr key={y.year} className="border-b border-slate-100/50 hover:bg-indigo-50/30 transition-colors">
-                  <td className="py-2.5 px-3 font-semibold text-slate-800">{2026 + y.year - 1}</td>
-                  <td className="py-2.5 px-3 num text-slate-600">{y.age}</td>
-                  <td className={`py-2.5 px-3 num font-medium ${y.isDepleted ? 'text-red-500' : 'text-slate-700'}`}>
+                <tr key={y.year} className="border-b border-[#e8dfc8] hover:bg-[#fcf7ec] transition-colors">
+                  <Td>{2026 + y.year - 1}</Td>
+                  <Td mono>{y.age}</Td>
+                  <Td>
+                    <PhaseBadge phase={y.phase} hasPension={y.monthlyPensionPayout > 0} />
+                  </Td>
+                  <Td mono align="left" className={y.isDepleted ? 'text-[#8a2d3a]' : ''}>
                     {y.isDepleted ? 'אזל' : fmtNum(y.liquidPortfolio)}
-                  </td>
-                  <td className="py-2.5 px-3 num text-slate-600">{fmtNum(y.pension)}</td>
-                  <td className="py-2.5 px-3 num text-slate-600">{y.homeEquity > 0 ? fmtNum(y.homeEquity) : '—'}</td>
-                  <td className="py-2.5 px-3 num font-bold text-slate-800">{fmtNum(y.netWorth)}</td>
-                  <td className={`py-2.5 px-3 num font-medium ${y.annualCashflow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {y.annualCashflow >= 0 ? '+' : ''}{fmtNum(y.annualCashflow)}
-                  </td>
-                  <td className="py-2.5 px-3">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      y.isWorking
-                        ? 'bg-emerald-100/60 text-emerald-600'
-                        : y.monthlyPensionPayout > 0
-                          ? 'bg-indigo-100/60 text-indigo-600'
-                          : 'bg-amber-100/60 text-amber-600'
-                    }`}>
-                      {y.isWorking ? 'עובד' : y.monthlyPensionPayout > 0 ? 'פרש + קצבה' : 'פרש'}
-                    </span>
-                  </td>
+                  </Td>
+                  <Td mono align="left" className="text-[#4a4755]">{fmtNum(y.pension)}</Td>
+                  <Td mono align="left" className="text-[#4a4755]">{y.homeEquity > 0 ? fmtNum(y.homeEquity) : '—'}</Td>
+                  <Td mono align="left" className="font-semibold">{fmtNum(y.netWorth)}</Td>
+                  <Td mono align="left" className={y.monthlyBalance >= 0 ? 'text-[#3d6e5c]' : 'text-[#8a2d3a]'}>
+                    {y.monthlyBalance >= 0 ? '+' : ''}{fmtNum(y.monthlyBalance)}
+                  </Td>
                 </tr>
               ))}
             </tbody>
@@ -111,6 +108,45 @@ export function DataTable({ result, onExportJSON }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+function Th({ children, align = 'right' }: { children: React.ReactNode; align?: 'right' | 'left' }) {
+  return (
+    <th className={`eyebrow py-3 px-3 !text-[#8a8695] font-semibold text-${align}`}>
+      {children}
+    </th>
+  );
+}
+
+function Td({ children, mono, align = 'right', className = '' }: {
+  children: React.ReactNode;
+  mono?: boolean;
+  align?: 'right' | 'left';
+  className?: string;
+}) {
+  return (
+    <td className={`py-2.5 md:py-3 px-3 ${mono ? 'num font-medium' : ''} text-${align} ${className}`}
+      style={mono ? { fontVariantNumeric: 'tabular-nums' } : undefined}>
+      {children}
+    </td>
+  );
+}
+
+function PhaseBadge({ phase, hasPension }: { phase: string; hasPension: boolean }) {
+  const style =
+    phase === 'zinuk' ? 'text-[#4a5a8a]'
+    : phase === 'altIncome' ? 'text-[#3d6e5c]'
+    : 'text-[#a68a4d]';
+  const label =
+    phase === 'zinuk' ? 'זינוק'
+    : phase === 'altIncome' ? 'חלופית'
+    : hasPension ? 'פרישה+פנסיה' : 'פרישה';
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-xs ${style}`}>
+      <span className="w-1 h-1 rounded-full bg-current" />
+      <span className="font-medium">{label}</span>
+    </span>
   );
 }
 

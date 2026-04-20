@@ -1,13 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  --font-body: 'Heebo', sans-serif;
-  --font-numbers: 'Heebo', sans-serif;
-  --color-glass: rgba(255, 255, 255, 0.72);
-  --color-glass-border: rgba(255, 255, 255, 0.5);
-  --color-mesh-indigo: rgba(79, 70, 229, 0.15);
-  --color-mesh-violet: rgba(124, 58, 237, 0.12);
-  --color-mesh-pink: rgba(236, 72, 153, 0.12);
+  /* ─── Private Wealth Ledger palette ─── */
+  --color-parchment: #f4ede0;
+  --color-parchment-deep: #ede4d0;
+  --color-paper: #fdfaf2;
+  --color-ink: #1a1c28;
+  --color-ink-soft: #4a4755;
+  --color-ink-faint: #8a8695;
+  --color-brass: #a68a4d;
+  --color-brass-dark: #8a6f36;
+  --color-sage: #3d6e5c;
+  --color-sage-deep: #2d5443;
+  --color-copper: #b87333;
+  --color-burgundy: #8a2d3a;
+  --color-burgundy-soft: #b05762;
+  --color-plum: #3a2e5c;
+  --color-indigo-ink: #4a5a8a;
+  --color-hairline: #d9cfba;
+  --color-hairline-strong: #b8a985;
+
+  /* Fonts */
+  --font-serif-display: 'Fraunces', 'Frank Ruhl Libre', serif;
+  --font-serif-he: 'Frank Ruhl Libre', serif;
+  --font-sans-he: 'Heebo', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 * {
@@ -23,21 +40,20 @@ html {
 body {
   font-family: 'Heebo', sans-serif;
   font-size: 17px;
-  background: #f1f5f9;
+  line-height: 1.55;
+  color: #1a1c28;
+  background: #f4ede0;
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "kern", "liga", "calt";
 }
 
 @media (min-width: 1024px) {
-  body {
-    font-size: 19px;
-  }
+  body { font-size: 18px; }
 }
-
 @media (min-width: 1536px) {
-  body {
-    font-size: 21px;
-  }
+  body { font-size: 19px; }
 }
 
 #root {
@@ -45,72 +61,199 @@ body {
   position: relative;
 }
 
-/* Mesh background */
-.mesh-bg {
+/* ─── Paper texture overlay ─── */
+.paper-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse 600px 600px at 0% 0%, var(--color-mesh-indigo), transparent),
-    radial-gradient(ellipse 500px 500px at 100% 0%, var(--color-mesh-violet), transparent),
-    radial-gradient(ellipse 600px 600px at 50% 50%, rgba(99, 102, 241, 0.08), transparent),
-    radial-gradient(ellipse 500px 500px at 0% 100%, var(--color-mesh-pink), transparent),
-    radial-gradient(ellipse 600px 600px at 100% 100%, var(--color-mesh-indigo), transparent),
-    #f1f5f9;
+  background-color: #f4ede0;
+  background-image:
+    radial-gradient(ellipse 1200px 600px at 20% 0%, rgba(166, 138, 77, 0.06), transparent 70%),
+    radial-gradient(ellipse 800px 500px at 80% 100%, rgba(58, 46, 92, 0.04), transparent 70%);
 }
 
-/* Glass card */
-.glass-card {
-  background: var(--color-glass);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid var(--color-glass-border);
-  border-radius: 2rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.paper-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.glass-card:hover {
-  transform: translateY(-4px) scale(1.002);
-  box-shadow:
-    0 20px 60px rgba(79, 70, 229, 0.08),
-    0 8px 24px rgba(0, 0, 0, 0.06);
+/* ─── Typography classes ─── */
+.serif {
+  font-family: 'Frank Ruhl Libre', serif;
+  font-feature-settings: "kern", "liga";
 }
 
-/* Number formatting - always LTR */
+.serif-display {
+  font-family: 'Fraunces', 'Frank Ruhl Libre', serif;
+  font-feature-settings: "kern", "liga";
+  font-variation-settings: "opsz" 96, "SOFT" 50;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-feature-settings: "kern", "calt", "tnum", "zero";
+}
+
 .num {
+  font-variant-numeric: tabular-nums slashed-zero;
   direction: ltr;
   unicode-bidi: isolate;
+}
+
+.num-display {
+  font-family: 'Fraunces', serif;
+  font-feature-settings: "tnum", "ss01";
+  font-variation-settings: "opsz" 144, "wght" 600, "SOFT" 30;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  font-family: 'Heebo', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8a8695;
+}
+
+@media (min-width: 1024px) {
+  .eyebrow { font-size: 12px; }
+}
+
+/* ─── Card base ─── */
+.ledger-card {
+  background: #fdfaf2;
+  border: 1px solid #d9cfba;
+  border-radius: 6px;
+  box-shadow:
+    0 1px 2px rgba(26, 28, 40, 0.04),
+    0 4px 16px rgba(138, 111, 54, 0.04);
+  transition: box-shadow 0.3s ease;
+}
+
+.ledger-card:hover {
+  box-shadow:
+    0 1px 2px rgba(26, 28, 40, 0.04),
+    0 12px 36px rgba(138, 111, 54, 0.08);
+}
+
+/* Ornamental rule */
+.rule-ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #b8a985;
+}
+
+.rule-ornament::before,
+.rule-ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d9cfba, transparent);
+}
+
+/* ─── Number formatting ─── */
+input[type="number"],
+input[type="text"],
+select {
+  direction: ltr;
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* Scrollbar styling */
+input[type="range"] {
+  direction: ltr;
+}
+
+/* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 3px;
+  background: #c9bd9e;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: #a68a4d;
 }
 
-/* Recharts tooltip */
+/* ─── Page-load animation ─── */
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-rise {
+  animation: fade-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* ─── Selection ─── */
+::selection {
+  background: rgba(166, 138, 77, 0.25);
+  color: #1a1c28;
+}
+
+/* ─── Recharts tooltip RTL ─── */
 .recharts-tooltip-wrapper {
   direction: rtl;
 }
 
-/* Input styling */
-input[type="number"], input[type="text"], select {
-  direction: ltr;
-  text-align: right;
+/* ─── Range slider styling ─── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
 }
 
-input[type="range"] {
-  direction: ltr;
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #d9cfba;
+  height: 2px;
+  border-radius: 1px;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #d9cfba;
+  height: 2px;
+  border-radius: 1px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #a68a4d;
+  border: 3px solid #fdfaf2;
+  box-shadow: 0 0 0 1px #a68a4d, 0 2px 4px rgba(138, 111, 54, 0.2);
+  margin-top: -8px;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #a68a4d;
+  border: 3px solid #fdfaf2;
+  box-shadow: 0 0 0 1px #a68a4d, 0 2px 4px rgba(138, 111, 54, 0.2);
+  cursor: pointer;
 }
