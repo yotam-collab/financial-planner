@@ -21,30 +21,52 @@ function App() {
             alt=""
             className="w-full h-40 md:h-72 lg:h-[28rem] xl:h-[32rem] 2xl:h-[36rem] object-cover object-top"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 px-5 md:px-10 pb-6 md:pb-10">
-            <div className="mx-auto w-full flex flex-col md:flex-row items-start md:items-end justify-between gap-4" style={{ maxWidth: '1920px' }}>
+          {/* Dark gradient: stronger at bottom (where desktop title sits), subtle at top (mobile title) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-slate-900/30 md:to-transparent" />
+
+          {/* ─── Mobile: compact title at top-right ─── */}
+          <div className="md:hidden absolute top-3 right-4 left-4 flex items-start justify-between gap-2 fade-up">
+            <div>
+              <p className="text-white/80 text-[9px] font-bold uppercase tracking-[0.22em] mb-0.5 drop-shadow">
+                יותם והדס
+              </p>
+              <h1 className="font-display text-lg font-extrabold text-white leading-tight drop-shadow">
+                מודל תרחישים
+              </h1>
+            </div>
+          </div>
+
+          {/* ─── Mobile: buttons at bottom ─── */}
+          <div className="md:hidden absolute bottom-3 right-4 left-4 flex items-center justify-end gap-1.5 fade-up" style={{ animationDelay: '0.1s' }}>
+            <HeroButton onClick={() => fileInputRef.current?.click()}>ייבוא</HeroButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) importJSON(file);
+                e.target.value = '';
+              }}
+            />
+            <HeroButton onClick={exportJSON}>ייצוא</HeroButton>
+            <HeroButton onClick={resetToDefaults} danger>אפס</HeroButton>
+          </div>
+
+          {/* ─── Desktop: title + buttons at bottom ─── */}
+          <div className="hidden md:block absolute inset-x-0 bottom-0 px-10 pb-10">
+            <div className="mx-auto w-full flex flex-row items-end justify-between gap-4" style={{ maxWidth: '1920px' }}>
               <div className="fade-up">
-                <p className="text-white/70 text-[11px] md:text-xs font-bold uppercase tracking-[0.28em] mb-2 md:mb-3">
+                <p className="text-white/70 text-xs font-bold uppercase tracking-[0.28em] mb-3">
                   יותם והדס · תכנון פיננסי
                 </p>
-                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[0.95]">
+                <h1 className="font-display text-6xl lg:text-7xl font-extrabold text-white leading-[0.95]">
                   מודל תרחישים
                 </h1>
               </div>
-              <div className="flex items-center gap-2 md:gap-3 fade-up" style={{ animationDelay: '0.1s' }}>
+              <div className="flex items-center gap-3 fade-up" style={{ animationDelay: '0.1s' }}>
                 <HeroButton onClick={() => fileInputRef.current?.click()}>ייבוא</HeroButton>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".json"
-                  className="hidden"
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) importJSON(file);
-                    e.target.value = '';
-                  }}
-                />
                 <HeroButton onClick={exportJSON}>ייצוא</HeroButton>
                 <HeroButton onClick={resetToDefaults} danger>אפס</HeroButton>
               </div>
