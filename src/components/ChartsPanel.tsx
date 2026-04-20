@@ -200,6 +200,10 @@ export function ChartsPanel({ result, config }: Props) {
             tickFormatter={(v: number) => `${fmtK(v)}`}
             width={60}
             mirror
+            domain={[
+              (dataMin: number) => Math.min(0, dataMin * 1.1),
+              (dataMax: number) => Math.max(0, dataMax * 1.05),
+            ]}
           />
           <Tooltip content={<ChartTooltip />} cursor={<AvatarCursor />} />
 
