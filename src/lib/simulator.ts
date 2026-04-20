@@ -85,8 +85,6 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
     const nomYPC = inflate(income.yotamMonthlyPensionContribution, market.inflationRate, ye);
     const nomHPC = inflate(income.hadasMonthlyPensionContribution, market.inflationRate, ye);
-    const nomLR = inflate(income.monthlyLiquidContributionRenting, market.inflationRate, ye);
-    const nomLO = inflate(income.monthlyLiquidContributionOwning, market.inflationRate, ye);
 
     // Windfalls
     if (year === 1) liquid += assets.usRealEstateNonProducing;
