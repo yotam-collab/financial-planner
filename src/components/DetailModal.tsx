@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { YearResult, ScenarioConfig } from '../lib/types';
+import { HelpTooltip } from './HelpTooltip';
 
 interface Props {
   year: YearResult;
@@ -92,12 +93,14 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-emerald-500 rounded-full" />
               הכנסות חודשיות (בפועל)
+              <HelpTooltip placement="bottom" text="סך ההכנסות החודשיות בפועל מכל המקורות: עבודה (נטו), קצבת פנסיה, והכנסה פאסיבית מהבית. זה מה שזורם בפועל לחשבון הבנק — לא כולל משיכה תיאורטית מהתיק הנזיל." />
             </h3>
             <div className="bg-white rounded-2xl border border-emerald-200 overflow-hidden shadow-sm">
               {/* Earned income */}
               {totalEarnedIncome > 0 && (
                 <>
-                  <SectionRow label="הכנסה מעבודה" value={totalEarnedIncome} dotColor="bg-emerald-500" />
+                  <SectionRow label="הכנסה מעבודה" value={totalEarnedIncome} dotColor="bg-emerald-500"
+                    help="הכנסה נטו חודשית משני בני הזוג (אחרי מס, ביטוח לאומי, בריאות, הפקדות פנסיה). מוצמד למדד כל שנה. נכנס אוטומטית לתיק הנזיל אם לא מנוצל." />
                   {y.yotamMonthlyIncome > 0 && (
                     <SubRow label={y.phase === 'zinuk' ? 'יותם · זינוק' : 'יותם · חלופית'} value={y.yotamMonthlyIncome} />
                   )}
@@ -110,7 +113,8 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               {/* Pension */}
               {totalPension > 0 && (
                 <>
-                  <SectionRow label="קצבת פנסיה" value={totalPension} dotColor="bg-amber-500" />
+                  <SectionRow label="קצבת פנסיה" value={totalPension} dotColor="bg-amber-500"
+                    help="קצבה חודשית = יתרת פנסיה ÷ 216 (מקדם המרה סטטוטורי). מתחילה מגיל 60 ליותם, מגיל פרישה לנשים (עד 65) להדס. הקצבה ריאלית — מוצמדת למדד לאורך חיי המקבל." />
                   {y.yotamPensionPayoutMonthly > 0 && <SubRow label="יותם · קצבה" value={y.yotamPensionPayoutMonthly} />}
                   {y.hadasPensionPayoutMonthly > 0 && <SubRow label="הדס · קצבה" value={y.hadasPensionPayoutMonthly} />}
                 </>
@@ -119,7 +123,8 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               {/* Passive from home */}
               {totalPassiveIncome > 0 && (
                 <>
-                  <SectionRow label="הכנסה פאסיבית מהבית" value={totalPassiveIncome} dotColor="bg-teal-500" />
+                  <SectionRow label="הכנסה פאסיבית מהבית" value={totalPassiveIncome} dotColor="bg-teal-500"
+                    help="הכנסות אוטומטיות מנכס הבית: השכרת יחידת דיור (פטור ממס עד ~5,654 ₪/חודש) + מכירת חשמל סולארי. זמינה רק אם קונים בית. מוצמדות למדד — מעלות משמעותית את ה-ROI של הקנייה." />
                   {y.monthlyRentalIncomeFromUnit > 0 && <SubRow label="השכרת יחידת דיור" value={y.monthlyRentalIncomeFromUnit} />}
                   {y.monthlySolarIncome > 0 && <SubRow label="מערכת סולארית" value={y.monthlySolarIncome} />}
                 </>
@@ -140,14 +145,18 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-rose-500 rounded-full" />
               הוצאות חודשיות
+              <HelpTooltip placement="bottom" text="כל ההוצאות החודשיות המוצמדות למדד: הוצאות שוטפות (ללא דיור) + עלות דיור (שכירות/משכנתא). לא כולל חסכונות/השקעות — אלה עוברים אוטומטית לתיק." />
             </h3>
             <div className="bg-white rounded-2xl border border-rose-200 overflow-hidden shadow-sm">
-              <SectionRow label="הוצאות (ללא דיור)" value={y.monthlyNonHousingExpense} dotColor="bg-rose-500" />
+              <SectionRow label="הוצאות (ללא דיור)" value={y.monthlyNonHousingExpense} dotColor="bg-rose-500"
+                help="הוצאות שוטפות מוצמדות למדד: אוכל, רכב+דלק, חינוך+חוגים, ביטוחים, חופשות, טלפון/אינטרנט, בריאות. לפי למ״ס: משפחה ישראלית ממוצעת ~17K, עם 4 ילדים upper-middle 33-46K." />
               <SectionRow
                 label={y.housingStatus === 'owning' ? `משכנתא · תשלום חודשי` : 'שכירות'}
                 value={y.monthlyHousingExpense}
                 dotColor="bg-rose-400"
-              />
+                help={y.housingStatus === 'owning'
+                  ? "תשלום משכנתא חודשי (קרן+ריבית). קבוע בערכים נומינליים — ריאלית יורד כל שנה עם האינפלציה. נעלם אחרי סוף תקופת המשכנתא. לא כולל ארנונה/אחזקה."
+                  : "שכר דירה חודשי מוצמד למדד. נעלם מהיום שקונים בית (מוחלף במשכנתא)."} />
               <div className="px-4 md:px-5 py-3.5 bg-rose-50 border-t border-rose-200 flex items-center justify-between">
                 <span className="font-display text-base md:text-lg font-extrabold text-rose-800">סה״כ הוצאות</span>
                 <span className="num font-display text-xl md:text-2xl font-extrabold text-rose-700" style={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -161,7 +170,10 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
           <section>
             <div className={`rounded-2xl border-2 px-5 py-5 shadow-sm ${cashSurplus >= 0 ? 'border-emerald-400 bg-emerald-50' : 'border-rose-400 bg-rose-50'}`}>
               <div className="flex items-baseline justify-between mb-2">
-                <span className="font-display text-lg md:text-xl font-extrabold text-slate-900">תזרים מזומנים בפועל</span>
+                <span className="font-display text-lg md:text-xl font-extrabold text-slate-900 flex items-center gap-1.5">
+                  תזרים מזומנים בפועל
+                  <HelpTooltip placement="bottom" text="המדד האמיתי של האם אנחנו מאזנים כל חודש: סה״כ הכנסה פחות סה״כ הוצאה. חיובי = הכסף העודף עובר לתיק (וגדל בתשואה ריאלית). שלילי = צריך למשוך מהתיק (מקטין את הריבית-דריבית)." />
+                </span>
                 <span className={`num font-display text-2xl md:text-3xl font-extrabold ${cashSurplus >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                   {cashSurplus >= 0 ? '+' : ''}{fmt(cashSurplus)} ₪
                 </span>
@@ -179,6 +191,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-indigo-500 rounded-full" />
               פוטנציאל משיכה · 4% מהתיק
+              <HelpTooltip placement="bottom" text="כלל Bengen (1994, Trinity Study): אם מושכים 4% מהתיק בשנה הראשונה ומצמידים למדד — התיק שורד 30+ שנים ב-95% מהמקרים היסטוריים. המדד התקני לבדיקת היתכנות פרישה. תיק של 10M₪ → 33K ₪/חודש בר-קיימא." />
             </h3>
             <div className="bg-indigo-50 rounded-2xl border border-indigo-200 px-5 py-4 shadow-sm">
               <div className="flex items-baseline justify-between mb-2">
@@ -199,7 +212,10 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
           <section>
             <div className={`rounded-2xl border px-5 py-4 shadow-sm ${y.monthlyBalance >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50'}`}>
               <div className="flex items-baseline justify-between">
-                <span className="font-display text-base md:text-lg font-bold text-slate-800">יתרה חודשית (בר-קיימא)</span>
+                <span className="font-display text-base md:text-lg font-bold text-slate-800 flex items-center gap-1.5">
+                  יתרה חודשית (בר-קיימא)
+                  <HelpTooltip placement="bottom" text="אינדיקטור יכולת כלכלית: יתרה בהנחה שמשתמשים בתיק לפי כלל 4%. חיובי = הפרישה בת-קיימא (התיק לא נשחק); שלילי = צריך למשוך יותר מ-4% → התיק נשחק מוקדם. זה המדד להחליט מתי אפשר לפרוש." />
+                </span>
                 <span className={`num font-display text-xl font-extrabold ${y.monthlyBalance >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                   {y.monthlyBalance >= 0 ? '+' : ''}{fmt(y.monthlyBalance)} ₪
                 </span>
@@ -215,6 +231,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-violet-500 rounded-full" />
               שווי נקי · <span className="num">{fmt(y.netWorth)} ₪</span>
+              <HelpTooltip placement="bottom" text="סה״כ ההון המשפחתי: תיק נזיל + הון עצמי בנדל״ן (ערך בית פחות יתרת משכנתא) + יתרת פנסיה נעולה. המטרה לטווח ארוך: לגדל את זה כדי להבטיח פרישה בת-קיימא. הפנסיה נעולה אבל נחשבת כנכס כי היא תהפוך לקצבה." />
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <PortCard label="תיק נזיל" value={y.liquidPortfolio} color="indigo" total={y.netWorth} />
@@ -229,6 +246,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-slate-400 rounded-full" />
               בערכים של היום (ריאלי)
+              <HelpTooltip placement="bottom" text="המספרים מוחזרו לערכי היום (שנת הסימולציה) כדי לנטרל אינפלציה. דוגמה: 10M₪ ב-2050 שווים בערך של היום ל-~5.5M₪ (ב-2.5% אינפלציה). זו הדרך הנכונה להשוות כוח קנייה בין תקופות — הערכים הנומינליים מטעים." />
             </h3>
             <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 md:p-5 grid grid-cols-2 md:grid-cols-3 gap-4">
               <RealStat label="תיק נזיל" value={y.real.liquidPortfolio} />
@@ -246,6 +264,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
                 <span className="w-1 h-5 bg-emerald-500 rounded-full" />
                 פרטי הבית
+                <HelpTooltip placement="bottom" text="מעקב אחרי הון הבית לאורך זמן. שווי הבית עולה עם האינפלציה + עלייה ריאלית. יתרת המשכנתא יורדת עם כל תשלום (לוח שפיצר). ההון העצמי = שווי − יתרת משכנתא — זה מה שבאמת שלך." />
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <MiniStat label="שווי הבית" value={fmt(y.homeValue) + ' ₪'} />
@@ -287,14 +306,23 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
   );
 }
 
-function SectionRow({ label, value, dotColor }: { label: string; value: number; dotColor: string }) {
+function SectionRow({ label, value, dotColor, help }: { label: string; value: number; dotColor: string; help?: string }) {
   return (
-    <div className="px-4 md:px-5 py-3 flex items-center justify-between border-b border-slate-100 last:border-b-0">
+    <div
+      className="px-4 md:px-5 py-3 flex items-center justify-between border-b border-slate-100 last:border-b-0"
+      style={{ background: '#ffffff' }}
+    >
       <span className="flex items-center gap-2.5">
         <span className={`w-2 h-2 rounded-full ${dotColor}`} />
-        <span className="font-bold text-slate-900 text-sm md:text-base">{label}</span>
+        <span className="font-bold text-sm md:text-base flex items-center gap-1.5" style={{ color: '#0f172a' }}>
+          {label}
+          {help && <HelpTooltip text={help} />}
+        </span>
       </span>
-      <span className="num font-bold text-slate-900 text-sm md:text-base" style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <span
+        className="num font-bold text-sm md:text-base"
+        style={{ fontVariantNumeric: 'tabular-nums', color: '#0f172a' }}
+      >
         {Math.round(value).toLocaleString('he-IL')} ₪
       </span>
     </div>
@@ -303,9 +331,15 @@ function SectionRow({ label, value, dotColor }: { label: string; value: number; 
 
 function SubRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="px-4 md:px-5 py-2 flex items-center justify-between bg-slate-50 border-b border-slate-100 last:border-b-0">
-      <span className="text-xs md:text-sm text-slate-600 pr-4">└ {label}</span>
-      <span className="num text-xs md:text-sm text-slate-800 font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+    <div
+      className="px-4 md:px-5 py-2 flex items-center justify-between border-b border-slate-100 last:border-b-0"
+      style={{ background: '#f8fafc' }}
+    >
+      <span className="text-xs md:text-sm pr-4" style={{ color: '#475569' }}>└ {label}</span>
+      <span
+        className="num text-xs md:text-sm font-semibold"
+        style={{ fontVariantNumeric: 'tabular-nums', color: '#1e293b' }}
+      >
         {Math.round(value).toLocaleString('he-IL')} ₪
       </span>
     </div>
