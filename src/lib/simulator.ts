@@ -218,6 +218,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
         annualIncome: Math.round(deflate(mSustainable * 12, market.inflationRate, ye)),
         annualExpenses: Math.round(deflate(mExp * 12, market.inflationRate, ye)),
         annualCashflow: Math.round(deflate(cf, market.inflationRate, ye)),
+        monthly4pctWithdrawal: Math.round(deflate(m4pct, market.inflationRate, ye)),
       },
     });
   }

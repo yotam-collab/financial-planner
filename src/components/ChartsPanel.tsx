@@ -34,13 +34,13 @@ function ChartTooltip({ active, payload }: any) {
         }`}>{phaseLabel}</span>
       </div>
       <div className="space-y-2">
-        {d.monthlyZinukIncome > 0 && (
+        {d.phase === 'zinuk' && d.monthlyZinukIncome > 0 && (
           <div className="flex justify-between">
             <span className="text-slate-500">הכנסה מזינוק</span>
             <span className="num font-bold">{d.monthlyZinukIncome?.toLocaleString('he-IL')} ₪</span>
           </div>
         )}
-        {d.monthlyAltIncome > 0 && (
+        {d.phase === 'altIncome' && d.monthlyAltIncome > 0 && (
           <div className="flex justify-between">
             <span className="text-slate-500">הכנסה חלופית</span>
             <span className="num font-bold">{d.monthlyAltIncome?.toLocaleString('he-IL')} ₪</span>
@@ -123,6 +123,12 @@ function ChartTooltip({ active, payload }: any) {
               <span className="font-bold text-slate-600">שווי נקי ריאלי</span>
               <span className="num font-bold text-slate-700">{d.real.netWorth?.toLocaleString('he-IL')} ₪</span>
             </div>
+            {d.real.monthly4pctWithdrawal > 0 && (
+              <div className="flex justify-between">
+                <span>4% חודשי</span>
+                <span className="num font-semibold">{d.real.monthly4pctWithdrawal?.toLocaleString('he-IL')} ₪</span>
+              </div>
+            )}
           </div>
         </div>
       )}
