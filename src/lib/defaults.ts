@@ -40,7 +40,7 @@ export const DEFAULT_HOUSE: HouseConfig = {
   purchaseTaxRate: 0.03,
   closingCosts: 130_000,
   mortgageLTV: 0.70,
-  mortgageRate: 0.05,
+  mortgageRate: 0.052,
   mortgageTerm: 25,
   rentalIncomeFromUnit: 3_400,
   solarIncome: 500,

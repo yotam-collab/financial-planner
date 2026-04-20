@@ -189,7 +189,9 @@ export function InputPanel({ config, setConfig }: Props) {
               min={30} max={75} displayValue={`${Math.round(config.house.mortgageLTV * 100)}%`}
               note={`משכנתא: ${mortAmt.toLocaleString('he-IL')} ₪ · חודשי: ${mortPay.toLocaleString('he-IL')} ₪`} />
             <NumInput label="ריבית" value={Math.round(config.house.mortgageRate * 1000) / 10}
-              onChange={v => update('house.mortgageRate', v / 100)} step={0.1} suffix="%" />
+              onChange={v => update('house.mortgageRate', v / 100)} step={0.1} suffix="%"
+              rec="5.0-5.5% — ריבית משוקללת (פריים ~5.5%, קל״צ ~5.2%, צמודה ~3.5%+מדד)"
+              note="בנק ישראל: ריבית בנק 4% · פריים=BOI+1.5%" />
             <NumInput label="תקופה" value={config.house.mortgageTerm}
               onChange={v => update('house.mortgageTerm', v)} step={1} suffix="שנים" />
 
