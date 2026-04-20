@@ -31,36 +31,34 @@ export function SummaryCard({ result }: Props) {
         <div className="absolute top-0 left-10 w-40 h-40 bg-white/20 rounded-full blur-3xl float-anim" />
         <div className="absolute bottom-0 right-20 w-32 h-32 bg-white/15 rounded-full blur-2xl float-anim" style={{ animationDelay: '1s' }} />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-10">
-          <div>
-            <div className="flex items-center gap-2 mb-3 md:mb-4">
-              <span className="relative flex h-2 w-2">
-                <span className="pulse-glow absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-              </span>
-              <p className="text-white/90 text-[11px] md:text-xs font-bold uppercase tracking-[0.28em]">
-                {scenarioLabel}
-              </p>
-            </div>
-            <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-extrabold text-white/95 leading-tight max-w-md">
-              הגיל המוקדם ביותר
-              <br />
-              <span className="text-white/70 font-bold">לסגירת העסק</span>
-            </h2>
+        <div className="relative z-10 flex flex-col items-center text-center gap-4 md:gap-5">
+          {/* Eyebrow */}
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="pulse-glow absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+            </span>
+            <p className="text-white/90 text-[11px] md:text-xs font-bold uppercase tracking-[0.28em]">
+              {scenarioLabel}
+            </p>
           </div>
 
-          <div className="flex items-baseline gap-3 md:gap-4">
-            <div className="font-display text-[96px] md:text-[140px] lg:text-[160px] font-extrabold text-white leading-[0.8] tracking-tighter num drop-shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
-              {earliestRetirementAge ?? '—'}
-            </div>
+          {/* Title */}
+          <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-extrabold text-white/90 leading-tight">
+            הגיל המוקדם ביותר <span className="text-white/60 font-bold">לסגירת העסק</span>
+          </h2>
+
+          {/* Huge centered number */}
+          <div className="font-display text-[96px] md:text-[140px] lg:text-[180px] font-extrabold text-white leading-[0.8] tracking-tighter num drop-shadow-[0_6px_28px_rgba(0,0,0,0.2)]">
+            {earliestRetirementAge ?? '—'}
           </div>
+
+          {earliestRetirementAge && (
+            <p className="text-white/80 text-sm md:text-base font-medium max-w-xl">
+              ההכנסה ברת-הקיימא מכסה את ההוצאות מגיל זה ואילך
+            </p>
+          )}
         </div>
-
-        {earliestRetirementAge && (
-          <p className="relative z-10 text-white/80 text-sm md:text-base font-medium mt-3 md:mt-4">
-            ההכנסה ברת-הקיימא מכסה את ההוצאות מגיל זה ואילך
-          </p>
-        )}
       </div>
 
       {/* Stats strip */}
