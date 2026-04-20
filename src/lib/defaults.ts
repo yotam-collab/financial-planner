@@ -1,7 +1,7 @@
 import type { ScenarioConfig, AssetConfig, IncomeConfig, ExpenseConfig, HouseConfig, MarketConfig } from './types';
 
 export const DEFAULT_ASSETS: AssetConfig = {
-  liquidPortfolio: 1_770_000,
+  liquidPortfolio: 1_900_000,
   yotamPension: 800_000,
   hadasPension: 200_000,
   kerenHishtalmut: 200_000,
@@ -15,16 +15,14 @@ export const DEFAULT_ASSETS: AssetConfig = {
 };
 
 export const DEFAULT_INCOME: IncomeConfig = {
-  // Yotam — salaried at own company, 100K gross → ~65K net during zinuk
-  yotamNetIncomeZinuk: 65_000,
-  // Post-zinuk: consulting/part-time work
-  yotamNetIncomePostZinuk: 10_000,
+  // Yotam — salaried at own company during zinuk, consulting/alt post-zinuk
+  yotamNetIncomeZinuk: 22_000,
+  yotamNetIncomePostZinuk: 15_000,
   // Yotam pension: 6%+6.5%+6% capped at max deposit = 5,645
   yotamMonthlyPensionContribution: 5_645,
-  // Hadas — self-employed, ~30K gross → ~22K net
-  hadasNetIncomeZinuk: 22_000,
-  // Hadas continues working post-zinuk (she's 43 when Yotam closes zinuk at 52)
-  hadasNetIncomePostZinuk: 22_000,
+  // Hadas — self-employed
+  hadasNetIncomeZinuk: 25_000,
+  hadasNetIncomePostZinuk: 10_000,
   // Self-employed mandatory pension (4.45% + 12.55% on avg wage)
   hadasMonthlyPensionContribution: 1_170,
   monthlyLiquidContributionRenting: 17_000,

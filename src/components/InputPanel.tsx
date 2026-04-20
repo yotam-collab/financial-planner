@@ -171,11 +171,11 @@ export function InputPanel({ config, setConfig }: Props) {
         <NumInput label="הכנסה נטו לפני סגירת זינוק" value={config.income.yotamNetIncomeZinuk}
           onChange={v => update('income.yotamNetIncomeZinuk', v)} step={5000}
           note={`ברוטו: ~${estimateGross(config.income.yotamNetIncomeZinuk).toLocaleString('he-IL')} ₪`}
-          rec="65,000 ₪ — שכיר בחברה בע״מ, ~100K ברוטו" />
+          rec="22,000 ₪ — שכיר בחברה בע״מ" />
         <NumInput label="הכנסה נטו אחרי סגירת זינוק" value={config.income.yotamNetIncomePostZinuk}
           onChange={v => update('income.yotamNetIncomePostZinuk', v)} step={1000}
           note={config.income.yotamNetIncomePostZinuk > 0 ? `ברוטו: ~${estimateGross(config.income.yotamNetIncomePostZinuk).toLocaleString('he-IL')} ₪` : 'ללא הכנסה'}
-          rec="10,000-15,000 ₪ — ייעוץ / עבודה חלקית" />
+          rec="15,000 ₪ — ייעוץ / עבודה חלקית" />
         <NumInput label="הפקדה חודשית לפנסיה" value={config.income.yotamMonthlyPensionContribution}
           onChange={v => update('income.yotamMonthlyPensionContribution', v)} step={100}
           rec="5,645 ₪ — תקרת שכיר (6%+6.5%+6%)"
@@ -190,11 +190,11 @@ export function InputPanel({ config, setConfig }: Props) {
         <NumInput label="הכנסה נטו לפני סגירת זינוק" value={config.income.hadasNetIncomeZinuk}
           onChange={v => update('income.hadasNetIncomeZinuk', v)} step={1000}
           note={`ברוטו: ~${estimateGross(config.income.hadasNetIncomeZinuk).toLocaleString('he-IL')} ₪ · עצמאית, בת ${config.hadasAge}`}
-          rec="22,000 ₪ — עצמאית ~30K ברוטו" />
+          rec="25,000 ₪ — עצמאית" />
         <NumInput label="הכנסה נטו אחרי סגירת זינוק" value={config.income.hadasNetIncomePostZinuk}
           onChange={v => update('income.hadasNetIncomePostZinuk', v)} step={1000}
           note={config.income.hadasNetIncomePostZinuk > 0 ? `ברוטו: ~${estimateGross(config.income.hadasNetIncomePostZinuk).toLocaleString('he-IL')} ₪` : 'ללא הכנסה'}
-          rec="22,000 ₪ — הדס ממשיכה לעבוד (היא צעירה)" />
+          rec="10,000 ₪ — הדס ממשיכה חלקית (היא צעירה)" />
         <NumInput label="הפקדה חודשית לפנסיה" value={config.income.hadasMonthlyPensionContribution}
           onChange={v => update('income.hadasMonthlyPensionContribution', v)} step={100}
           rec="1,170 ₪ — חובת עצמאית (4.45%+12.55%)"
@@ -208,7 +208,7 @@ export function InputPanel({ config, setConfig }: Props) {
       <Section title="נכסים משותפים" icon="💰">
         <NumInput label="תיק נזיל" value={config.assets.liquidPortfolio}
           onChange={v => update('assets.liquidPortfolio', v)} step={50000}
-          rec="1,770,000 ₪ — USD + קרנות + money market" />
+          rec="1,900,000 ₪ — USD + קרנות + money market" />
         <NumInput label="קה״ש" value={config.assets.kerenHishtalmut}
           onChange={v => update('assets.kerenHishtalmut', v)} step={10000}
           note={`נזילה בגיל ${config.assets.kerenHishtalmutLiquidAge} · רווחים פטורים ממס`}
