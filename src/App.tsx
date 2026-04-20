@@ -19,7 +19,7 @@ function App() {
           <img
             src={`${import.meta.env.BASE_URL}hero.png`}
             alt=""
-            className="w-full h-36 md:h-64 lg:h-80 object-cover object-top"
+            className="w-full h-36 md:h-72 lg:h-[28rem] xl:h-[32rem] 2xl:h-[36rem] object-cover object-top"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute bottom-0 inset-x-0 px-4 md:px-10 pb-4 md:pb-6 flex flex-col md:flex-row items-start md:items-end justify-between gap-3">
