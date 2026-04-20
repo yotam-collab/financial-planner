@@ -70,7 +70,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const nomRent = inflate(expenses.monthlyRent, market.inflationRate, ye);
     const nomNH = inflate(expenses.monthlyNonHousingExpenses, market.inflationRate, ye);
 
-    // Income per person per phase
+    // Income per person per phase (ACTUAL income for cashflow)
     const yotamIncome = phase === 'zinuk'
       ? inflate(income.yotamNetIncomeZinuk, market.inflationRate, ye)
       : phase === 'altIncome'
@@ -82,6 +82,13 @@ function runCore(config: ScenarioConfig): YearResult[] {
       : phase === 'altIncome'
         ? inflate(income.hadasNetIncomePostZinuk, market.inflationRate, ye)
         : 0;
+
+    // Post-zinuk income (hypothetical — what they'd earn if they quit zinuk NOW)
+    // Used for the "sustainable income" calculation
+    const hypotheticalPostZinuk = age < fullRetirementAge
+      ? inflate(income.yotamNetIncomePostZinuk, market.inflationRate, ye) +
+        inflate(income.hadasNetIncomePostZinuk, market.inflationRate, ye)
+      : 0;
 
     const nomYPC = inflate(income.yotamMonthlyPensionContribution, market.inflationRate, ye);
     const nomHPC = inflate(income.hadasMonthlyPensionContribution, market.inflationRate, ye);
@@ -133,10 +140,10 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const mZinuk = phase === 'zinuk' ? yotamIncome + hadasIncome : 0;
     const mAlt = phase === 'altIncome' ? yotamIncome + hadasIncome : 0;
 
-    // Sustainable income: what's coming in this phase
-    const mSustainable = phase === 'zinuk'
-      ? mZinuk + totalPensionPayout
-      : mAlt + totalPensionPayout + m4pct;
+    // Sustainable income = what they'd have if they quit zinuk NOW
+    // (post-zinuk income + 4% from liquid + pension annuity)
+    // This is the "retirement test" — same formula across all phases
+    const mSustainable = hypotheticalPostZinuk + totalPensionPayout + m4pct;
 
     // Cashflow: actual money movement
     let cf: number;
@@ -198,7 +205,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
       monthlyZinukIncome: Math.round(mZinuk),
       monthly4pctWithdrawal: Math.round(m4pct),
       monthlyPensionIncome: Math.round(totalPensionPayout),
-      monthlyAltIncome: Math.round(mAlt),
+      // monthlyAltIncome represents "post-zinuk income if you quit" (for sustainability display)
+      monthlyAltIncome: Math.round(hypotheticalPostZinuk),
       monthlySustainableIncome: Math.round(mSustainable),
       monthlyBalance: Math.round(mSustainable - mExp),
       monthlyExpenses: Math.round(mExp),
@@ -217,12 +225,24 @@ function runCore(config: ScenarioConfig): YearResult[] {
   return results;
 }
 
+/**
+ * Find the earliest age at which quitting zinuk is sustainable.
+ * Criterion: monthly balance is non-negative EVERY year post-zinuk,
+ * AND liquid portfolio doesn't deplete before endAge.
+ */
 export function findEarliestRetirementAge(config: ScenarioConfig): number | null {
-  // Project as if never closing zinuk — find age when sustainable income covers expenses
-  const c: ScenarioConfig = { ...config, zinukEndAge: config.endAge + 1, fullRetirementAge: config.endAge + 1 };
-  const years = runCore(c);
-  for (const y of years) {
-    if (y.monthlySustainableIncome >= y.monthlyExpenses) return y.age;
+  for (let quitAge = config.startAge; quitAge <= config.endAge; quitAge++) {
+    const testConfig: ScenarioConfig = { ...config, zinukEndAge: quitAge };
+    const years = runCore(testConfig);
+    // Check post-zinuk years have non-negative balance
+    const postZinukYears = years.filter(y => y.phase !== 'zinuk');
+    if (postZinukYears.length === 0) continue;
+    const anyNegative = postZinukYears.some(y => y.monthlyBalance < 0);
+    if (anyNegative) continue;
+    // Check no depletion
+    const depleted = years.some(y => y.isDepleted && y.phase !== 'zinuk');
+    if (depleted) continue;
+    return quitAge;
   }
   return null;
 }
