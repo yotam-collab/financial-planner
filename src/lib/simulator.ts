@@ -132,26 +132,26 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const mZinuk = phase === 'zinuk' ? yotamIncome + hadasIncome : 0;
     const mAlt = phase === 'altIncome' ? yotamIncome + hadasIncome : 0;
 
-    // Sustainable income = income + pension + 4% (full picture)
-    const mSustainable = (yotamIncome + hadasIncome) + totalPensionPayout + m4pct;
+    // ─── Passive income from owned home (sub-unit rental + solar) ───
+    // Both are inflation-adjusted from today's values, only applicable when owning
+    const nomRentalUnit = ownsHome ? inflate(house.rentalIncomeFromUnit ?? 0, market.inflationRate, ye) : 0;
+    const nomSolar = ownsHome ? inflate(house.solarIncome ?? 0, market.inflationRate, ye) : 0;
+    const mHomePassive = nomRentalUnit + nomSolar;
+
+    // Sustainable income = income + pension + home-passive + 4% (full picture)
+    const mSustainable = (yotamIncome + hadasIncome) + totalPensionPayout + mHomePassive + m4pct;
 
     // ─── Monthly balance shown in chart ───
-    // Balance = sustainable income - expenses (includes 4% as "usable money")
-    // Positive = income + pension + 4% cover expenses with surplus
-    // Negative = even with 4% withdrawal, not enough → eating into principal
     const mBalance = mSustainable - mExp;
 
     // ─── Pension contributions (separate from liquid cashflow) ───
-    // Contribute while earning: based on each person's own income
     if (yotamIncome > 0) yotamPension += nomYPC * 12;
     if (hadasIncome > 0) hadasPension += nomHPC * 12;
 
     // ─── Actual cashflow to/from liquid ───
-    // Only income + pension - expenses actually moves money.
-    // The 4% is a REFERENCE metric; the portfolio grows at nomRet (compound),
-    // which implicitly includes the return that makes 4% sustainable.
-    // No double-counting: the 4% is shown in balance but not ADDED to liquid.
-    const actualCashflow = ((yotamIncome + hadasIncome) + totalPensionPayout - mExp) * 12;
+    // Includes earned income + pension annuity + home passive - expenses.
+    // The 4% is REFERENCE only, not added (avoids double-counting with compound growth).
+    const actualCashflow = ((yotamIncome + hadasIncome) + totalPensionPayout + mHomePassive - mExp) * 12;
     liquid += actualCashflow;
     const cf = actualCashflow;
 
@@ -196,8 +196,15 @@ function runCore(config: ScenarioConfig): YearResult[] {
       monthlyZinukIncome: Math.round(mZinuk),
       monthly4pctWithdrawal: Math.round(m4pct),
       monthlyPensionIncome: Math.round(totalPensionPayout),
-      // monthlyAltIncome represents "post-zinuk income if you quit" (for sustainability display)
       monthlyAltIncome: Math.round(mAlt),
+      monthlyRentalIncomeFromUnit: Math.round(nomRentalUnit),
+      monthlySolarIncome: Math.round(nomSolar),
+      yotamMonthlyIncome: Math.round(yotamIncome),
+      hadasMonthlyIncome: Math.round(hadasIncome),
+      yotamPensionPayoutMonthly: Math.round(yotamPensionPayout),
+      hadasPensionPayoutMonthly: Math.round(hadasPensionPayout),
+      monthlyNonHousingExpense: Math.round(nomNH),
+      monthlyHousingExpense: Math.round(mHousing),
       monthlySustainableIncome: Math.round(mSustainable),
       monthlyBalance: Math.round(mBalance),
       monthlyExpenses: Math.round(mExp),

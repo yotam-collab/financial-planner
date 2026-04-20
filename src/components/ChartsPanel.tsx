@@ -136,6 +136,12 @@ function makeChartTooltip(showReal: boolean) {
           {d.monthlyPensionIncome > 0 && (
             <RowDual label="קצבת פנסיה" nominal={d.monthlyPensionIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-amber-500" />
           )}
+          {d.monthlyRentalIncomeFromUnit > 0 && (
+            <RowDual label="השכרת יחידה" nominal={d.monthlyRentalIncomeFromUnit} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-teal-500" />
+          )}
+          {d.monthlySolarIncome > 0 && (
+            <RowDual label="הכנסה מסולארי" nominal={d.monthlySolarIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-yellow-500" />
+          )}
         </div>
 
         <div className="mt-3 pt-3 border-t border-white/60 space-y-1.5 text-sm">
@@ -411,13 +417,21 @@ export function ChartsPanel({ result, config }: Props) {
             })()}
 
             <Area type="monotone" dataKey={dataKey} fill={`url(#${metricCfg.gradientId})`} stroke="none" />
-            <Bar dataKey={dataKey} radius={[6, 6, 0, 0]}>
+            <Bar
+              dataKey={dataKey}
+              radius={[6, 6, 0, 0]}
+              onClick={(payload: any) => {
+                const p = payload?.payload ?? payload;
+                if (p) setSelectedYear(p as YearResult);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
               {data.map((entry, i) => {
                 const value = (entry as any)[dataKey] ?? 0;
                 const fill = metricCfg.isBiColor
                   ? (value >= 0 ? metricCfg.color : metricCfg.colorSecondary || '#f43f5e')
                   : metricCfg.color;
-                return <Cell key={i} fill={fill} fillOpacity={0.85} />;
+                return <Cell key={i} fill={fill} fillOpacity={0.85} style={{ cursor: 'pointer' }} />;
               })}
             </Bar>
           </ComposedChart>

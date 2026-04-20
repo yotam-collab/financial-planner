@@ -41,6 +41,10 @@ export interface HouseConfig {
   mortgageLTV: number;
   mortgageRate: number;
   mortgageTerm: number;
+  /** Monthly rental income from a sub-unit in the home (נטו, today's values) */
+  rentalIncomeFromUnit: number;
+  /** Monthly income from solar panels (נטו, today's values) */
+  solarIncome: number;
 }
 
 export interface MarketConfig {
@@ -110,6 +114,16 @@ export interface YearResult {
   monthly4pctWithdrawal: number;
   monthlyPensionIncome: number;
   monthlyAltIncome: number;
+  monthlyRentalIncomeFromUnit: number;
+  monthlySolarIncome: number;
+  // Per-person income breakdown for detail view
+  yotamMonthlyIncome: number;   // Yotam's current earned income this year
+  hadasMonthlyIncome: number;   // Hadas's current earned income this year
+  yotamPensionPayoutMonthly: number;  // Yotam's portion of pension annuity
+  hadasPensionPayoutMonthly: number;  // Hadas's portion of pension annuity
+  // Housing detail
+  monthlyNonHousingExpense: number;
+  monthlyHousingExpense: number;
   monthlySustainableIncome: number;
   monthlyBalance: number;
   isFullyRetired: boolean;

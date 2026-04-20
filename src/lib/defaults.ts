@@ -42,6 +42,8 @@ export const DEFAULT_HOUSE: HouseConfig = {
   mortgageLTV: 0.60,
   mortgageRate: 0.05,
   mortgageTerm: 25,
+  rentalIncomeFromUnit: 0,
+  solarIncome: 0,
 };
 
 export const DEFAULT_MARKET: MarketConfig = {

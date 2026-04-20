@@ -192,6 +192,23 @@ export function InputPanel({ config, setConfig }: Props) {
               onChange={v => update('house.mortgageRate', v / 100)} step={0.1} suffix="%" />
             <NumInput label="תקופה" value={config.house.mortgageTerm}
               onChange={v => update('house.mortgageTerm', v)} step={1} suffix="שנים" />
+
+            {/* Passive income from home */}
+            <div className="pt-3 mt-2 border-t border-white/70">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600 mb-2">
+                💡 הכנסות נוספות מהבית
+              </p>
+            </div>
+            <NumInput label="השכרת יחידת דיור (חודשי, נטו)"
+              value={config.house.rentalIncomeFromUnit}
+              onChange={v => update('house.rentalIncomeFromUnit', v)} step={500}
+              rec="3,000-5,000 ₪ — יחידת דיור בפרדס חנה"
+              note="0 = אין יחידה להשכיר · מוצמד למדד" />
+            <NumInput label="הכנסה מסולארי (חודשי, נטו)"
+              value={config.house.solarIncome}
+              onChange={v => update('house.solarIncome', v)} step={100}
+              rec="500-1,500 ₪ — מערכת סולארית ביתית"
+              note="0 = אין מערכת · נטו אחרי דמי אחזקה" />
           </>
         )}
       </Section>
@@ -241,7 +258,8 @@ export function InputPanel({ config, setConfig }: Props) {
       <Section title="הוצאות" icon="📊" color="rose">
         <NumInput label="הוצאות (ללא דיור)" value={config.expenses.monthlyNonHousingExpenses}
           onChange={v => update('expenses.monthlyNonHousingExpenses', v)} step={1000}
-          rec="30,000 ₪ — משפחה עם 4 ילדים" />
+          rec="33,000-46,000 ₪ — משפחה עם 4 ילדים (upper-middle, מבוסס על למ״ס)"
+          note="כולל: אוכל, רכב, חוגים, ביטוחים, חופשות · לא כולל חסכונות" />
         <NumInput label="שכר דירה" value={config.expenses.monthlyRent}
           onChange={v => update('expenses.monthlyRent', v)} step={500}
           rec="9,500 ₪ — מחיר שוק בפרדס חנה" />
