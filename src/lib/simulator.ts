@@ -138,7 +138,6 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const m4pct = Math.max(0, liquid * 0.04 / 12);
 
     const mZinuk = phase === 'zinuk' ? yotamIncome + hadasIncome : 0;
-    const mAlt = phase === 'altIncome' ? yotamIncome + hadasIncome : 0;
 
     // Sustainable income = what they'd have if they quit zinuk NOW
     // (post-zinuk income + 4% from liquid + pension annuity)
