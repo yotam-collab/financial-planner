@@ -221,20 +221,21 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
 /**
  * Find the earliest age at which quitting zinuk is sustainable.
- * Criterion: liquid portfolio survives until endAge (doesn't deplete).
- * The actual cashflow model naturally accounts for deficit years —
- * as long as portfolio growth exceeds withdrawals, retirement is viable.
+ * Criterion: monthly balance (sustainable income - expenses) >= 0 in EVERY
+ * post-zinuk year. This matches what the chart displays.
+ * Also requires portfolio not to deplete.
  */
 export function findEarliestRetirementAge(config: ScenarioConfig): number | null {
   for (let quitAge = config.startAge; quitAge <= config.endAge; quitAge++) {
     const testConfig: ScenarioConfig = { ...config, zinukEndAge: quitAge };
     const years = runCore(testConfig);
-    // Portfolio must not deplete in post-zinuk years
+    // Post-zinuk years must have non-negative balance (matches chart)
+    const postZinukYears = years.filter(y => y.phase !== 'zinuk');
+    if (postZinukYears.length === 0) continue;
+    if (postZinukYears.some(y => y.monthlyBalance < 0)) continue;
+    // Also check portfolio doesn't deplete
     const depleted = years.some(y => y.isDepleted && y.phase !== 'zinuk');
     if (depleted) continue;
-    // Final year liquid must be positive
-    const finalYear = years[years.length - 1];
-    if (finalYear.liquidPortfolio <= 0) continue;
     return quitAge;
   }
   return null;
