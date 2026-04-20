@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Area, ComposedChart,
-  Cell, Bar, Line,
+  Cell, Bar,
 } from 'recharts';
 import type { SimulationResult, ScenarioConfig } from '../lib/types';
 
@@ -9,6 +10,59 @@ interface Props {
   result: SimulationResult;
   config: ScenarioConfig;
 }
+
+type MetricType = 'monthlyBalance' | 'sustainableIncome' | 'fourPercent' | 'netWorth';
+
+interface MetricConfig {
+  label: string;
+  shortLabel: string;
+  nominalKey: string;
+  realKey: string;
+  color: string;
+  colorSecondary?: string; // for bi-color (balance)
+  isBiColor: boolean;
+  description: string;
+}
+
+const METRICS: Record<MetricType, MetricConfig> = {
+  monthlyBalance: {
+    label: 'יתרה חודשית',
+    shortLabel: 'יתרה',
+    nominalKey: 'monthlyBalance',
+    realKey: 'real.monthlyBalance',
+    color: '#10b981',
+    colorSecondary: '#f43f5e',
+    isBiColor: true,
+    description: 'הכנסה ברת-קיימא פחות הוצאות',
+  },
+  sustainableIncome: {
+    label: 'סה״כ הכנסה ברת-קיימא',
+    shortLabel: 'הכנסה',
+    nominalKey: 'monthlySustainableIncome',
+    realKey: 'real.monthlySustainableIncome',
+    color: '#7c3aed',
+    isBiColor: false,
+    description: '4% מהתיק + קצבת פנסיה + הכנסה פוסט-זינוק',
+  },
+  fourPercent: {
+    label: '4% מהתיק',
+    shortLabel: '4%',
+    nominalKey: 'monthly4pctWithdrawal',
+    realKey: 'real.monthly4pctWithdrawal',
+    color: '#4f46e5',
+    isBiColor: false,
+    description: 'משיכה חודשית בת-קיימא של 4% שנתי מהתיק הנזיל',
+  },
+  netWorth: {
+    label: 'שווי נקי',
+    shortLabel: 'שווי',
+    nominalKey: 'netWorth',
+    realKey: 'real.netWorth',
+    color: '#f59e0b',
+    isBiColor: false,
+    description: 'תיק נזיל + פנסיה נעולה + הון עצמי בנדל״ן',
+  },
+};
 
 function fmtK(v: number): string {
   if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
@@ -73,7 +127,6 @@ function ChartTooltip({ active, payload }: any) {
           <span className="num font-semibold">{d.real?.monthlyBalance >= 0 ? '+' : ''}{(d.real?.monthlyBalance || 0).toLocaleString('he-IL')} ₪</span>
         </div>
       </div>
-      {/* Portfolio breakdown */}
       <div className="border-t border-slate-200 mt-3 pt-3">
         <p className="text-sm lg:text-base font-bold text-slate-500 mb-2">התפלגות תיק (נומינלי)</p>
         <div className="space-y-1.5 text-sm lg:text-base">
@@ -174,22 +227,68 @@ function AvatarCursor(props: any) {
   );
 }
 
+/** Resolve a nested dot-notation key from an object */
+function resolveKey(obj: any, key: string): number {
+  return key.split('.').reduce((acc, k) => acc?.[k], obj) ?? 0;
+}
+
 export function ChartsPanel({ result, config }: Props) {
+  const [metric, setMetric] = useState<MetricType>('monthlyBalance');
+  const [showReal, setShowReal] = useState(false);
+
   const data = result.years;
   const retAge = result.earliestRetirementAge;
+  const metricCfg = METRICS[metric];
+  const dataKey = showReal ? metricCfg.realKey : metricCfg.nominalKey;
 
   return (
     <div className="glass-card p-5 md:p-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6 gap-2 md:gap-3">
-        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">יתרה חודשית — {result.scenarioLabel}</h3>
-        <p className="text-sm md:text-base text-slate-400">הכנסה ברת-קיימא פחות הוצאות</p>
+      {/* ─── Metric selector ─── */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-4 md:mb-6">
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(METRICS) as MetricType[]).map(m => (
+            <button
+              key={m}
+              onClick={() => setMetric(m)}
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 cursor-pointer ${
+                metric === m
+                  ? 'bg-gradient-to-l from-indigo-600 to-violet-500 text-white shadow-lg shadow-indigo-600/20'
+                  : 'bg-white/40 text-slate-600 hover:bg-white/70 border border-white/50'
+              }`}
+            >
+              {METRICS[m].label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => setShowReal(!showReal)}
+          className={`px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${
+            showReal
+              ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+              : 'bg-white/40 text-slate-600 hover:bg-white/70 border border-white/50'
+          }`}
+        >
+          <span className={`w-8 h-4 rounded-full relative transition-colors ${showReal ? 'bg-white/40' : 'bg-slate-300'}`}>
+            <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${showReal ? 'right-0.5' : 'right-4'}`}></span>
+          </span>
+          {showReal ? 'ערכי היום' : 'ערכים נומינליים'}
+        </button>
       </div>
+
+      <div className="mb-4 md:mb-6">
+        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">
+          {metricCfg.label} — {result.scenarioLabel}
+          {showReal && <span className="text-slate-400 font-medium text-base md:text-lg"> (בערכי היום)</span>}
+        </h3>
+        <p className="text-sm md:text-base text-slate-400 mt-1">{metricCfg.description}</p>
+      </div>
+
       <ResponsiveContainer width="100%" height={420}>
         <ComposedChart data={data} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
           <defs>
-            <linearGradient id="posGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+            <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={metricCfg.color} stopOpacity={0.3} />
+              <stop offset="100%" stopColor={metricCfg.color} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
@@ -225,7 +324,7 @@ export function ChartsPanel({ result, config }: Props) {
               label={{ value: `פרישה מלאה (${config.fullRetirementAge})`, position: 'top', fontSize: 13, fill: '#f59e0b', fontWeight: 700 }}
             />
           )}
-          {retAge && (
+          {retAge && metric === 'monthlyBalance' && (
             <ReferenceLine
               x={retAge}
               stroke="#10b981"
@@ -235,59 +334,23 @@ export function ChartsPanel({ result, config }: Props) {
             />
           )}
 
-          <Area type="monotone" dataKey="monthlyBalance" fill="url(#posGrad)" stroke="none" />
-          <Bar dataKey="monthlyBalance" name="יתרה חודשית (נומינלי)" radius={[3, 3, 0, 0]}>
-            {data.map((entry, i) => (
-              <Cell
-                key={i}
-                fill={entry.monthlyBalance >= 0 ? '#10b981' : '#f43f5e'}
-                fillOpacity={0.6}
-              />
-            ))}
+          <Area type="monotone" dataKey={dataKey} fill="url(#metricGrad)" stroke="none" />
+          <Bar dataKey={dataKey} radius={[3, 3, 0, 0]}>
+            {data.map((entry, i) => {
+              const value = resolveKey(entry, dataKey);
+              const fill = metricCfg.isBiColor
+                ? (value >= 0 ? metricCfg.color : metricCfg.colorSecondary || '#f43f5e')
+                : metricCfg.color;
+              return <Cell key={i} fill={fill} fillOpacity={0.7} />;
+            })}
           </Bar>
-
-          {/* Real (today's money) lines */}
-          <Line
-            type="monotone"
-            dataKey="real.monthlyBalance"
-            stroke="#059669"
-            strokeWidth={2.5}
-            strokeDasharray="5 4"
-            dot={false}
-            name="יתרה חודשית (ערכי היום)"
-          />
-          <Line
-            type="monotone"
-            dataKey="real.monthly4pctWithdrawal"
-            stroke="#4f46e5"
-            strokeWidth={2}
-            strokeDasharray="3 3"
-            dot={false}
-            name="4% חודשי (ערכי היום)"
-          />
         </ComposedChart>
       </ResponsiveContainer>
-      <div className="text-sm md:text-base text-slate-500 mt-4 leading-relaxed space-y-2">
-        <div className="flex flex-wrap gap-x-5 gap-y-2 items-center">
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 bg-emerald-500/70 rounded"></span>
-            יתרה חיובית (נומינלי)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 bg-rose-500/70 rounded"></span>
-            יתרה שלילית (נומינלי)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <svg width="24" height="4"><line x1="0" y1="2" x2="24" y2="2" stroke="#059669" strokeWidth="2.5" strokeDasharray="5 4"/></svg>
-            יתרה בערכי היום
-          </span>
-          <span className="flex items-center gap-1.5">
-            <svg width="24" height="4"><line x1="0" y1="2" x2="24" y2="2" stroke="#4f46e5" strokeWidth="2" strokeDasharray="3 3"/></svg>
-            4% מהתיק בערכי היום
-          </span>
-        </div>
+
+      <div className="text-sm md:text-base text-slate-500 mt-4 leading-relaxed">
         <p className="text-xs md:text-sm text-slate-400">
-          הקו הכחול האנכי = סגירת זינוק · הקו הכתום = פרישה מלאה · הקו הירוק = נקודת איזון
+          הקו הכחול האנכי = סגירת זינוק · הקו הכתום = פרישה מלאה
+          {metric === 'monthlyBalance' && ' · הקו הירוק = נקודת איזון'}
         </p>
       </div>
     </div>

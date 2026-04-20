@@ -111,6 +111,7 @@ export interface YearResult {
     annualCashflow: number;
     monthly4pctWithdrawal: number;
     monthlyBalance: number;
+    monthlySustainableIncome: number;
   };
 }
 
