@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { YearResult, ScenarioConfig } from '../lib/types';
 
 interface Props {
@@ -17,7 +18,12 @@ function fmt(v: number): string {
   return Math.round(v).toLocaleString('he-IL');
 }
 
-export function DetailModal({ year: y, config, onClose }: Props) {
+export function DetailModal(props: Props) {
+  // Use portal so modal escapes chart card's backdrop-filter containing block
+  return createPortal(<DetailModalContent {...props} />, document.body);
+}
+
+function DetailModalContent({ year: y, config, onClose }: Props) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
@@ -44,14 +50,15 @@ export function DetailModal({ year: y, config, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-3 md:p-8 overflow-y-auto"
-      style={{ background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(6px)' }}
+      className="fixed inset-0 z-[1000] flex items-start md:items-center justify-center p-3 md:p-8 overflow-y-auto fade-up"
+      style={{ background: 'rgba(15, 23, 42, 0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
+      dir="rtl"
     >
       <div
-        className="widget-card-static w-full max-w-4xl fade-up my-4 md:my-auto"
+        className="w-full max-w-4xl my-4 md:my-auto rounded-[2rem] border border-white/80 shadow-2xl"
         onClick={e => e.stopPropagation()}
-        style={{ background: 'rgba(255, 255, 255, 0.98)' }}
+        style={{ background: '#ffffff', boxShadow: '0 30px 80px -20px rgba(15, 23, 42, 0.5)' }}
       >
         {/* Header */}
         <div className={`relative bg-gradient-to-l ${phaseColor} px-5 md:px-8 py-5 md:py-7 rounded-t-[2rem] overflow-hidden`}>
@@ -86,7 +93,7 @@ export function DetailModal({ year: y, config, onClose }: Props) {
               <span className="w-1 h-5 bg-emerald-500 rounded-full" />
               הכנסות חודשיות (בפועל)
             </h3>
-            <div className="bg-white/70 rounded-2xl border border-emerald-200/60 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-emerald-200 overflow-hidden shadow-sm">
               {/* Earned income */}
               {totalEarnedIncome > 0 && (
                 <>
@@ -119,7 +126,7 @@ export function DetailModal({ year: y, config, onClose }: Props) {
               )}
 
               {/* Total */}
-              <div className="px-4 md:px-5 py-3.5 bg-emerald-50/70 flex items-center justify-between">
+              <div className="px-4 md:px-5 py-3.5 bg-emerald-50 border-t border-emerald-200 flex items-center justify-between">
                 <span className="font-display text-base md:text-lg font-extrabold text-emerald-800">סה״כ הכנסה חודשית</span>
                 <span className="num font-display text-xl md:text-2xl font-extrabold text-emerald-700" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {fmt(totalAllIncome)} ₪
@@ -134,14 +141,14 @@ export function DetailModal({ year: y, config, onClose }: Props) {
               <span className="w-1 h-5 bg-rose-500 rounded-full" />
               הוצאות חודשיות
             </h3>
-            <div className="bg-white/70 rounded-2xl border border-rose-200/60 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-rose-200 overflow-hidden shadow-sm">
               <SectionRow label="הוצאות (ללא דיור)" value={y.monthlyNonHousingExpense} dotColor="bg-rose-500" />
               <SectionRow
                 label={y.housingStatus === 'owning' ? `משכנתא · תשלום חודשי` : 'שכירות'}
                 value={y.monthlyHousingExpense}
                 dotColor="bg-rose-400"
               />
-              <div className="px-4 md:px-5 py-3.5 bg-rose-50/70 flex items-center justify-between">
+              <div className="px-4 md:px-5 py-3.5 bg-rose-50 border-t border-rose-200 flex items-center justify-between">
                 <span className="font-display text-base md:text-lg font-extrabold text-rose-800">סה״כ הוצאות</span>
                 <span className="num font-display text-xl md:text-2xl font-extrabold text-rose-700" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {fmt(y.monthlyExpenses)} ₪
@@ -152,7 +159,7 @@ export function DetailModal({ year: y, config, onClose }: Props) {
 
           {/* ─── Cashflow Summary ─── */}
           <section>
-            <div className={`rounded-2xl border-2 px-5 py-5 ${cashSurplus >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50'}`}>
+            <div className={`rounded-2xl border-2 px-5 py-5 shadow-sm ${cashSurplus >= 0 ? 'border-emerald-400 bg-emerald-50' : 'border-rose-400 bg-rose-50'}`}>
               <div className="flex items-baseline justify-between mb-2">
                 <span className="font-display text-lg md:text-xl font-extrabold text-slate-900">תזרים מזומנים בפועל</span>
                 <span className={`num font-display text-2xl md:text-3xl font-extrabold ${cashSurplus >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
@@ -173,7 +180,7 @@ export function DetailModal({ year: y, config, onClose }: Props) {
               <span className="w-1 h-5 bg-indigo-500 rounded-full" />
               פוטנציאל משיכה · 4% מהתיק
             </h3>
-            <div className="bg-indigo-50/50 rounded-2xl border border-indigo-200/60 px-5 py-4">
+            <div className="bg-indigo-50 rounded-2xl border border-indigo-200 px-5 py-4 shadow-sm">
               <div className="flex items-baseline justify-between mb-2">
                 <span className="text-sm text-slate-700">
                   4% מ-<span className="num font-bold">{fmt(liquidTotal)} ₪</span> ÷ 12
@@ -190,7 +197,7 @@ export function DetailModal({ year: y, config, onClose }: Props) {
 
           {/* ─── Sustainable Balance ─── */}
           <section>
-            <div className={`rounded-2xl border px-5 py-4 ${y.monthlyBalance >= 0 ? 'border-emerald-200 bg-emerald-50/40' : 'border-rose-200 bg-rose-50/40'}`}>
+            <div className={`rounded-2xl border px-5 py-4 shadow-sm ${y.monthlyBalance >= 0 ? 'border-emerald-300 bg-emerald-50' : 'border-rose-300 bg-rose-50'}`}>
               <div className="flex items-baseline justify-between">
                 <span className="font-display text-base md:text-lg font-bold text-slate-800">יתרה חודשית (בר-קיימא)</span>
                 <span className={`num font-display text-xl font-extrabold ${y.monthlyBalance >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
@@ -251,23 +258,23 @@ export function DetailModal({ year: y, config, onClose }: Props) {
 
           {/* ─── Scenario info ─── */}
           <section className="grid grid-cols-2 gap-3 text-sm">
-            <div className="bg-white/50 rounded-xl px-4 py-3 border border-white/70">
+            <div className="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
               <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">תרחיש</p>
-              <p className="font-semibold text-slate-800">
+              <p className="font-semibold text-slate-900">
                 {config.housePurchaseYear === null ? 'ללא קניית בית' :
                  config.housePurchaseYear === 1 ? 'קנייה מיידית' :
                  `קנייה בגיל ${config.startAge + config.housePurchaseYear - 1}`}
               </p>
             </div>
-            <div className="bg-white/50 rounded-xl px-4 py-3 border border-white/70">
+            <div className="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
               <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">שנה בסימולציה</p>
-              <p className="font-semibold text-slate-800 num">{y.year} / {config.endAge - config.startAge + 1}</p>
+              <p className="font-semibold text-slate-900 num">{y.year} / {config.endAge - config.startAge + 1}</p>
             </div>
           </section>
         </div>
 
         {/* Footer */}
-        <div className="px-5 md:px-8 py-4 border-t border-white/60 flex justify-end bg-white/30 rounded-b-[2rem]">
+        <div className="px-5 md:px-8 py-4 border-t border-slate-200 flex justify-end bg-slate-50 rounded-b-[2rem]">
           <button
             onClick={onClose}
             className="btn-primary px-5 py-2 text-sm md:text-base"
@@ -282,10 +289,10 @@ export function DetailModal({ year: y, config, onClose }: Props) {
 
 function SectionRow({ label, value, dotColor }: { label: string; value: number; dotColor: string }) {
   return (
-    <div className="px-4 md:px-5 py-3 flex items-center justify-between border-b border-white/60 last:border-b-0">
+    <div className="px-4 md:px-5 py-3 flex items-center justify-between border-b border-slate-100 last:border-b-0">
       <span className="flex items-center gap-2.5">
         <span className={`w-2 h-2 rounded-full ${dotColor}`} />
-        <span className="font-bold text-slate-800 text-sm md:text-base">{label}</span>
+        <span className="font-bold text-slate-900 text-sm md:text-base">{label}</span>
       </span>
       <span className="num font-bold text-slate-900 text-sm md:text-base" style={{ fontVariantNumeric: 'tabular-nums' }}>
         {Math.round(value).toLocaleString('he-IL')} ₪
@@ -296,9 +303,9 @@ function SectionRow({ label, value, dotColor }: { label: string; value: number; 
 
 function SubRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="px-4 md:px-5 py-2 flex items-center justify-between bg-slate-50/40">
+    <div className="px-4 md:px-5 py-2 flex items-center justify-between bg-slate-50 border-b border-slate-100 last:border-b-0">
       <span className="text-xs md:text-sm text-slate-600 pr-4">└ {label}</span>
-      <span className="num text-xs md:text-sm text-slate-700 font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <span className="num text-xs md:text-sm text-slate-800 font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
         {Math.round(value).toLocaleString('he-IL')} ₪
       </span>
     </div>
@@ -351,7 +358,7 @@ function RealStat({ label, value, bold, sign }: { label: string; value: number; 
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white/60 rounded-xl px-3 py-2.5 border border-white/70">
+    <div className="bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-200">
       <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
       <p className="num text-sm md:text-base font-bold text-slate-900 mt-1" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</p>
     </div>
