@@ -35,7 +35,8 @@ export function deflate(nominal: number, rate: number, years: number): number {
 
 function runCore(config: ScenarioConfig): YearResult[] {
   const { startAge, endAge, housePurchaseYear, zinukEndAge, pensionStartAge,
-    hadasAge, hadasPensionStartAge, fullRetirementAge,
+    hadasAge, hadasPensionStartAge, fullRetirementAge, hadasFullRetirementAge,
+    simulationStartYear,
     assets, income, expenses, house, market } = config;
   const totalYears = endAge - startAge + 1;
   const results: YearResult[] = [];
@@ -57,11 +58,14 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const year = yi + 1;
     const age = startAge + yi;
     const hadasCurrentAge = hadasAge + yi;
+    const calendarYear = (simulationStartYear ?? 2026) + yi;
     const ye = yi;
 
+    // Phase label follows Yotam (primary). But each person's income
+    // stops at their own respective full retirement age.
     let phase: 'zinuk' | 'altIncome' | 'retired';
     if (age < zinukEndAge) phase = 'zinuk';
-    else if (age < fullRetirementAge) phase = 'altIncome';
+    else if (age < fullRetirementAge || hadasCurrentAge < hadasFullRetirementAge) phase = 'altIncome';
     else phase = 'retired';
 
     const isWorking = phase === 'zinuk';
@@ -70,18 +74,15 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const nomRent = inflate(expenses.monthlyRent, market.inflationRate, ye);
     const nomNH = inflate(expenses.monthlyNonHousingExpenses, market.inflationRate, ye);
 
-    // Income per person per phase (actual current income)
-    const yotamIncome = phase === 'zinuk'
-      ? inflate(income.yotamNetIncomeZinuk, market.inflationRate, ye)
-      : phase === 'altIncome'
-        ? inflate(income.yotamNetIncomePostZinuk, market.inflationRate, ye)
-        : 0;
+    // Yotam's income: zinuk → post-zinuk → 0 at his full retirement
+    let yotamIncome = 0;
+    if (age < zinukEndAge) yotamIncome = inflate(income.yotamNetIncomeZinuk, market.inflationRate, ye);
+    else if (age < fullRetirementAge) yotamIncome = inflate(income.yotamNetIncomePostZinuk, market.inflationRate, ye);
 
-    const hadasIncome = phase === 'zinuk'
-      ? inflate(income.hadasNetIncomeZinuk, market.inflationRate, ye)
-      : phase === 'altIncome'
-        ? inflate(income.hadasNetIncomePostZinuk, market.inflationRate, ye)
-        : 0;
+    // Hadas's income: zinuk (while Yotam in zinuk) → post-zinuk → 0 at HER full retirement
+    let hadasIncome = 0;
+    if (age < zinukEndAge) hadasIncome = inflate(income.hadasNetIncomeZinuk, market.inflationRate, ye);
+    else if (hadasCurrentAge < hadasFullRetirementAge) hadasIncome = inflate(income.hadasNetIncomePostZinuk, market.inflationRate, ye);
 
     const nomYPC = inflate(income.yotamMonthlyPensionContribution, market.inflationRate, ye);
     const nomHPC = inflate(income.hadasMonthlyPensionContribution, market.inflationRate, ye);
@@ -141,13 +142,9 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const mBalance = mSustainable - mExp;
 
     // ─── Pension contributions (separate from liquid cashflow) ───
-    if (phase === 'zinuk') {
-      yotamPension += nomYPC * 12;
-      hadasPension += nomHPC * 12;
-    } else if (phase === 'altIncome') {
-      if (income.yotamNetIncomePostZinuk > 0) yotamPension += nomYPC * 12;
-      if (income.hadasNetIncomePostZinuk > 0) hadasPension += nomHPC * 12;
-    }
+    // Contribute while earning: based on each person's own income
+    if (yotamIncome > 0) yotamPension += nomYPC * 12;
+    if (hadasIncome > 0) hadasPension += nomHPC * 12;
 
     // ─── Actual cashflow to/from liquid ───
     // Only income + pension - expenses actually moves money.
@@ -182,6 +179,9 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
     results.push({
       year, age, phase, isWorking,
+      calendarYear,
+      yotamAge: age,
+      hadasAge: hadasCurrentAge,
       housingStatus: ownsHome ? 'owning' : 'renting',
       liquidPortfolio: Math.round(liquid),
       pension: Math.round(totalPensionNW),

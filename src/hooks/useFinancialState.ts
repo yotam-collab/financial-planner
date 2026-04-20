@@ -33,6 +33,13 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
   return {
     ...defaults,
     ...saved,
+    // New fields — fall back to defaults if missing in saved state
+    simulationStartYear: saved.simulationStartYear ?? defaults.simulationStartYear,
+    yotamBirthYear: saved.yotamBirthYear ?? defaults.yotamBirthYear,
+    yotamBirthMonth: saved.yotamBirthMonth ?? defaults.yotamBirthMonth,
+    hadasBirthYear: saved.hadasBirthYear ?? defaults.hadasBirthYear,
+    hadasBirthMonth: saved.hadasBirthMonth ?? defaults.hadasBirthMonth,
+    hadasFullRetirementAge: saved.hadasFullRetirementAge ?? defaults.hadasFullRetirementAge,
     assets: { ...defaults.assets, ...saved.assets },
     income: { ...defaults.income, ...saved.income },
     expenses: { ...defaults.expenses, ...saved.expenses },

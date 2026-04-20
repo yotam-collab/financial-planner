@@ -145,21 +145,28 @@ export function InputPanel({ config, setConfig }: Props) {
         <SliderInput label="סגירת זינוק" value={config.zinukEndAge}
           onChange={v => setConfig(prev => ({ ...prev, zinukEndAge: v, fullRetirementAge: Math.max(prev.fullRetirementAge, v) }))}
           min={config.startAge} max={65}
-          displayValue={`גיל ${config.zinukEndAge}`}
+          displayValue={`גיל ${config.zinukEndAge} · ${(config.simulationStartYear ?? 2026) + config.zinukEndAge - config.startAge}`}
           note="מעבר מהכנסת זינוק להכנסה חלופית" />
         <SliderInput label="תחילת קצבת יותם" value={config.pensionStartAge}
           onChange={v => setConfig(prev => ({ ...prev, pensionStartAge: v }))}
-          min={60} max={67} displayValue={`גיל ${config.pensionStartAge}`}
+          min={60} max={67}
+          displayValue={`גיל ${config.pensionStartAge} · ${(config.simulationStartYear ?? 2026) + config.pensionStartAge - config.startAge}`}
           rec="גיל 60 — מינימום חוקי לגברים" />
         <SliderInput label="תחילת קצבת הדס" value={config.hadasPensionStartAge}
           onChange={v => setConfig(prev => ({ ...prev, hadasPensionStartAge: v }))}
           min={60} max={65}
-          displayValue={`גיל ${config.hadasPensionStartAge} · עוד ${config.hadasPensionStartAge - config.hadasAge} שנים`}
+          displayValue={`גיל ${config.hadasPensionStartAge} · ${(config.simulationStartYear ?? 2026) + config.hadasPensionStartAge - config.hadasAge}`}
           rec="גיל 62-65 — גיל פרישה לנשים" />
-        <SliderInput label="פרישה מלאה" value={config.fullRetirementAge}
+        <SliderInput label="פרישה מלאה — יותם" value={config.fullRetirementAge}
           onChange={v => setConfig(prev => ({ ...prev, fullRetirementAge: v }))}
-          min={config.zinukEndAge} max={85} displayValue={`גיל ${config.fullRetirementAge}`}
-          note="רק 4% מהתיק + קצבאות פנסיה" />
+          min={config.zinukEndAge} max={85}
+          displayValue={`גיל ${config.fullRetirementAge} · ${(config.simulationStartYear ?? 2026) + config.fullRetirementAge - config.startAge}`}
+          note="יותם מפסיק להרוויח · עובר ל-4% + פנסיה" />
+        <SliderInput label="פרישה מלאה — הדס" value={config.hadasFullRetirementAge}
+          onChange={v => setConfig(prev => ({ ...prev, hadasFullRetirementAge: v }))}
+          min={config.hadasPensionStartAge} max={85}
+          displayValue={`גיל ${config.hadasFullRetirementAge} · ${(config.simulationStartYear ?? 2026) + config.hadasFullRetirementAge - config.hadasAge}`}
+          note="הדס מפסיקה להרוויח" />
       </Section>
 
       <Section title="קניית בית" icon="🏠" color="violet" defaultOpen={true}>

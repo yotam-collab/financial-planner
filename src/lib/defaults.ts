@@ -53,14 +53,21 @@ export const DEFAULT_MARKET: MarketConfig = {
 
 export function createDefaultConfig(): ScenarioConfig {
   return {
+    simulationStartYear: 2026,
+    yotamBirthYear: 1981,
+    yotamBirthMonth: 12,
+    hadasBirthYear: 1990,
+    hadasBirthMonth: 2,
+
     startAge: 44,
     endAge: 85,
-    housePurchaseYear: 1, // default: buy immediately; set to null to never buy
+    housePurchaseYear: 1,
     zinukEndAge: 52,
     pensionStartAge: 60,
     hadasAge: 35,
     hadasPensionStartAge: 65,
     fullRetirementAge: 67,
+    hadasFullRetirementAge: 67,
     assets: { ...DEFAULT_ASSETS },
     income: { ...DEFAULT_INCOME },
     expenses: { ...DEFAULT_EXPENSES },

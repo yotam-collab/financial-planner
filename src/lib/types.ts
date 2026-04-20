@@ -51,6 +51,15 @@ export interface MarketConfig {
 }
 
 export interface ScenarioConfig {
+  /** Calendar year the simulation starts (default 2026) */
+  simulationStartYear: number;
+  /** Yotam's birth year/month (for display + age calc) */
+  yotamBirthYear: number;
+  yotamBirthMonth: number;
+  /** Hadas's birth year/month */
+  hadasBirthYear: number;
+  hadasBirthMonth: number;
+
   startAge: number;
   endAge: number;
   /** Year (1-based) to buy a house, or null = never buy */
@@ -59,12 +68,14 @@ export interface ScenarioConfig {
   zinukEndAge: number;
   /** Yotam's age at which pension annuity begins (60-67) */
   pensionStartAge: number;
-  /** Hadas's current age */
+  /** Hadas's current age at simulation start */
   hadasAge: number;
   /** Hadas's age at which pension annuity begins (60-65) */
   hadasPensionStartAge: number;
-  /** Yotam's age at full retirement — no more earned income at all */
+  /** Yotam's age at full retirement — no more earned income */
   fullRetirementAge: number;
+  /** Hadas's age at full retirement — no more earned income */
+  hadasFullRetirementAge: number;
   assets: AssetConfig;
   income: IncomeConfig;
   expenses: ExpenseConfig;
@@ -74,7 +85,10 @@ export interface ScenarioConfig {
 
 export interface YearResult {
   year: number;
-  age: number;
+  age: number;          // Yotam's age (primary)
+  calendarYear: number; // Actual calendar year (e.g. 2026)
+  yotamAge: number;     // Same as age; explicit alias
+  hadasAge: number;     // Hadas's age in this year
   phase: 'zinuk' | 'altIncome' | 'retired';
   isWorking: boolean;
   housingStatus: 'renting' | 'owning';

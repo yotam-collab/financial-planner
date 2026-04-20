@@ -4,7 +4,8 @@ import {
   ResponsiveContainer, ReferenceLine, Area, ComposedChart,
   Cell, Bar,
 } from 'recharts';
-import type { SimulationResult, ScenarioConfig } from '../lib/types';
+import type { SimulationResult, ScenarioConfig, YearResult } from '../lib/types';
+import { DetailModal } from './DetailModal';
 
 interface Props {
   result: SimulationResult;
@@ -102,11 +103,22 @@ function makeChartTooltip(showReal: boolean) {
 
     return (
       <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[340px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
-        <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/60">
-          <div className="flex items-baseline gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">גיל</span>
-            <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.age}</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">{primaryLabel}</span>
+        <div className="flex items-start justify-between mb-3 pb-3 border-b border-white/60">
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.calendarYear ?? d.age}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{primaryLabel}</span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] mt-1 text-slate-600">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                יותם · <span className="num font-semibold">{d.yotamAge ?? d.age}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                הדס · <span className="num font-semibold">{d.hadasAge ?? '—'}</span>
+              </span>
+            </div>
           </div>
           <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${phaseColor}`}>
             {phaseLabel}
@@ -251,6 +263,7 @@ function AvatarCursor(props: any) {
 export function ChartsPanel({ result, config }: Props) {
   const [metric, setMetric] = useState<MetricType>('monthlyBalance');
   const [showReal, setShowReal] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<YearResult | null>(null);
 
   const data = result.years.map(y => ({
     ...y,
@@ -321,7 +334,17 @@ export function ChartsPanel({ result, config }: Props) {
       {/* Chart */}
       <div className="w-full">
         <ResponsiveContainer width="100%" height={420}>
-          <ComposedChart data={data} margin={{ top: 30, right: 0, left: 0, bottom: 0 }}>
+          <ComposedChart
+            data={data}
+            margin={{ top: 30, right: 0, left: 0, bottom: 0 }}
+            onClick={(e: any) => {
+              if (e?.activePayload?.[0]?.payload) {
+                const clicked = e.activePayload[0].payload as YearResult;
+                setSelectedYear(clicked);
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+          >
             <defs>
               <linearGradient id={metricCfg.gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={metricCfg.color} stopOpacity={0.35} />
@@ -330,7 +353,7 @@ export function ChartsPanel({ result, config }: Props) {
             </defs>
             <CartesianGrid strokeDasharray="2 4" stroke="rgba(79, 70, 229, 0.08)" vertical={false} />
             <XAxis
-              dataKey="age"
+              dataKey="calendarYear"
               tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }}
               tickLine={false}
               axisLine={false}
@@ -351,31 +374,41 @@ export function ChartsPanel({ result, config }: Props) {
 
             <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1.5} opacity={0.5} />
 
-            <ReferenceLine
-              x={config.zinukEndAge}
-              stroke="#4f46e5"
-              strokeWidth={2}
-              strokeDasharray="6 4"
-              label={{ value: `סגירת זינוק (${config.zinukEndAge})`, position: 'top', fontSize: 12, fill: '#4f46e5', fontWeight: 700 }}
-            />
-            {config.fullRetirementAge <= config.endAge && (
-              <ReferenceLine
-                x={config.fullRetirementAge}
-                stroke="#f59e0b"
-                strokeWidth={2}
-                strokeDasharray="6 4"
-                label={{ value: `פרישה מלאה (${config.fullRetirementAge})`, position: 'top', fontSize: 12, fill: '#f59e0b', fontWeight: 700 }}
-              />
-            )}
-            {retAge && metric === 'monthlyBalance' && (
-              <ReferenceLine
-                x={retAge}
-                stroke="#10b981"
-                strokeWidth={2.5}
-                strokeDasharray="4 3"
-                label={{ value: `נקודת איזון (${retAge})`, position: 'insideTopLeft', fontSize: 12, fill: '#10b981', fontWeight: 800 }}
-              />
-            )}
+            {(() => {
+              const startY = config.simulationStartYear ?? 2026;
+              const zinukYear = startY + (config.zinukEndAge - config.startAge);
+              const fullRetYear = startY + (config.fullRetirementAge - config.startAge);
+              const retYear = retAge != null ? startY + (retAge - config.startAge) : null;
+              return (
+                <>
+                  <ReferenceLine
+                    x={zinukYear}
+                    stroke="#4f46e5"
+                    strokeWidth={2}
+                    strokeDasharray="6 4"
+                    label={{ value: `סגירת זינוק (${zinukYear})`, position: 'top', fontSize: 12, fill: '#4f46e5', fontWeight: 700 }}
+                  />
+                  {config.fullRetirementAge <= config.endAge && (
+                    <ReferenceLine
+                      x={fullRetYear}
+                      stroke="#f59e0b"
+                      strokeWidth={2}
+                      strokeDasharray="6 4"
+                      label={{ value: `פרישה מלאה (${fullRetYear})`, position: 'top', fontSize: 12, fill: '#f59e0b', fontWeight: 700 }}
+                    />
+                  )}
+                  {retYear != null && metric === 'monthlyBalance' && (
+                    <ReferenceLine
+                      x={retYear}
+                      stroke="#10b981"
+                      strokeWidth={2.5}
+                      strokeDasharray="4 3"
+                      label={{ value: `נקודת איזון (${retYear})`, position: 'insideTopLeft', fontSize: 12, fill: '#10b981', fontWeight: 800 }}
+                    />
+                  )}
+                </>
+              );
+            })()}
 
             <Area type="monotone" dataKey={dataKey} fill={`url(#${metricCfg.gradientId})`} stroke="none" />
             <Bar dataKey={dataKey} radius={[6, 6, 0, 0]}>
@@ -392,11 +425,19 @@ export function ChartsPanel({ result, config }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 pt-4 border-t border-white/60 flex flex-wrap gap-x-5 gap-y-2 text-xs md:text-sm text-slate-600 font-medium">
-        <LegendItem color="#4f46e5">סגירת זינוק</LegendItem>
-        <LegendItem color="#f59e0b">פרישה מלאה</LegendItem>
-        {metric === 'monthlyBalance' && <LegendItem color="#10b981">נקודת איזון</LegendItem>}
+      <div className="mt-4 pt-4 border-t border-white/60 flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm text-slate-600 font-medium">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <LegendItem color="#4f46e5">סגירת זינוק</LegendItem>
+          <LegendItem color="#f59e0b">פרישה מלאה</LegendItem>
+          {metric === 'monthlyBalance' && <LegendItem color="#10b981">נקודת איזון</LegendItem>}
+        </div>
+        <span className="text-[11px] md:text-xs text-slate-400 italic">💡 לחץ על נקודה בגרף לפירוט מלא</span>
       </div>
+
+      {/* Detail modal */}
+      {selectedYear && (
+        <DetailModal year={selectedYear} config={config} onClose={() => setSelectedYear(null)} />
+      )}
     </div>
   );
 }
