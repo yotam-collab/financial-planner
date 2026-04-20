@@ -14,63 +14,63 @@ export function SummaryCard({ result }: Props) {
   const finalYear = years[years.length - 1];
   const pensionYear = years.find(y => y.monthlyPensionPayout > 0);
 
-  // Status color
-  const statusColor =
-    earliestRetirementAge === null ? 'text-[#8a2d3a]'
-    : earliestRetirementAge <= 55 ? 'text-[#3d6e5c]'
-    : earliestRetirementAge <= 62 ? 'text-[#b87333]'
-    : 'text-[#8a2d3a]';
-
-  const statusLabel =
-    earliestRetirementAge === null ? 'לא בר-השגה'
-    : earliestRetirementAge <= 55 ? 'מצוין'
-    : earliestRetirementAge <= 62 ? 'סביר'
-    : 'מאוחר';
+  // Gradient based on retirement quality
+  const gradient = earliestRetirementAge === null
+    ? 'from-rose-500 via-rose-500 to-pink-600'
+    : earliestRetirementAge <= 55
+      ? 'from-emerald-500 via-teal-500 to-emerald-600'
+      : earliestRetirementAge <= 62
+        ? 'from-amber-400 via-orange-400 to-amber-500'
+        : 'from-rose-500 via-pink-500 to-rose-600';
 
   return (
-    <article className="ledger-card px-6 md:px-10 py-6 md:py-8 fade-rise">
-      {/* Eyebrow row */}
-      <div className="flex items-center justify-between mb-5 md:mb-6">
-        <div className="flex items-center gap-3">
-          <span className="eyebrow">תרחיש</span>
-          <span className="serif text-base md:text-lg font-medium text-[#1a1c28]">{scenarioLabel}</span>
+    <div className="widget-card overflow-hidden">
+      {/* Top gradient band with huge age */}
+      <div className={`relative bg-gradient-to-l ${gradient} px-6 md:px-12 py-8 md:py-12 overflow-hidden`}>
+        {/* Floating light orbs */}
+        <div className="absolute top-0 left-10 w-40 h-40 bg-white/20 rounded-full blur-3xl float-anim" />
+        <div className="absolute bottom-0 right-20 w-32 h-32 bg-white/15 rounded-full blur-2xl float-anim" style={{ animationDelay: '1s' }} />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-10">
+          <div>
+            <div className="flex items-center gap-2 mb-3 md:mb-4">
+              <span className="relative flex h-2 w-2">
+                <span className="pulse-glow absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+              </span>
+              <p className="text-white/90 text-[11px] md:text-xs font-bold uppercase tracking-[0.28em]">
+                {scenarioLabel}
+              </p>
+            </div>
+            <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-extrabold text-white/95 leading-tight max-w-md">
+              הגיל המוקדם ביותר
+              <br />
+              <span className="text-white/70 font-bold">לסגירת העסק</span>
+            </h2>
+          </div>
+
+          <div className="flex items-baseline gap-3 md:gap-4">
+            <div className="font-display text-[96px] md:text-[140px] lg:text-[160px] font-extrabold text-white leading-[0.8] tracking-tighter num drop-shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
+              {earliestRetirementAge ?? '—'}
+            </div>
+          </div>
         </div>
-        <div className={`flex items-center gap-2 ${statusColor}`}>
-          <span className="w-1 h-1 rounded-full bg-current" />
-          <span className="eyebrow !text-current">{statusLabel}</span>
-        </div>
+
+        {earliestRetirementAge && (
+          <p className="relative z-10 text-white/80 text-sm md:text-base font-medium mt-3 md:mt-4">
+            ההכנסה ברת-הקיימא מכסה את ההוצאות מגיל זה ואילך
+          </p>
+        )}
       </div>
 
-      {/* Main headline + age */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-8 mb-6 md:mb-8">
-        <div className="flex-1">
-          <h2 className="serif text-2xl md:text-3xl lg:text-4xl font-medium leading-tight text-[#1a1c28] max-w-xl">
-            סגירת העסק אפשרית
-            <br />
-            <span className="text-[#8a8695]">מגיל</span>
-          </h2>
-        </div>
-        <div className="flex items-baseline gap-3 md:gap-4">
-          <span className={`num-display text-[88px] md:text-[120px] lg:text-[144px] leading-[0.85] ${statusColor}`}>
-            {earliestRetirementAge ?? '—'}
-          </span>
-        </div>
-      </div>
-
-      {/* Ornamental divider */}
-      <div className="rule-ornament mb-6 md:mb-8">
-        <svg width="10" height="10" viewBox="0 0 10 10" className="flex-shrink-0">
-          <path d="M5 0 L6 4 L10 5 L6 6 L5 10 L4 6 L0 5 L4 4 Z" fill="currentColor" opacity="0.6" />
-        </svg>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5 md:gap-x-8 md:gap-y-0">
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/40">
         {retYear && (
           <Stat
             label={`הכנסה · גיל ${earliestRetirementAge}`}
             value={Math.round(retYear.monthlySustainableIncome).toLocaleString('he-IL')}
             suffix="₪"
+            accent="violet"
           />
         )}
         {retYear && (
@@ -78,6 +78,7 @@ export function SummaryCard({ result }: Props) {
             label={`הוצאות · גיל ${earliestRetirementAge}`}
             value={Math.round(retYear.monthlyExpenses).toLocaleString('he-IL')}
             suffix="₪"
+            accent="pink"
           />
         )}
         {currentYear && (
@@ -85,6 +86,7 @@ export function SummaryCard({ result }: Props) {
             label="שווי נקי · היום"
             value={fmtCompact(currentYear.netWorth)}
             suffix="₪"
+            accent="indigo"
           />
         )}
         {finalYear && (
@@ -92,37 +94,52 @@ export function SummaryCard({ result }: Props) {
             label={`שווי נקי · גיל ${finalYear.age}`}
             value={fmtCompact(finalYear.netWorth)}
             suffix="₪"
+            accent="emerald"
           />
         )}
       </div>
 
-      {/* Pension footer */}
       {pensionYear && (
-        <div className="mt-6 md:mt-8 pt-5 border-t border-[#e8dfc8] flex flex-col md:flex-row md:items-baseline md:justify-between gap-2">
-          <p className="text-sm md:text-base text-[#4a4755]">
-            <span className="serif italic text-[#8a6f36]">קצבת פנסיה משולבת</span> מתחילה בגיל {pensionYear.age}
+        <div className="border-t border-white/40 px-6 md:px-12 py-3 md:py-4 flex flex-wrap items-baseline justify-between gap-2 bg-white/40">
+          <p className="text-sm md:text-base text-slate-700 font-medium">
+            <span className="font-display font-bold text-slate-900">קצבת פנסיה משולבת</span>
+            {' '}· מגיל {pensionYear.age}
           </p>
-          <p className="num font-semibold text-[#1a1c28] text-base md:text-lg">
+          <p className="num text-base md:text-lg font-bold text-slate-900">
             {pensionYear.monthlyPensionPayout.toLocaleString('he-IL')}
-            <span className="text-[#8a8695] font-normal text-sm">
-              {' '}₪/חודש
-            </span>
+            <span className="text-slate-500 font-normal text-sm"> ₪/חודש</span>
           </p>
         </div>
       )}
-    </article>
+    </div>
   );
 }
 
-function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+const ACCENTS: Record<string, { dot: string; }> = {
+  indigo: { dot: 'bg-indigo-500' },
+  violet: { dot: 'bg-violet-500' },
+  pink: { dot: 'bg-pink-500' },
+  emerald: { dot: 'bg-emerald-500' },
+  amber: { dot: 'bg-amber-500' },
+};
+
+function Stat({ label, value, suffix, accent = 'indigo' }: {
+  label: string; value: string; suffix?: string; accent?: keyof typeof ACCENTS;
+}) {
+  const a = ACCENTS[accent];
   return (
-    <div>
-      <div className="eyebrow mb-1.5 md:mb-2">{label}</div>
+    <div className="px-5 md:px-8 py-5 md:py-7">
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`w-1.5 h-1.5 rounded-full ${a.dot}`} />
+        <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+          {label}
+        </p>
+      </div>
       <div className="flex items-baseline gap-1.5">
-        <span className="num-display text-[28px] md:text-[36px] lg:text-[42px] leading-none text-[#1a1c28]" style={{ fontVariationSettings: "'opsz' 72, 'wght' 500, 'SOFT' 30" }}>
+        <span className="font-display num text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-none">
           {value}
         </span>
-        {suffix && <span className="text-sm md:text-base text-[#8a8695] font-medium">{suffix}</span>}
+        {suffix && <span className="text-slate-500 font-semibold text-sm md:text-base">{suffix}</span>}
       </div>
     </div>
   );

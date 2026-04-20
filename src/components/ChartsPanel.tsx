@@ -19,44 +19,53 @@ interface MetricConfig {
   realKey: string;
   color: string;
   colorSecondary?: string;
+  gradientId: string;
   isBiColor: boolean;
   description: string;
+  emoji: string;
 }
 
-// Palette tied to parchment/ink theme
 const METRICS: Record<MetricType, MetricConfig> = {
   monthlyBalance: {
     label: 'יתרה חודשית',
     nominalKey: 'monthlyBalance',
     realKey: 'realMonthlyBalance',
-    color: '#3d6e5c',      // sage (positive)
-    colorSecondary: '#8a2d3a', // burgundy (negative)
+    color: '#10b981',
+    colorSecondary: '#f43f5e',
+    gradientId: 'grad-balance',
     isBiColor: true,
     description: 'הכנסה ברת-קיימא פחות הוצאות',
+    emoji: '⚖️',
   },
   sustainableIncome: {
     label: 'הכנסה ברת-קיימא',
     nominalKey: 'monthlySustainableIncome',
     realKey: 'realMonthlySustainableIncome',
-    color: '#3a2e5c',      // plum
+    color: '#7c3aed',
+    gradientId: 'grad-sustain',
     isBiColor: false,
-    description: 'הכנסה + 4% מהתיק + קצבת פנסיה',
+    description: 'הכנסה + 4% + פנסיה',
+    emoji: '💎',
   },
   fourPercent: {
     label: '4% מהתיק',
     nominalKey: 'monthly4pctWithdrawal',
     realKey: 'realMonthly4pctWithdrawal',
-    color: '#4a5a8a',      // indigo ink
+    color: '#4f46e5',
+    gradientId: 'grad-4pct',
     isBiColor: false,
     description: 'משיכה חודשית בת-קיימא',
+    emoji: '💰',
   },
   netWorth: {
     label: 'שווי נקי',
     nominalKey: 'netWorth',
     realKey: 'realNetWorth',
-    color: '#a68a4d',      // brass
+    color: '#f59e0b',
+    gradientId: 'grad-worth',
     isBiColor: false,
-    description: 'תיק נזיל + פנסיה + הון בנדל״ן',
+    description: 'תיק + פנסיה + נדל״ן',
+    emoji: '🏆',
   },
 };
 
@@ -72,88 +81,95 @@ function ChartTooltip({ active, payload }: any) {
   if (!d) return null;
 
   const phaseLabel = d.phase === 'zinuk' ? 'זינוק'
-    : d.phase === 'altIncome' ? 'הכנסה חלופית'
-    : 'פרישה מלאה';
-  const phaseColor = d.phase === 'zinuk' ? 'text-[#4a5a8a]'
-    : d.phase === 'altIncome' ? 'text-[#3d6e5c]'
-    : 'text-[#a68a4d]';
+    : d.phase === 'altIncome' ? 'חלופית'
+    : 'פרישה';
+  const phaseColor = d.phase === 'zinuk' ? 'bg-indigo-100 text-indigo-700'
+    : d.phase === 'altIncome' ? 'bg-emerald-100 text-emerald-700'
+    : 'bg-amber-100 text-amber-700';
 
   return (
-    <div className="ledger-card px-4 py-4 md:px-5 md:py-5 text-sm md:text-base shadow-xl max-w-[92vw] md:min-w-[340px]" dir="rtl" style={{ background: '#fdfaf2' }}>
-      <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-[#e8dfc8]">
+    <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[320px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.92)' }}>
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/60">
         <div className="flex items-baseline gap-2">
-          <span className="eyebrow">גיל</span>
-          <span className="serif num text-xl md:text-2xl font-medium text-[#1a1c28]">{d.age}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">גיל</span>
+          <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.age}</span>
         </div>
-        <span className={`eyebrow !text-current ${phaseColor}`}>{phaseLabel}</span>
+        <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${phaseColor}`}>
+          {phaseLabel}
+        </span>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 text-sm">
         {d.phase === 'zinuk' && d.monthlyZinukIncome > 0 && (
-          <Row label="הכנסה מזינוק" value={d.monthlyZinukIncome} />
+          <Row label="הכנסה מזינוק" value={d.monthlyZinukIncome} dotColor="bg-indigo-500" />
         )}
         {d.phase === 'altIncome' && d.monthlyAltIncome > 0 && (
-          <Row label="הכנסה חלופית" value={d.monthlyAltIncome} />
+          <Row label="הכנסה חלופית" value={d.monthlyAltIncome} dotColor="bg-emerald-500" />
         )}
-        <Row label="4% מהתיק" value={d.monthly4pctWithdrawal} />
+        <Row label="4% מהתיק" value={d.monthly4pctWithdrawal} dotColor="bg-indigo-600" />
         {d.monthlyPensionIncome > 0 && (
-          <Row label="קצבת פנסיה" value={d.monthlyPensionIncome} />
+          <Row label="קצבת פנסיה" value={d.monthlyPensionIncome} dotColor="bg-amber-500" />
         )}
       </div>
 
-      <div className="mt-3 pt-2 border-t border-[#e8dfc8] space-y-1.5">
-        <Row label="סה״כ ברת-קיימא" value={d.monthlySustainableIncome} highlight color="text-[#3a2e5c]" />
-        <Row label="הוצאות" value={d.monthlyExpenses} highlight color="text-[#8a2d3a]" />
+      <div className="mt-3 pt-3 border-t border-white/60 space-y-1.5 text-sm">
+        <Row label="סה״כ ברת-קיימא" value={d.monthlySustainableIncome} highlight dotColor="bg-violet-500" />
+        <Row label="הוצאות" value={d.monthlyExpenses} highlight dotColor="bg-rose-500" />
       </div>
 
-      <div className="mt-3 pt-3 border-t-2 border-[#c9bd9e]">
+      <div className={`mt-3 pt-3 border-t-2 ${d.monthlyBalance >= 0 ? 'border-emerald-200' : 'border-rose-200'}`}>
         <div className="flex items-baseline justify-between">
-          <span className="serif text-base md:text-lg font-medium text-[#1a1c28]">יתרה</span>
-          <span className={`num serif text-xl md:text-2xl font-semibold ${d.monthlyBalance >= 0 ? 'text-[#3d6e5c]' : 'text-[#8a2d3a]'}`}>
+          <span className="font-display text-base md:text-lg font-extrabold text-slate-900">יתרה חודשית</span>
+          <span className={`num font-display text-xl md:text-2xl font-extrabold ${d.monthlyBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
             {d.monthlyBalance >= 0 ? '+' : ''}{d.monthlyBalance?.toLocaleString('he-IL')} ₪
           </span>
         </div>
         <div className="flex items-baseline justify-between mt-1">
-          <span className="eyebrow">בערכי היום</span>
-          <span className={`num text-sm font-medium ${d.real?.monthlyBalance >= 0 ? 'text-[#3d6e5c]' : 'text-[#8a2d3a]'}`}>
+          <span className="text-xs text-slate-400 font-semibold">בערכי היום</span>
+          <span className={`num text-sm font-semibold ${d.real?.monthlyBalance >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
             {d.real?.monthlyBalance >= 0 ? '+' : ''}{(d.real?.monthlyBalance || 0).toLocaleString('he-IL')} ₪
           </span>
         </div>
       </div>
 
       {/* Portfolio breakdown */}
-      <div className="mt-4 pt-3 border-t border-[#e8dfc8]">
-        <p className="eyebrow mb-2">התפלגות תיק · {d.netWorth?.toLocaleString('he-IL')} ₪</p>
-        <div className="space-y-1 text-xs md:text-sm">
-          <PortfolioRow label="השקעות" value={d.liquidPortfolio} color="#4a5a8a" total={d.netWorth} />
-          {d.homeEquity > 0 && <PortfolioRow label="נדל״ן" value={d.homeEquity} color="#3d6e5c" total={d.netWorth} />}
-          {d.pension > 0 && <PortfolioRow label="פנסיה" value={d.pension} color="#a68a4d" total={d.netWorth} />}
+      <div className="mt-4 pt-3 border-t border-white/60">
+        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+          שווי נקי · <span className="num text-slate-900">{d.netWorth?.toLocaleString('he-IL')} ₪</span>
+        </p>
+        <div className="space-y-2">
+          <PortfolioBar label="השקעות" value={d.liquidPortfolio} color="indigo" total={d.netWorth} />
+          {d.homeEquity > 0 && <PortfolioBar label="נדל״ן" value={d.homeEquity} color="emerald" total={d.netWorth} />}
+          {d.pension > 0 && <PortfolioBar label="פנסיה" value={d.pension} color="amber" total={d.netWorth} />}
         </div>
       </div>
     </div>
   );
 }
 
-function Row({ label, value, highlight = false, color }: { label: string; value: number; highlight?: boolean; color?: string }) {
+function Row({ label, value, highlight, dotColor }: { label: string; value: number; highlight?: boolean; dotColor: string }) {
   return (
-    <div className="flex items-baseline justify-between">
-      <span className={`${highlight ? 'font-semibold' : 'text-[#4a4755]'} ${color || ''}`}>{label}</span>
-      <span className={`num font-medium ${color || 'text-[#1a1c28]'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
+    <div className="flex items-center justify-between gap-3">
+      <span className="flex items-center gap-2">
+        <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+        <span className={highlight ? 'font-semibold text-slate-800' : 'text-slate-600'}>{label}</span>
+      </span>
+      <span className="num font-bold text-slate-900" style={{ fontVariantNumeric: 'tabular-nums' }}>
         {value?.toLocaleString('he-IL')} ₪
       </span>
     </div>
   );
 }
 
-function PortfolioRow({ label, value, color, total }: { label: string; value: number; color: string; total: number }) {
+function PortfolioBar({ label, value, color, total }: { label: string; value: number; color: string; total: number }) {
   const pct = total > 0 ? (value / total) * 100 : 0;
   return (
-    <div className="flex items-center gap-2">
-      <span className="flex-shrink-0 w-16 text-[#4a4755]">{label}</span>
-      <div className="flex-1 h-1 bg-[#f4ede0] rounded-full overflow-hidden">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+    <div className="flex items-center gap-2.5">
+      <span className="flex-shrink-0 w-14 text-xs font-semibold text-slate-600">{label}</span>
+      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full progress-${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="num flex-shrink-0 w-24 text-left font-medium text-[#1a1c28]" style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <span className="num flex-shrink-0 w-20 text-left text-xs font-bold text-slate-800" style={{ fontVariantNumeric: 'tabular-nums' }}>
         {fmtK(value)} ₪
       </span>
     </div>
@@ -167,10 +183,10 @@ function AvatarCursor(props: any) {
   else if (x != null) cx = x + (width || 0) / 2;
   else return null;
 
-  const r = 14;
+  const r = 16;
   const chartHeight = (height || 380);
-  const avatarY = chartHeight - 6;
-  const clipId = `av-clip-${Math.round(cx)}`;
+  const avatarY = chartHeight - 8;
+  const clipId = `av-${Math.round(cx)}`;
 
   return (
     <svg style={{ overflow: 'visible' }}>
@@ -178,9 +194,14 @@ function AvatarCursor(props: any) {
         <clipPath id={clipId}>
           <circle cx={cx} cy={avatarY} r={r} />
         </clipPath>
+        <linearGradient id={`brd-${Math.round(cx)}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#4f46e5" />
+          <stop offset="50%" stopColor="#7c3aed" />
+          <stop offset="100%" stopColor="#ec4899" />
+        </linearGradient>
       </defs>
-      <line x1={cx} y1={10} x2={cx} y2={avatarY - r - 3} stroke="#a68a4d" strokeWidth={1} strokeDasharray="3 3" opacity="0.6" />
-      <circle cx={cx} cy={avatarY} r={r + 2} fill="#fdfaf2" />
+      <line x1={cx} y1={12} x2={cx} y2={avatarY - r - 4} stroke="url(#avatar-line-grad)" strokeWidth={1.5} strokeDasharray="4 4" opacity="0.6" />
+      <circle cx={cx} cy={avatarY} r={r + 3} fill="white" />
       <image
         href={`${import.meta.env.BASE_URL}profile-small.jpeg`}
         x={cx - r} y={avatarY - r}
@@ -188,7 +209,7 @@ function AvatarCursor(props: any) {
         clipPath={`url(#${clipId})`}
         preserveAspectRatio="xMidYMid slice"
       />
-      <circle cx={cx} cy={avatarY} r={r + 1} fill="none" stroke="#a68a4d" strokeWidth={2} />
+      <circle cx={cx} cy={avatarY} r={r + 1} fill="none" stroke={`url(#brd-${Math.round(cx)})`} strokeWidth={2.5} />
     </svg>
   );
 }
@@ -209,138 +230,150 @@ export function ChartsPanel({ result, config }: Props) {
   const dataKey = showReal ? metricCfg.realKey : metricCfg.nominalKey;
 
   return (
-    <div className="ledger-card px-5 md:px-8 py-5 md:py-8 fade-rise">
+    <div className="widget-card-static p-5 md:p-8">
+      {/* Hidden SVG defs for line gradient */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="avatar-line-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#4f46e5" />
+            <stop offset="100%" stopColor="#ec4899" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       {/* Header */}
-      <div className="pb-5 md:pb-6 border-b-2 border-[#e8dfc8] mb-5 md:mb-6">
-        <div className="flex items-start justify-between gap-3 mb-4 md:mb-5">
-          <div>
-            <p className="eyebrow mb-1">לוח בקרה</p>
-            <h2 className="serif text-xl md:text-2xl lg:text-3xl font-medium text-[#1a1c28] leading-tight">
+      <div className="flex items-start justify-between gap-3 mb-5">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">{metricCfg.emoji}</span>
+            <h3 className="font-display text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-900 leading-tight">
               {metricCfg.label}
-              {showReal && <span className="text-[#8a8695] italic text-base md:text-lg font-normal"> · בערכי היום</span>}
-            </h2>
-            <p className="text-sm text-[#4a4755] mt-1">{metricCfg.description}</p>
+              {showReal && <span className="text-slate-400 font-bold text-base md:text-lg"> · ערכי היום</span>}
+            </h3>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="eyebrow hidden md:inline">ערכים</span>
-            <button
-              onClick={() => setShowReal(!showReal)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${showReal ? 'bg-[#a68a4d]' : 'bg-[#d9cfba]'}`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#fdfaf2] shadow-sm transition-all ${showReal ? 'right-0.5' : 'right-5'}`} />
-            </button>
-            <span className="text-xs md:text-sm font-medium text-[#4a4755] w-14">
-              {showReal ? 'היום' : 'נומינלי'}
-            </span>
-          </div>
+          <p className="text-sm text-slate-500 font-medium">{metricCfg.description}</p>
         </div>
 
-        {/* Metric tabs */}
-        <div className="flex flex-wrap gap-x-1 gap-y-2">
-          {(Object.keys(METRICS) as MetricType[]).map(m => (
-            <button
-              key={m}
-              onClick={() => setMetric(m)}
-              className={`px-3 md:px-4 py-1.5 text-sm md:text-[15px] font-medium transition-all duration-200 cursor-pointer border-b-2 -mb-0.5 ${
-                metric === m
-                  ? 'text-[#1a1c28] border-[#a68a4d]'
-                  : 'text-[#8a8695] border-transparent hover:text-[#4a4755] hover:border-[#d9cfba]'
-              }`}
-            >
-              {METRICS[m].label}
-            </button>
-          ))}
-        </div>
+        {/* Real/Nominal toggle */}
+        <button
+          onClick={() => setShowReal(!showReal)}
+          className="flex items-center gap-2 btn-glass px-3 md:px-4 py-2 text-xs md:text-sm"
+        >
+          <span className={`relative w-9 h-5 rounded-full transition-colors ${showReal ? 'bg-gradient-to-r from-indigo-500 to-violet-500' : 'bg-slate-300'}`}>
+            <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${showReal ? 'right-0.5' : 'right-[18px]'}`} />
+          </span>
+          <span className="font-semibold text-slate-700">{showReal ? 'ריאלי' : 'נומינלי'}</span>
+        </button>
+      </div>
+
+      {/* Metric tabs */}
+      <div className="flex flex-wrap gap-2 mb-6 p-1 bg-white/40 rounded-2xl">
+        {(Object.keys(METRICS) as MetricType[]).map(m => (
+          <button
+            key={m}
+            onClick={() => setMetric(m)}
+            className={`flex-1 min-w-[90px] md:min-w-[120px] px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-sm md:text-[15px] font-bold transition-all duration-200 cursor-pointer ${
+              metric === m
+                ? 'bg-white text-slate-900 shadow-lg shadow-indigo-500/10'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
+            }`}
+          >
+            <span className="ml-1">{METRICS[m].emoji}</span>
+            {METRICS[m].label}
+          </button>
+        ))}
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={420}>
-        <ComposedChart data={data} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
-          <defs>
-            <linearGradient id="metricGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={metricCfg.color} stopOpacity={0.2} />
-              <stop offset="100%" stopColor={metricCfg.color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="1 4" stroke="rgba(26, 28, 40, 0.1)" />
-          <XAxis
-            dataKey="age"
-            tick={{ fontSize: 12, fill: '#8a8695', fontFamily: 'JetBrains Mono' }}
-            tickLine={false}
-            axisLine={{ stroke: '#d9cfba' }}
-          />
-          <YAxis
-            tick={{ fontSize: 12, fill: '#8a8695', fontFamily: 'JetBrains Mono' }}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(v: number) => fmtK(v)}
-            width={60}
-            mirror
-            domain={[
-              (dataMin: number) => Math.min(0, dataMin * 1.1),
-              (dataMax: number) => Math.max(0, dataMax * 1.05),
-            ]}
-          />
-          <Tooltip content={<ChartTooltip />} cursor={<AvatarCursor />} />
-
-          <ReferenceLine y={0} stroke="#1a1c28" strokeWidth={1} opacity={0.3} />
-
-          <ReferenceLine
-            x={config.zinukEndAge}
-            stroke="#4a5a8a"
-            strokeWidth={1}
-            strokeDasharray="2 4"
-            label={{ value: `סגירת זינוק (${config.zinukEndAge})`, position: 'top', fontSize: 11, fill: '#4a5a8a', fontWeight: 600 }}
-          />
-          {config.fullRetirementAge <= config.endAge && (
-            <ReferenceLine
-              x={config.fullRetirementAge}
-              stroke="#a68a4d"
-              strokeWidth={1}
-              strokeDasharray="2 4"
-              label={{ value: `פרישה מלאה (${config.fullRetirementAge})`, position: 'top', fontSize: 11, fill: '#a68a4d', fontWeight: 600 }}
+      <div className="-mx-5 md:-mx-8">
+        <ResponsiveContainer width="100%" height={420}>
+          <ComposedChart data={data} margin={{ top: 30, right: 20, left: 20, bottom: 0 }}>
+            <defs>
+              <linearGradient id={metricCfg.gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={metricCfg.color} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={metricCfg.color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="2 4" stroke="rgba(79, 70, 229, 0.08)" vertical={false} />
+            <XAxis
+              dataKey="age"
+              tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }}
+              tickLine={false}
+              axisLine={false}
             />
-          )}
-          {retAge && metric === 'monthlyBalance' && (
-            <ReferenceLine
-              x={retAge}
-              stroke="#3d6e5c"
-              strokeWidth={1.5}
-              strokeDasharray="1 3"
-              label={{ value: `נקודת איזון (${retAge})`, position: 'insideTopLeft', fontSize: 11, fill: '#3d6e5c', fontWeight: 700 }}
+            <YAxis
+              tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(v: number) => fmtK(v)}
+              width={60}
+              mirror
+              domain={[
+                (dataMin: number) => Math.min(0, dataMin * 1.1),
+                (dataMax: number) => Math.max(0, dataMax * 1.05),
+              ]}
             />
-          )}
+            <Tooltip content={<ChartTooltip />} cursor={<AvatarCursor />} />
 
-          <Area type="monotone" dataKey={dataKey} fill="url(#metricGrad)" stroke="none" />
-          <Bar dataKey={dataKey} radius={[2, 2, 0, 0]}>
-            {data.map((entry, i) => {
-              const value = (entry as any)[dataKey] ?? 0;
-              const fill = metricCfg.isBiColor
-                ? (value >= 0 ? metricCfg.color : metricCfg.colorSecondary || '#8a2d3a')
-                : metricCfg.color;
-              return <Cell key={i} fill={fill} fillOpacity={0.85} />;
-            })}
-          </Bar>
-        </ComposedChart>
-      </ResponsiveContainer>
+            <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1.5} opacity={0.5} />
+
+            <ReferenceLine
+              x={config.zinukEndAge}
+              stroke="#4f46e5"
+              strokeWidth={2}
+              strokeDasharray="6 4"
+              label={{ value: `סגירת זינוק (${config.zinukEndAge})`, position: 'top', fontSize: 12, fill: '#4f46e5', fontWeight: 700 }}
+            />
+            {config.fullRetirementAge <= config.endAge && (
+              <ReferenceLine
+                x={config.fullRetirementAge}
+                stroke="#f59e0b"
+                strokeWidth={2}
+                strokeDasharray="6 4"
+                label={{ value: `פרישה מלאה (${config.fullRetirementAge})`, position: 'top', fontSize: 12, fill: '#f59e0b', fontWeight: 700 }}
+              />
+            )}
+            {retAge && metric === 'monthlyBalance' && (
+              <ReferenceLine
+                x={retAge}
+                stroke="#10b981"
+                strokeWidth={2.5}
+                strokeDasharray="4 3"
+                label={{ value: `נקודת איזון (${retAge})`, position: 'insideTopLeft', fontSize: 12, fill: '#10b981', fontWeight: 800 }}
+              />
+            )}
+
+            <Area type="monotone" dataKey={dataKey} fill={`url(#${metricCfg.gradientId})`} stroke="none" />
+            <Bar dataKey={dataKey} radius={[6, 6, 0, 0]}>
+              {data.map((entry, i) => {
+                const value = (entry as any)[dataKey] ?? 0;
+                const fill = metricCfg.isBiColor
+                  ? (value >= 0 ? metricCfg.color : metricCfg.colorSecondary || '#f43f5e')
+                  : metricCfg.color;
+                return <Cell key={i} fill={fill} fillOpacity={0.85} />;
+              })}
+            </Bar>
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Legend */}
-      <div className="mt-4 md:mt-5 pt-4 md:pt-5 border-t border-[#e8dfc8] flex flex-wrap gap-x-6 gap-y-2 text-xs md:text-sm text-[#4a4755]">
-        <LegendItem color="#4a5a8a" dashed>סגירת זינוק</LegendItem>
-        <LegendItem color="#a68a4d" dashed>פרישה מלאה</LegendItem>
-        {metric === 'monthlyBalance' && <LegendItem color="#3d6e5c" dashed>נקודת איזון</LegendItem>}
+      <div className="mt-4 pt-4 border-t border-white/60 flex flex-wrap gap-x-5 gap-y-2 text-xs md:text-sm text-slate-600 font-medium">
+        <LegendItem color="#4f46e5">סגירת זינוק</LegendItem>
+        <LegendItem color="#f59e0b">פרישה מלאה</LegendItem>
+        {metric === 'monthlyBalance' && <LegendItem color="#10b981">נקודת איזון</LegendItem>}
       </div>
     </div>
   );
 }
 
-function LegendItem({ color, dashed, children }: { color: string; dashed?: boolean; children: React.ReactNode }) {
+function LegendItem({ color, children }: { color: string; children: React.ReactNode }) {
   return (
     <span className="flex items-center gap-2">
       <svg width="20" height="3">
-        <line x1="0" y1="1.5" x2="20" y2="1.5" stroke={color} strokeWidth="1.5" strokeDasharray={dashed ? '2 3' : undefined} />
+        <line x1="0" y1="1.5" x2="20" y2="1.5" stroke={color} strokeWidth="2" strokeDasharray="4 3" />
       </svg>
-      {children}
+      <span className="font-semibold">{children}</span>
     </span>
   );
 }
