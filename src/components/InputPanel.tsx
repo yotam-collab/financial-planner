@@ -226,12 +226,6 @@ export function InputPanel({ config, setConfig }: Props) {
         <NumInput label="שכ״ד" value={config.expenses.monthlyRent}
           onChange={v => update('expenses.monthlyRent', v)} step={500}
           rec="11,000 ₪ — מחיר שוק בפרדס חנה" />
-        <NumInput label="חיסכון חודשי (שוכר)" value={config.income.monthlyLiquidContributionRenting}
-          onChange={v => update('income.monthlyLiquidContributionRenting', v)} step={1000}
-          rec="17,000 ₪ — עודף אחרי הוצאות+שכירות+פנסיה" />
-        <NumInput label="חיסכון חודשי (בעלים)" value={config.income.monthlyLiquidContributionOwning}
-          onChange={v => update('income.monthlyLiquidContributionOwning', v)} step={1000}
-          rec="10,000 ₪ — פחות בגלל משכנתא" />
       </Section>
 
       {/* ═══ הנחות שוק ═══ */}

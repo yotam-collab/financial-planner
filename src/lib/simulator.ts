@@ -131,15 +131,14 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const mZinuk = phase === 'zinuk' ? yotamIncome + hadasIncome : 0;
     const mAlt = phase === 'altIncome' ? yotamIncome + hadasIncome : 0;
 
-    // ─── ACTUAL monthly cashflow = income + pension - expenses ───
-    // This is what actually flows in/out of liquid each month.
-    // Compound growth on liquid is applied separately via nomRet (does NOT
-    // double-count the 4% — the 4% is a reference metric, not a cashflow).
-    const mActualBalance = (yotamIncome + hadasIncome) + totalPensionPayout - mExp;
-
-    // Sustainable income (reference metric): actual income + pension + 4%
-    // Used for display only, NOT for cashflow simulation
+    // Sustainable income = income + pension + 4% (full picture)
     const mSustainable = (yotamIncome + hadasIncome) + totalPensionPayout + m4pct;
+
+    // ─── Monthly balance shown in chart ───
+    // Balance = sustainable income - expenses (includes 4% as "usable money")
+    // Positive = income + pension + 4% cover expenses with surplus
+    // Negative = even with 4% withdrawal, not enough → eating into principal
+    const mBalance = mSustainable - mExp;
 
     // ─── Pension contributions (separate from liquid cashflow) ───
     if (phase === 'zinuk') {
@@ -150,11 +149,14 @@ function runCore(config: ScenarioConfig): YearResult[] {
       if (income.hadasNetIncomePostZinuk > 0) hadasPension += nomHPC * 12;
     }
 
-    // ─── Liquid cashflow: actual monthly balance → liquid ───
-    // Positive balance = saved (grows liquid)
-    // Negative balance = withdrawn (shrinks liquid)
-    liquid += mActualBalance * 12;
-    const cf = mActualBalance * 12;
+    // ─── Actual cashflow to/from liquid ───
+    // Only income + pension - expenses actually moves money.
+    // The 4% is a REFERENCE metric; the portfolio grows at nomRet (compound),
+    // which implicitly includes the return that makes 4% sustainable.
+    // No double-counting: the 4% is shown in balance but not ADDED to liquid.
+    const actualCashflow = ((yotamIncome + hadasIncome) + totalPensionPayout - mExp) * 12;
+    liquid += actualCashflow;
+    const cf = actualCashflow;
 
     // Growth
     if (liquid > 0) liquid *= (1 + nomRet);
@@ -197,7 +199,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       // monthlyAltIncome represents "post-zinuk income if you quit" (for sustainability display)
       monthlyAltIncome: Math.round(mAlt),
       monthlySustainableIncome: Math.round(mSustainable),
-      monthlyBalance: Math.round(mActualBalance),
+      monthlyBalance: Math.round(mBalance),
       monthlyExpenses: Math.round(mExp),
       isFullyRetired: phase === 'retired',
       real: {
@@ -209,7 +211,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
         annualExpenses: Math.round(deflate(mExp * 12, market.inflationRate, ye)),
         annualCashflow: Math.round(deflate(cf, market.inflationRate, ye)),
         monthly4pctWithdrawal: Math.round(deflate(m4pct, market.inflationRate, ye)),
-        monthlyBalance: Math.round(deflate(mActualBalance, market.inflationRate, ye)),
+        monthlyBalance: Math.round(deflate(mBalance, market.inflationRate, ye)),
         monthlySustainableIncome: Math.round(deflate(mSustainable, market.inflationRate, ye)),
       },
     });
