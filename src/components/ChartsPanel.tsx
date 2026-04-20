@@ -75,87 +75,121 @@ function fmtK(v: number): string {
   return String(Math.round(v));
 }
 
-function ChartTooltip({ active, payload }: any) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0]?.payload;
-  if (!d) return null;
+function makeChartTooltip(showReal: boolean) {
+  return function ChartTooltip({ active, payload }: any) {
+    if (!active || !payload?.length) return null;
+    const d = payload[0]?.payload;
+    if (!d) return null;
 
-  const phaseLabel = d.phase === 'zinuk' ? 'זינוק'
-    : d.phase === 'altIncome' ? 'חלופית'
-    : 'פרישה';
-  const phaseColor = d.phase === 'zinuk' ? 'bg-indigo-100 text-indigo-700'
-    : d.phase === 'altIncome' ? 'bg-emerald-100 text-emerald-700'
-    : 'bg-amber-100 text-amber-700';
+    const phaseLabel = d.phase === 'zinuk' ? 'זינוק'
+      : d.phase === 'altIncome' ? 'חלופית'
+      : 'פרישה';
+    const phaseColor = d.phase === 'zinuk' ? 'bg-indigo-100 text-indigo-700'
+      : d.phase === 'altIncome' ? 'bg-emerald-100 text-emerald-700'
+      : 'bg-amber-100 text-amber-700';
 
-  return (
-    <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[320px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.92)' }}>
-      <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/60">
-        <div className="flex items-baseline gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">גיל</span>
-          <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.age}</span>
-        </div>
-        <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${phaseColor}`}>
-          {phaseLabel}
-        </span>
-      </div>
+    // Pick primary / secondary value based on toggle
+    const pick = (nominal: number | undefined, real: number | undefined) =>
+      showReal ? (real ?? 0) : (nominal ?? 0);
+    const pickSecondary = (nominal: number | undefined, real: number | undefined) =>
+      showReal ? (nominal ?? 0) : (real ?? 0);
 
-      <div className="space-y-1.5 text-sm">
-        {d.phase === 'zinuk' && d.monthlyZinukIncome > 0 && (
-          <Row label="הכנסה מזינוק" value={d.monthlyZinukIncome} dotColor="bg-indigo-500" />
-        )}
-        {d.phase === 'altIncome' && d.monthlyAltIncome > 0 && (
-          <Row label="הכנסה חלופית" value={d.monthlyAltIncome} dotColor="bg-emerald-500" />
-        )}
-        <Row label="4% מהתיק" value={d.monthly4pctWithdrawal} dotColor="bg-indigo-600" />
-        {d.monthlyPensionIncome > 0 && (
-          <Row label="קצבת פנסיה" value={d.monthlyPensionIncome} dotColor="bg-amber-500" />
-        )}
-      </div>
+    const primaryLabel = showReal ? 'בערכי היום' : 'נומינלי';
+    const secondaryLabel = showReal ? 'נומינלי' : 'בערכי היום';
 
-      <div className="mt-3 pt-3 border-t border-white/60 space-y-1.5 text-sm">
-        <Row label="סה״כ ברת-קיימא" value={d.monthlySustainableIncome} highlight dotColor="bg-violet-500" />
-        <Row label="הוצאות" value={d.monthlyExpenses} highlight dotColor="bg-rose-500" />
-      </div>
+    const balance = pick(d.monthlyBalance, d.real?.monthlyBalance);
+    const balanceSecondary = pickSecondary(d.monthlyBalance, d.real?.monthlyBalance);
 
-      <div className={`mt-3 pt-3 border-t-2 ${d.monthlyBalance >= 0 ? 'border-emerald-200' : 'border-rose-200'}`}>
-        <div className="flex items-baseline justify-between">
-          <span className="font-display text-base md:text-lg font-extrabold text-slate-900">יתרה חודשית</span>
-          <span className={`num font-display text-xl md:text-2xl font-extrabold ${d.monthlyBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-            {d.monthlyBalance >= 0 ? '+' : ''}{d.monthlyBalance?.toLocaleString('he-IL')} ₪
+    return (
+      <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[340px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
+        <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/60">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">גיל</span>
+            <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.age}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-1">{primaryLabel}</span>
+          </div>
+          <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${phaseColor}`}>
+            {phaseLabel}
           </span>
         </div>
-        <div className="flex items-baseline justify-between mt-1">
-          <span className="text-xs text-slate-400 font-semibold">בערכי היום</span>
-          <span className={`num text-sm font-semibold ${d.real?.monthlyBalance >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-            {d.real?.monthlyBalance >= 0 ? '+' : ''}{(d.real?.monthlyBalance || 0).toLocaleString('he-IL')} ₪
-          </span>
-        </div>
-      </div>
 
-      {/* Portfolio breakdown */}
-      <div className="mt-4 pt-3 border-t border-white/60">
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-          שווי נקי · <span className="num text-slate-900">{d.netWorth?.toLocaleString('he-IL')} ₪</span>
-        </p>
-        <div className="space-y-2">
-          <PortfolioBar label="השקעות" value={d.liquidPortfolio} color="indigo" total={d.netWorth} />
-          {d.homeEquity > 0 && <PortfolioBar label="נדל״ן" value={d.homeEquity} color="emerald" total={d.netWorth} />}
-          {d.pension > 0 && <PortfolioBar label="פנסיה" value={d.pension} color="amber" total={d.netWorth} />}
+        <div className="space-y-1.5 text-sm">
+          {d.phase === 'zinuk' && d.monthlyZinukIncome > 0 && (
+            <RowDual label="הכנסה מזינוק" nominal={d.monthlyZinukIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-indigo-500" />
+          )}
+          {d.phase === 'altIncome' && d.monthlyAltIncome > 0 && (
+            <RowDual label="הכנסה חלופית" nominal={d.monthlyAltIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-emerald-500" />
+          )}
+          <RowDual label="4% מהתיק" nominal={d.monthly4pctWithdrawal} real={d.real?.monthly4pctWithdrawal} showReal={showReal} dotColor="bg-indigo-600" />
+          {d.monthlyPensionIncome > 0 && (
+            <RowDual label="קצבת פנסיה" nominal={d.monthlyPensionIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-amber-500" />
+          )}
+        </div>
+
+        <div className="mt-3 pt-3 border-t border-white/60 space-y-1.5 text-sm">
+          <RowDual label="סה״כ ברת-קיימא" nominal={d.monthlySustainableIncome} real={d.real?.monthlySustainableIncome} showReal={showReal} highlight dotColor="bg-violet-500" />
+          <RowDual label="הוצאות" nominal={d.monthlyExpenses} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} highlight dotColor="bg-rose-500" />
+        </div>
+
+        <div className={`mt-3 pt-3 border-t-2 ${balance >= 0 ? 'border-emerald-200' : 'border-rose-200'}`}>
+          <div className="flex items-baseline justify-between">
+            <span className="font-display text-base md:text-lg font-extrabold text-slate-900">יתרה חודשית</span>
+            <span className={`num font-display text-xl md:text-2xl font-extrabold ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {balance >= 0 ? '+' : ''}{balance.toLocaleString('he-IL')} ₪
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{secondaryLabel}</span>
+            <span className={`num text-xs font-semibold ${balanceSecondary >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              {balanceSecondary >= 0 ? '+' : ''}{balanceSecondary.toLocaleString('he-IL')} ₪
+            </span>
+          </div>
+        </div>
+
+        {/* Portfolio breakdown */}
+        <div className="mt-4 pt-3 border-t border-white/60">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+            שווי נקי · <span className="num text-slate-900">{pick(d.netWorth, d.real?.netWorth).toLocaleString('he-IL')} ₪</span>
+            <span className="text-[10px] text-slate-400 font-normal mr-1">({primaryLabel})</span>
+          </p>
+          <div className="space-y-2">
+            <PortfolioBar label="השקעות" value={pick(d.liquidPortfolio, d.real?.liquidPortfolio)} color="indigo" total={pick(d.netWorth, d.real?.netWorth)} />
+            {d.homeEquity > 0 && <PortfolioBar label="נדל״ן" value={pick(d.homeEquity, d.real?.homeEquity)} color="emerald" total={pick(d.netWorth, d.real?.netWorth)} />}
+            {d.pension > 0 && <PortfolioBar label="פנסיה" value={pick(d.pension, d.real?.pension)} color="amber" total={pick(d.netWorth, d.real?.netWorth)} />}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 }
 
-function Row({ label, value, highlight, dotColor }: { label: string; value: number; highlight?: boolean; dotColor: string }) {
+/** Row with primary value + small secondary (opposite mode) */
+function RowDual({ label, nominal, real, showReal, infl, highlight, dotColor }: {
+  label: string;
+  nominal: number;
+  real?: number;
+  infl?: number;    // inflation ratio for deriving real when not stored
+  showReal: boolean;
+  highlight?: boolean;
+  dotColor: string;
+}) {
+  const realValue = real ?? (infl != null ? Math.round(nominal * infl) : nominal);
+  const primary = showReal ? realValue : nominal;
+  const secondary = showReal ? nominal : realValue;
+
   return (
     <div className="flex items-center justify-between gap-3">
       <span className="flex items-center gap-2">
         <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
         <span className={highlight ? 'font-semibold text-slate-800' : 'text-slate-600'}>{label}</span>
       </span>
-      <span className="num font-bold text-slate-900" style={{ fontVariantNumeric: 'tabular-nums' }}>
-        {value?.toLocaleString('he-IL')} ₪
+      <span className="text-left">
+        <span className="num font-bold text-slate-900 block leading-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          {primary.toLocaleString('he-IL')} ₪
+        </span>
+        <span className="num text-[10px] text-slate-400 leading-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          {secondary.toLocaleString('he-IL')} ₪
+        </span>
       </span>
     </div>
   );
@@ -313,7 +347,7 @@ export function ChartsPanel({ result, config }: Props) {
                 (dataMax: number) => Math.max(0, dataMax * 1.05),
               ]}
             />
-            <Tooltip content={<ChartTooltip />} cursor={<AvatarCursor />} />
+            <Tooltip content={makeChartTooltip(showReal) as any} cursor={<AvatarCursor />} />
 
             <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1.5} opacity={0.5} />
 
