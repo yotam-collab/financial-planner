@@ -70,7 +70,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const nomRent = inflate(expenses.monthlyRent, market.inflationRate, ye);
     const nomNH = inflate(expenses.monthlyNonHousingExpenses, market.inflationRate, ye);
 
-    // Income per person per phase (ACTUAL income for cashflow)
+    // Income per person per phase (actual current income)
     const yotamIncome = phase === 'zinuk'
       ? inflate(income.yotamNetIncomeZinuk, market.inflationRate, ye)
       : phase === 'altIncome'
@@ -82,13 +82,6 @@ function runCore(config: ScenarioConfig): YearResult[] {
       : phase === 'altIncome'
         ? inflate(income.hadasNetIncomePostZinuk, market.inflationRate, ye)
         : 0;
-
-    // Post-zinuk income (hypothetical — what they'd earn if they quit zinuk NOW)
-    // Used for the "sustainable income" calculation
-    const hypotheticalPostZinuk = age < fullRetirementAge
-      ? inflate(income.yotamNetIncomePostZinuk, market.inflationRate, ye) +
-        inflate(income.hadasNetIncomePostZinuk, market.inflationRate, ye)
-      : 0;
 
     const nomYPC = inflate(income.yotamMonthlyPensionContribution, market.inflationRate, ye);
     const nomHPC = inflate(income.hadasMonthlyPensionContribution, market.inflationRate, ye);
@@ -138,11 +131,13 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const m4pct = Math.max(0, liquid * 0.04 / 12);
 
     const mZinuk = phase === 'zinuk' ? yotamIncome + hadasIncome : 0;
+    const mAlt = phase === 'altIncome' ? yotamIncome + hadasIncome : 0;
 
-    // Sustainable income = what they'd have if they quit zinuk NOW
-    // (post-zinuk income + 4% from liquid + pension annuity)
-    // This is the "retirement test" — same formula across all phases
-    const mSustainable = hypotheticalPostZinuk + totalPensionPayout + m4pct;
+    // Sustainable income = ACTUAL current income + 4% from liquid + pension annuity
+    // During zinuk: zinuk income + 4% + pension
+    // During altIncome: alt income + 4% + pension
+    // During retired: just 4% + pension
+    const mSustainable = yotamIncome + hadasIncome + totalPensionPayout + m4pct;
 
     // Cashflow: actual money movement
     let cf: number;
@@ -205,7 +200,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       monthly4pctWithdrawal: Math.round(m4pct),
       monthlyPensionIncome: Math.round(totalPensionPayout),
       // monthlyAltIncome represents "post-zinuk income if you quit" (for sustainability display)
-      monthlyAltIncome: Math.round(hypotheticalPostZinuk),
+      monthlyAltIncome: Math.round(mAlt),
       monthlySustainableIncome: Math.round(mSustainable),
       monthlyBalance: Math.round(mSustainable - mExp),
       monthlyExpenses: Math.round(mExp),

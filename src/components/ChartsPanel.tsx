@@ -29,7 +29,7 @@ const METRICS: Record<MetricType, MetricConfig> = {
     label: 'יתרה חודשית',
     shortLabel: 'יתרה',
     nominalKey: 'monthlyBalance',
-    realKey: 'real.monthlyBalance',
+    realKey: 'realMonthlyBalance',
     color: '#10b981',
     colorSecondary: '#f43f5e',
     isBiColor: true,
@@ -39,16 +39,16 @@ const METRICS: Record<MetricType, MetricConfig> = {
     label: 'סה״כ הכנסה ברת-קיימא',
     shortLabel: 'הכנסה',
     nominalKey: 'monthlySustainableIncome',
-    realKey: 'real.monthlySustainableIncome',
+    realKey: 'realMonthlySustainableIncome',
     color: '#7c3aed',
     isBiColor: false,
-    description: '4% מהתיק + קצבת פנסיה + הכנסה פוסט-זינוק',
+    description: 'הכנסה בפועל + 4% מהתיק + קצבת פנסיה',
   },
   fourPercent: {
     label: '4% מהתיק',
     shortLabel: '4%',
     nominalKey: 'monthly4pctWithdrawal',
-    realKey: 'real.monthly4pctWithdrawal',
+    realKey: 'realMonthly4pctWithdrawal',
     color: '#4f46e5',
     isBiColor: false,
     description: 'משיכה חודשית בת-קיימא של 4% שנתי מהתיק הנזיל',
@@ -57,7 +57,7 @@ const METRICS: Record<MetricType, MetricConfig> = {
     label: 'שווי נקי',
     shortLabel: 'שווי',
     nominalKey: 'netWorth',
-    realKey: 'real.netWorth',
+    realKey: 'realNetWorth',
     color: '#f59e0b',
     isBiColor: false,
     description: 'תיק נזיל + פנסיה נעולה + הון עצמי בנדל״ן',
@@ -236,7 +236,14 @@ export function ChartsPanel({ result, config }: Props) {
   const [metric, setMetric] = useState<MetricType>('monthlyBalance');
   const [showReal, setShowReal] = useState(false);
 
-  const data = result.years;
+  // Flatten real values so Recharts dataKey can find them (no dot-notation support)
+  const data = result.years.map(y => ({
+    ...y,
+    realMonthlyBalance: y.real.monthlyBalance,
+    realMonthlySustainableIncome: y.real.monthlySustainableIncome,
+    realMonthly4pctWithdrawal: y.real.monthly4pctWithdrawal,
+    realNetWorth: y.real.netWorth,
+  }));
   const retAge = result.earliestRetirementAge;
   const metricCfg = METRICS[metric];
   const dataKey = showReal ? metricCfg.realKey : metricCfg.nominalKey;
