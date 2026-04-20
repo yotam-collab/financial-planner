@@ -58,19 +58,23 @@ function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, r
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-1">
-        <label className="text-sm md:text-[15px] text-slate-700 font-semibold flex-shrink-0">{label}</label>
-        <div className="flex items-center gap-1 bg-white/70 rounded-xl px-3 py-1.5 border border-white/70 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-400/20 transition-all">
+        <label className="text-sm md:text-[15px] text-slate-800 font-semibold flex-shrink-0">{label}</label>
+        <div
+          className="flex items-center gap-1 rounded-xl px-3 py-1.5 border border-indigo-200/60 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-400/25 transition-all"
+          style={{ background: '#ffffff' }}
+        >
           <input
             type="number" value={value ?? 0}
             onChange={e => onChange(Number(e.target.value) || 0)}
             step={step}
-            className="num w-24 md:w-28 text-sm md:text-base font-bold text-slate-900 bg-transparent outline-none text-left"
+            className="num w-24 md:w-28 text-sm md:text-base font-bold outline-none text-left"
+            style={{ background: 'transparent', color: '#0f172a' }}
           />
-          <span className="text-xs text-slate-400 font-medium">{suffix}</span>
+          <span className="text-xs font-medium" style={{ color: '#64748b' }}>{suffix}</span>
         </div>
       </div>
-      {rec && <p className="text-[11px] md:text-xs text-indigo-500 mt-0.5 mr-1 font-medium">💡 {rec}</p>}
-      {note && <p className="text-[11px] md:text-xs text-slate-400 mt-0.5 mr-1 italic">{note}</p>}
+      {rec && <p className="text-[11px] md:text-xs text-indigo-600 mt-0.5 mr-1 font-medium">💡 {rec}</p>}
+      {note && <p className="text-[11px] md:text-xs text-slate-500 mt-0.5 mr-1 italic">{note}</p>}
     </div>
   );
 }

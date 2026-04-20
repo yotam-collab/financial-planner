@@ -85,29 +85,28 @@ body {
 }
 
 /* ─── Glass widget card ─── */
+/* Reduced blur from 28px → 12px for performance */
 .widget-card {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 2rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .widget-card:hover {
-  transform: translateY(-6px) scale(1.005);
+  transform: translateY(-4px);
   box-shadow:
-    0 20px 60px rgba(79, 70, 229, 0.08),
-    0 10px 30px rgba(124, 58, 237, 0.06),
+    0 20px 40px rgba(79, 70, 229, 0.06),
     0 4px 12px rgba(0, 0, 0, 0.04);
-  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .widget-card-static {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 2rem;
 }
 
