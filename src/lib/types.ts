@@ -15,17 +15,17 @@ export interface AssetConfig {
 }
 
 export interface IncomeConfig {
-  // Yotam — salaried from own company
-  yotamMonthlyNetIncome: number;
+  // Yotam — during zinuk (salaried from own company) and post-zinuk (consulting/alt)
+  yotamNetIncomeZinuk: number;
+  yotamNetIncomePostZinuk: number;
   yotamMonthlyPensionContribution: number;
-  // Hadas — self-employed
-  hadasMonthlyNetIncome: number;
+  // Hadas — self-employed, may continue working post-zinuk
+  hadasNetIncomeZinuk: number;
+  hadasNetIncomePostZinuk: number;
   hadasMonthlyPensionContribution: number;
-  // Combined household
+  // Household liquid savings (derived from total income minus expenses)
   monthlyLiquidContributionRenting: number;
   monthlyLiquidContributionOwning: number;
-  monthlyGrossAltIncome: number;
-  monthlyNetAltIncome: number;
 }
 
 export interface ExpenseConfig {
@@ -47,24 +47,23 @@ export interface MarketConfig {
   realReturnRate: number;
   inflationRate: number;
   realHomeAppreciation: number;
-  /** מקדם המרה — monthly payout = balance / mekaddem (~200) */
   pensionConversionFactor: number;
 }
 
 export interface ScenarioConfig {
   startAge: number;
   endAge: number;
-  /** Year (relative to start, 1-based) in which to buy a house. null = never buy */
+  /** Year (1-based) to buy a house, or null = never buy */
   housePurchaseYear: number | null;
-  /** Age at which zinuk (business) income stops and alt income begins */
+  /** Yotam's age at which zinuk (business) ends and post-zinuk income begins */
   zinukEndAge: number;
-  /** Age at which Yotam's pension annuity begins (60-67) */
+  /** Yotam's age at which pension annuity begins (60-67) */
   pensionStartAge: number;
   /** Hadas's current age */
   hadasAge: number;
-  /** Age at which Hadas's pension annuity begins (60-65) */
+  /** Hadas's age at which pension annuity begins (60-65) */
   hadasPensionStartAge: number;
-  /** Age at which user fully retires — no earned income, only 4% + pension */
+  /** Yotam's age at full retirement — no more earned income at all */
   fullRetirementAge: number;
   assets: AssetConfig;
   income: IncomeConfig;
@@ -76,12 +75,10 @@ export interface ScenarioConfig {
 export interface YearResult {
   year: number;
   age: number;
-  /** Phase: 'zinuk' | 'altIncome' | 'retired' */
   phase: 'zinuk' | 'altIncome' | 'retired';
   isWorking: boolean;
   housingStatus: 'renting' | 'owning';
   liquidPortfolio: number;
-  /** Locked pension balance (0 after age 60 when converted to annuity) */
   pension: number;
   monthlyPensionPayout: number;
   homeEquity: number;
@@ -95,22 +92,13 @@ export interface YearResult {
   annualCashflow: number;
   isDepleted: boolean;
 
-  // ─── Monthly breakdown (for the main chart) ───
-  /** Monthly zinuk (business) income — only during zinuk phase */
   monthlyZinukIncome: number;
-  /** Monthly 4% sustainable withdrawal from liquid portfolio */
   monthly4pctWithdrawal: number;
-  /** Monthly pension annuity payout */
   monthlyPensionIncome: number;
-  /** Monthly alternative income (post-business) */
   monthlyAltIncome: number;
-  /** Total monthly sustainable income = 4% + pension + alt income (or just 4% + pension if fully retired) */
   monthlySustainableIncome: number;
-  /** יתרה חודשית = sustainable income - expenses. Positive = surplus, negative = deficit */
   monthlyBalance: number;
-  /** Is this person fully retired (no alt income)? */
   isFullyRetired: boolean;
-  /** Monthly expenses (housing + non-housing, inflation-adjusted) */
   monthlyExpenses: number;
 
   real: {
@@ -126,7 +114,6 @@ export interface YearResult {
 
 export interface SimulationResult {
   years: YearResult[];
-  /** Earliest age at which sustainable income >= expenses */
   earliestRetirementAge: number | null;
   depletionAge: number | null;
   scenarioLabel: string;

@@ -22,10 +22,22 @@ html {
 
 body {
   font-family: 'Heebo', sans-serif;
-  font-size: 18px;
+  font-size: 17px;
   background: #f1f5f9;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+@media (min-width: 1024px) {
+  body {
+    font-size: 19px;
+  }
+}
+
+@media (min-width: 1536px) {
+  body {
+    font-size: 21px;
+  }
 }
 
 #root {

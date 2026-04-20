@@ -1,17 +1,12 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import type { ScenarioConfig, SimulationResult } from '../lib/types';
-import { createBuyNowConfig, createRentForeverConfig, createBuyLaterConfig } from '../lib/defaults';
+import type { ScenarioConfig } from '../lib/types';
+import { createDefaultConfig } from '../lib/defaults';
 import { simulate } from '../lib/simulator';
 
-export type ScenarioType = 'buyNow' | 'rentForever' | 'buyLater';
-
-const STORAGE_KEY = 'financial-planner-state';
+const STORAGE_KEY = 'financial-planner-state-v2';
 
 interface PersistedState {
-  activeScenario: ScenarioType;
-  buyNowConfig: ScenarioConfig;
-  rentForeverConfig: ScenarioConfig;
-  buyLaterConfig: ScenarioConfig;
+  config: ScenarioConfig;
 }
 
 function loadFromStorage(): PersistedState | null {
@@ -38,11 +33,6 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
   return {
     ...defaults,
     ...saved,
-    zinukEndAge: saved.zinukEndAge ?? defaults.zinukEndAge,
-    pensionStartAge: saved.pensionStartAge ?? defaults.pensionStartAge,
-    hadasAge: saved.hadasAge ?? defaults.hadasAge,
-    hadasPensionStartAge: saved.hadasPensionStartAge ?? defaults.hadasPensionStartAge,
-    fullRetirementAge: saved.fullRetirementAge ?? defaults.fullRetirementAge,
     assets: { ...defaults.assets, ...saved.assets },
     income: { ...defaults.income, ...saved.income },
     expenses: { ...defaults.expenses, ...saved.expenses },
@@ -54,104 +44,37 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
 export function useFinancialState() {
   const saved = loadFromStorage();
 
-  const [activeScenario, setActiveScenario] = useState<ScenarioType>(
-    saved?.activeScenario ?? 'buyNow'
-  );
-  const [buyNowConfig, setBuyNowConfig] = useState<ScenarioConfig>(
-    mergeConfig(saved?.buyNowConfig, createBuyNowConfig())
-  );
-  const [rentForeverConfig, setRentForeverConfig] = useState<ScenarioConfig>(
-    mergeConfig(saved?.rentForeverConfig, createRentForeverConfig())
-  );
-  const [buyLaterConfig, setBuyLaterConfig] = useState<ScenarioConfig>(
-    mergeConfig(saved?.buyLaterConfig, createBuyLaterConfig(52))
+  const [config, setConfig] = useState<ScenarioConfig>(
+    mergeConfig(saved?.config, createDefaultConfig())
   );
 
-  // Persist on change
   useEffect(() => {
-    saveToStorage({ activeScenario, buyNowConfig, rentForeverConfig, buyLaterConfig });
-  }, [activeScenario, buyNowConfig, rentForeverConfig, buyLaterConfig]);
+    saveToStorage({ config });
+  }, [config]);
 
-  const activeConfig = useMemo(() => {
-    switch (activeScenario) {
-      case 'buyNow': return buyNowConfig;
-      case 'rentForever': return rentForeverConfig;
-      case 'buyLater': return buyLaterConfig;
-    }
-  }, [activeScenario, buyNowConfig, rentForeverConfig, buyLaterConfig]);
-
-  const setActiveConfig = useCallback((updater: (prev: ScenarioConfig) => ScenarioConfig) => {
-    // Helper: extract shared fields from a config (everything except housePurchaseYear)
-    const extractShared = (c: ScenarioConfig) => ({
-      startAge: c.startAge, endAge: c.endAge,
-      zinukEndAge: c.zinukEndAge,
-      pensionStartAge: c.pensionStartAge,
-      hadasAge: c.hadasAge,
-      hadasPensionStartAge: c.hadasPensionStartAge,
-      fullRetirementAge: c.fullRetirementAge,
-      assets: { ...c.assets }, income: { ...c.income },
-      expenses: { ...c.expenses }, house: { ...c.house },
-      market: { ...c.market },
-    });
-
-    // Apply update to active config, then propagate shared fields to others
-    const allSetters = [setBuyNowConfig, setRentForeverConfig, setBuyLaterConfig];
-    const activeIdx = activeScenario === 'buyNow' ? 0 : activeScenario === 'rentForever' ? 1 : 2;
-
-    // Update active
-    allSetters[activeIdx](prev => {
-      const updated = updater(prev);
-      // Also propagate to others
-      const shared = extractShared(updated);
-      for (let i = 0; i < 3; i++) {
-        if (i !== activeIdx) {
-          allSetters[i](otherPrev => ({
-            ...otherPrev, ...shared,
-            housePurchaseYear: otherPrev.housePurchaseYear, // keep scenario-specific
-          }));
-        }
-      }
-      return updated;
-    });
-  }, [activeScenario]);
-
-  // Run simulations
-  const activeResult = useMemo(() => simulate(activeConfig), [activeConfig]);
-
-  const allResults = useMemo((): Record<ScenarioType, SimulationResult> => ({
-    buyNow: simulate(buyNowConfig),
-    rentForever: simulate(rentForeverConfig),
-    buyLater: simulate(buyLaterConfig),
-  }), [buyNowConfig, rentForeverConfig, buyLaterConfig]);
+  const result = useMemo(() => simulate(config), [config]);
 
   const resetToDefaults = useCallback(() => {
-    setBuyNowConfig(createBuyNowConfig());
-    setRentForeverConfig(createRentForeverConfig());
-    setBuyLaterConfig(createBuyLaterConfig(52));
-    setActiveScenario('buyNow');
+    setConfig(createDefaultConfig());
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   const exportJSON = useCallback(() => {
-    const data = { activeScenario, buyNowConfig, rentForeverConfig, buyLaterConfig };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify({ config }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `financial-plan-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [activeScenario, buyNowConfig, rentForeverConfig, buyLaterConfig]);
+  }, [config]);
 
   const importJSON = useCallback((file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target?.result as string) as PersistedState;
-        if (data.buyNowConfig) setBuyNowConfig(data.buyNowConfig);
-        if (data.rentForeverConfig) setRentForeverConfig(data.rentForeverConfig);
-        if (data.buyLaterConfig) setBuyLaterConfig(data.buyLaterConfig);
-        if (data.activeScenario) setActiveScenario(data.activeScenario);
+        if (data.config) setConfig(mergeConfig(data.config, createDefaultConfig()));
       } catch {
         alert('קובץ לא תקין');
       }
@@ -159,15 +82,5 @@ export function useFinancialState() {
     reader.readAsText(file);
   }, []);
 
-  return {
-    activeScenario,
-    setActiveScenario,
-    activeConfig,
-    setActiveConfig,
-    activeResult,
-    allResults,
-    resetToDefaults,
-    exportJSON,
-    importJSON,
-  };
+  return { config, setConfig, result, resetToDefaults, exportJSON, importJSON };
 }

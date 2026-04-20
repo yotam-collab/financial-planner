@@ -1,15 +1,12 @@
 import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Area, ComposedChart,
-  Legend, Cell, Bar, Line, LineChart,
+  Cell, Bar,
 } from 'recharts';
 import type { SimulationResult, ScenarioConfig } from '../lib/types';
-import type { ScenarioType } from '../hooks/useFinancialState';
 
 interface Props {
   result: SimulationResult;
-  showComparison: boolean;
-  allResults: Record<ScenarioType, SimulationResult>;
   config: ScenarioConfig;
 }
 
@@ -27,20 +24,26 @@ function ChartTooltip({ active, payload }: any) {
   const phaseLabel = d.phase === 'zinuk' ? 'הכנסה מזינוק' : d.phase === 'altIncome' ? 'הכנסה חלופית' : 'פרישה מלאה';
 
   return (
-    <div className="glass-card p-3 md:p-5 text-sm md:text-base shadow-xl !rounded-xl max-w-[90vw] md:min-w-[280px]" dir="rtl">
+    <div className="glass-card p-3 md:p-5 text-sm md:text-base lg:text-lg shadow-xl !rounded-xl max-w-[90vw] md:min-w-[320px]" dir="rtl">
       <div className="flex justify-between items-center mb-3">
-        <span className="font-bold text-slate-800 text-lg">גיל {d.age}</span>
-        <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+        <span className="font-bold text-slate-800 text-lg md:text-xl">גיל {d.age}</span>
+        <span className={`text-sm md:text-base font-semibold px-3 py-1 rounded-full ${
           d.phase === 'zinuk' ? 'bg-indigo-100 text-indigo-700' :
           d.phase === 'altIncome' ? 'bg-emerald-100 text-emerald-700' :
           'bg-amber-100 text-amber-700'
         }`}>{phaseLabel}</span>
       </div>
-      <div className="space-y-2 text-base">
+      <div className="space-y-2">
         {d.monthlyZinukIncome > 0 && (
           <div className="flex justify-between">
             <span className="text-slate-500">הכנסה מזינוק</span>
             <span className="num font-bold">{d.monthlyZinukIncome?.toLocaleString('he-IL')} ₪</span>
+          </div>
+        )}
+        {d.monthlyAltIncome > 0 && (
+          <div className="flex justify-between">
+            <span className="text-slate-500">הכנסה חלופית</span>
+            <span className="num font-bold">{d.monthlyAltIncome?.toLocaleString('he-IL')} ₪</span>
           </div>
         )}
         <div className="flex justify-between">
@@ -53,12 +56,6 @@ function ChartTooltip({ active, payload }: any) {
             <span className="num font-bold">{d.monthlyPensionIncome?.toLocaleString('he-IL')} ₪</span>
           </div>
         )}
-        {d.monthlyAltIncome > 0 && (
-          <div className="flex justify-between">
-            <span className="text-slate-500">הכנסה חלופית</span>
-            <span className="num font-bold">{d.monthlyAltIncome?.toLocaleString('he-IL')} ₪</span>
-          </div>
-        )}
         <div className="flex justify-between border-t border-slate-200 pt-2">
           <span className="text-violet-600 font-semibold">סה״כ הכנסה ברת-קיימא</span>
           <span className="num font-bold text-violet-600">{d.monthlySustainableIncome?.toLocaleString('he-IL')} ₪</span>
@@ -67,19 +64,19 @@ function ChartTooltip({ active, payload }: any) {
           <span className="text-rose-500 font-semibold">הוצאות חודשיות</span>
           <span className="num font-bold text-rose-500">{d.monthlyExpenses?.toLocaleString('he-IL')} ₪</span>
         </div>
-        <div className={`flex justify-between border-t border-slate-200 pt-2 text-lg ${d.monthlyBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+        <div className={`flex justify-between border-t border-slate-200 pt-2 text-lg md:text-xl ${d.monthlyBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
           <span className="font-bold">יתרה חודשית</span>
           <span className="num font-black">{d.monthlyBalance >= 0 ? '+' : ''}{d.monthlyBalance?.toLocaleString('he-IL')} ₪</span>
         </div>
         <div className="flex justify-between text-sm text-slate-400">
           <span>בערכים של היום</span>
-          <span className="num font-semibold">{d.monthlyBalance >= 0 ? '+' : ''}{Math.round(d.real?.annualCashflow / 12)?.toLocaleString('he-IL')} ₪</span>
+          <span className="num font-semibold">{d.monthlyBalance >= 0 ? '+' : ''}{Math.round((d.real?.annualCashflow || 0) / 12)?.toLocaleString('he-IL')} ₪</span>
         </div>
       </div>
-      {/* ─── Portfolio breakdown ─── */}
+      {/* Portfolio breakdown */}
       <div className="border-t border-slate-200 mt-3 pt-3">
-        <p className="text-sm font-bold text-slate-500 mb-2">התפלגות תיק (נומינלי)</p>
-        <div className="space-y-1.5 text-sm">
+        <p className="text-sm lg:text-base font-bold text-slate-500 mb-2">התפלגות תיק (נומינלי)</p>
+        <div className="space-y-1.5 text-sm lg:text-base">
           <div className="flex justify-between">
             <span className="text-indigo-600 font-medium">השקעות (נזיל)</span>
             <span className="num font-bold text-indigo-700">{d.liquidPortfolio?.toLocaleString('he-IL')} ₪</span>
@@ -102,11 +99,10 @@ function ChartTooltip({ active, payload }: any) {
           </div>
         </div>
       </div>
-      {/* ─── Real (today's money) ─── */}
       {d.real && (
         <div className="border-t border-slate-200 mt-3 pt-3">
-          <p className="text-sm font-bold text-slate-400 mb-2">בערכים של היום (ריאלי)</p>
-          <div className="space-y-1.5 text-sm text-slate-500">
+          <p className="text-sm lg:text-base font-bold text-slate-400 mb-2">בערכים של היום (ריאלי)</p>
+          <div className="space-y-1.5 text-sm lg:text-base text-slate-500">
             <div className="flex justify-between">
               <span>השקעות</span>
               <span className="num font-semibold">{d.real.liquidPortfolio?.toLocaleString('he-IL')} ₪</span>
@@ -134,11 +130,7 @@ function ChartTooltip({ active, payload }: any) {
   );
 }
 
-/** Custom tooltip cursor: vertical line + profile photo circle at top */
 function AvatarCursor(props: any) {
-  // Recharts passes different props depending on chart type
-  // For Bar in ComposedChart: x, y, width, height (bar dimensions)
-  // For Line: points array
   const { x, width, height, points } = props;
 
   let cx: number;
@@ -151,7 +143,6 @@ function AvatarCursor(props: any) {
   }
 
   const r = 16;
-  // Place avatar at the bottom of the chart, on the X-axis line
   const chartHeight = (height || 380);
   const avatarY = chartHeight - 8;
   const clipId = `av-clip-${Math.round(cx)}`;
@@ -177,19 +168,15 @@ function AvatarCursor(props: any) {
   );
 }
 
-export function ChartsPanel({ result, showComparison, allResults, config }: Props) {
-  if (showComparison) {
-    return <ComparisonChart allResults={allResults} />;
-  }
-
+export function ChartsPanel({ result, config }: Props) {
   const data = result.years;
   const retAge = result.earliestRetirementAge;
 
   return (
-    <div className="glass-card p-6 md:p-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-3">
-        <h3 className="text-xl font-bold text-slate-800">יתרה חודשית — {result.scenarioLabel}</h3>
-        <p className="text-sm text-slate-400">הכנסה ברת-קיימא (4% + פנסיה + חלופית) פחות הוצאות</p>
+    <div className="glass-card p-5 md:p-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6 gap-2 md:gap-3">
+        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">יתרה חודשית — {result.scenarioLabel}</h3>
+        <p className="text-sm md:text-base text-slate-400">הכנסה ברת-קיימא פחות הוצאות</p>
       </div>
       <ResponsiveContainer width="100%" height={420}>
         <ComposedChart data={data} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
@@ -198,18 +185,6 @@ export function ChartsPanel({ result, showComparison, allResults, config }: Prop
               <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
               <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
-            <linearGradient id="negGrad" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.15} />
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="avatarBorder" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#4f46e5" />
-              <stop offset="50%" stopColor="#7c3aed" />
-              <stop offset="100%" stopColor="#ec4899" />
-            </linearGradient>
-            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.2" />
-            </filter>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
           <XAxis dataKey="age" tick={{ fontSize: 14, fill: '#94a3b8' }} tickLine={false} />
@@ -222,10 +197,8 @@ export function ChartsPanel({ result, showComparison, allResults, config }: Prop
           />
           <Tooltip content={<ChartTooltip />} cursor={<AvatarCursor />} />
 
-          {/* Zero line */}
           <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={2} />
 
-          {/* Phase markers */}
           <ReferenceLine
             x={config.zinukEndAge}
             stroke="#4f46e5"
@@ -252,7 +225,6 @@ export function ChartsPanel({ result, showComparison, allResults, config }: Prop
             />
           )}
 
-          {/* The single line: monthly balance */}
           <Area type="monotone" dataKey="monthlyBalance" fill="url(#posGrad)" stroke="none" />
           <Bar dataKey="monthlyBalance" radius={[3, 3, 0, 0]}>
             {data.map((entry, i) => (
@@ -265,50 +237,11 @@ export function ChartsPanel({ result, showComparison, allResults, config }: Prop
           </Bar>
         </ComposedChart>
       </ResponsiveContainer>
-      <p className="text-base text-slate-500 mt-5 leading-relaxed">
-        <strong className="text-emerald-600">ירוק</strong> = הכנסה ברת-קיימא עולה על הוצאות (אפשר לסגור את העסק).
-        <strong className="text-rose-500 mr-2"> אדום</strong> = גירעון (צריך הכנסה נוספת).
+      <p className="text-sm md:text-base text-slate-500 mt-4 leading-relaxed">
+        <strong className="text-emerald-600">ירוק</strong> = הכנסה ברת-קיימא עולה על הוצאות.
+        <strong className="text-rose-500 mr-2"> אדום</strong> = גירעון.
         הקו הכחול = סגירת זינוק. הקו הכתום = פרישה מלאה.
       </p>
-    </div>
-  );
-}
-
-function ComparisonChart({ allResults }: { allResults: Record<ScenarioType, SimulationResult> }) {
-  const maxLen = Math.max(
-    allResults.buyNow.years.length,
-    allResults.rentForever.years.length,
-    allResults.buyLater.years.length,
-  );
-
-  const data = Array.from({ length: maxLen }, (_, i) => ({
-    age: allResults.buyNow.years[i]?.age ?? 44 + i,
-    buyNow: allResults.buyNow.years[i]?.monthlyBalance ?? 0,
-    rentForever: allResults.rentForever.years[i]?.monthlyBalance ?? 0,
-    buyLater: allResults.buyLater.years[i]?.monthlyBalance ?? 0,
-  }));
-
-  return (
-    <div className="glass-card p-6 md:p-8">
-      <h3 className="text-xl font-bold text-slate-800 mb-5">השוואת יתרה חודשית — כל התרחישים</h3>
-      <ResponsiveContainer width="100%" height={420}>
-        <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-          <XAxis dataKey="age" tick={{ fontSize: 14, fill: '#94a3b8' }} tickLine={false} />
-          <YAxis tick={{ fontSize: 14, fill: '#94a3b8' }} tickLine={false} tickFormatter={fmtK} width={60} mirror />
-          <Tooltip formatter={(v: any) => `${Math.round(Number(v) || 0).toLocaleString('he-IL')} ₪`} />
-          <Legend />
-          <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={2} />
-          <Line type="monotone" dataKey="buyNow" stroke="#4f46e5" strokeWidth={3} dot={false} name="קנייה מיידית" />
-          <Line type="monotone" dataKey="rentForever" stroke="#10b981" strokeWidth={3} dot={false} name="שכירות לצמיתות" />
-          <Line type="monotone" dataKey="buyLater" stroke="#f59e0b" strokeWidth={3} dot={false} name="קנייה מאוחרת" />
-        </LineChart>
-      </ResponsiveContainer>
-      <div className="mt-5 flex flex-wrap gap-8 text-base font-bold">
-        <span className="text-indigo-600">קנייה מיידית: גיל {allResults.buyNow.earliestRetirementAge ?? '—'}</span>
-        <span className="text-emerald-600">שכירות: גיל {allResults.rentForever.earliestRetirementAge ?? '—'}</span>
-        <span className="text-amber-600">קנייה מאוחרת: גיל {allResults.buyLater.earliestRetirementAge ?? '—'}</span>
-      </div>
     </div>
   );
 }

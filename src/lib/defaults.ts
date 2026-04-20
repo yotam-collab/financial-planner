@@ -15,18 +15,20 @@ export const DEFAULT_ASSETS: AssetConfig = {
 };
 
 export const DEFAULT_INCOME: IncomeConfig = {
-  // Yotam — salaried 100K gross → ~65K net
-  yotamMonthlyNetIncome: 65_000,
-  // Pension: employee 6% + employer 6.5% + severance 6% = 5,645 (capped at max deposit)
+  // Yotam — salaried at own company, 100K gross → ~65K net during zinuk
+  yotamNetIncomeZinuk: 65_000,
+  // Post-zinuk: consulting/part-time work
+  yotamNetIncomePostZinuk: 10_000,
+  // Yotam pension: 6%+6.5%+6% capped at max deposit = 5,645
   yotamMonthlyPensionContribution: 5_645,
-  // Hadas — self-employed ~30K gross → ~22K net
-  hadasMonthlyNetIncome: 22_000,
-  // Self-employed mandatory pension: 4.45% on half avg wage + 12.55% on rest = ~1,170
+  // Hadas — self-employed, ~30K gross → ~22K net
+  hadasNetIncomeZinuk: 22_000,
+  // Hadas continues working post-zinuk (she's 43 when Yotam closes zinuk at 52)
+  hadasNetIncomePostZinuk: 22_000,
+  // Self-employed mandatory pension (4.45% + 12.55% on avg wage)
   hadasMonthlyPensionContribution: 1_170,
   monthlyLiquidContributionRenting: 17_000,
   monthlyLiquidContributionOwning: 10_000,
-  monthlyGrossAltIncome: 20_000,
-  monthlyNetAltIncome: 15_000,
 };
 
 export const DEFAULT_EXPENSES: ExpenseConfig = {
@@ -46,51 +48,16 @@ export const DEFAULT_HOUSE: HouseConfig = {
 
 export const DEFAULT_MARKET: MarketConfig = {
   realReturnRate: 0.06,
-  // BOI target range 1-3%, current (Feb 2026) = 2.0%
   inflationRate: 0.025,
   realHomeAppreciation: 0.02,
-  // Mekaddem hamara: ~216 for current pension funds
   pensionConversionFactor: 216,
 };
 
-export function createBuyNowConfig(): ScenarioConfig {
+export function createDefaultConfig(): ScenarioConfig {
   return {
-    startAge: 44, endAge: 85,
-    housePurchaseYear: 1,
-    zinukEndAge: 52,
-    pensionStartAge: 60,
-    hadasAge: 35,
-    hadasPensionStartAge: 65,
-    fullRetirementAge: 67,
-    assets: { ...DEFAULT_ASSETS },
-    income: { ...DEFAULT_INCOME },
-    expenses: { ...DEFAULT_EXPENSES },
-    house: { ...DEFAULT_HOUSE },
-    market: { ...DEFAULT_MARKET },
-  };
-}
-
-export function createRentForeverConfig(): ScenarioConfig {
-  return {
-    startAge: 44, endAge: 85,
-    housePurchaseYear: null,
-    zinukEndAge: 52,
-    pensionStartAge: 60,
-    hadasAge: 35,
-    hadasPensionStartAge: 65,
-    fullRetirementAge: 67,
-    assets: { ...DEFAULT_ASSETS },
-    income: { ...DEFAULT_INCOME },
-    expenses: { ...DEFAULT_EXPENSES },
-    house: { ...DEFAULT_HOUSE },
-    market: { ...DEFAULT_MARKET },
-  };
-}
-
-export function createBuyLaterConfig(buyAtAge: number = 52): ScenarioConfig {
-  return {
-    startAge: 44, endAge: 85,
-    housePurchaseYear: buyAtAge - 44 + 1,
+    startAge: 44,
+    endAge: 85,
+    housePurchaseYear: 1, // default: buy immediately; set to null to never buy
     zinukEndAge: 52,
     pensionStartAge: 60,
     hadasAge: 35,
