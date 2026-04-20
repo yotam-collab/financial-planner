@@ -143,8 +143,8 @@ export function InputPanel({ config, setConfig }: Props) {
 
       <Section title="שלבי חיים" icon="🔄" color="indigo" defaultOpen={true}>
         <SliderInput label="סגירת זינוק" value={config.zinukEndAge}
-          onChange={v => setConfig(prev => ({ ...prev, zinukEndAge: v }))}
-          min={config.startAge} max={config.fullRetirementAge}
+          onChange={v => setConfig(prev => ({ ...prev, zinukEndAge: v, fullRetirementAge: Math.max(prev.fullRetirementAge, v) }))}
+          min={config.startAge} max={65}
           displayValue={`גיל ${config.zinukEndAge}`}
           note="מעבר מהכנסת זינוק להכנסה חלופית" />
         <SliderInput label="תחילת קצבת יותם" value={config.pensionStartAge}
