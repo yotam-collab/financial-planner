@@ -266,3 +266,210 @@ input[type="range"]::-moz-range-thumb {
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
+
+/* ─── Loading screen animations ─── */
+
+/* Speeder jitter — adapted from classic CodePen "speeder" loader, gentler timing */
+@keyframes loader-speeder-jitter {
+  0%   { transform: translate(2px, 1px) rotate(0deg); }
+  10%  { transform: translate(-1px, -3px) rotate(-1deg); }
+  20%  { transform: translate(-2px, 0) rotate(1deg); }
+  30%  { transform: translate(1px, 2px) rotate(0deg); }
+  40%  { transform: translate(1px, -1px) rotate(1deg); }
+  50%  { transform: translate(-1px, 3px) rotate(-1deg); }
+  60%  { transform: translate(-1px, 1px) rotate(0deg); }
+  70%  { transform: translate(3px, 1px) rotate(-1deg); }
+  80%  { transform: translate(-2px, -1px) rotate(1deg); }
+  90%  { transform: translate(2px, 1px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.loader-speeder {
+  animation: loader-speeder-jitter 0.55s linear infinite;
+  will-change: transform;
+}
+
+/* Halo pulse behind avatar */
+@keyframes loader-halo-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50%      { transform: scale(1.18); opacity: 0.75; }
+}
+
+.loader-halo {
+  animation: loader-halo-pulse 2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Small trailing motion lines (fazers) emitting from the left of the avatar */
+.loader-fazers {
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 60px;
+  height: 30px;
+}
+
+.loader-fazers span {
+  position: absolute;
+  height: 2px;
+  width: 46px;
+  border-radius: 999px;
+  will-change: transform, opacity;
+}
+
+.loader-fazers span:nth-child(1) {
+  top: -14px;
+  background: linear-gradient(to right, transparent, #4f46e5);
+  animation: loader-fazer 0.5s linear infinite;
+}
+.loader-fazers span:nth-child(2) {
+  top: -2px;
+  background: linear-gradient(to right, transparent, #7c3aed);
+  animation: loader-fazer 0.65s linear infinite;
+  animation-delay: -0.15s;
+  width: 52px;
+}
+.loader-fazers span:nth-child(3) {
+  top: 10px;
+  background: linear-gradient(to right, transparent, #ec4899);
+  animation: loader-fazer 0.8s linear infinite;
+  animation-delay: -0.35s;
+  width: 38px;
+}
+.loader-fazers span:nth-child(4) {
+  top: 18px;
+  background: linear-gradient(to right, transparent, #f59e0b);
+  animation: loader-fazer 1.05s linear infinite;
+  animation-delay: -0.55s;
+  width: 60px;
+}
+
+@keyframes loader-fazer {
+  0%   { transform: translateX(0); opacity: 0.9; }
+  100% { transform: translateX(-110px); opacity: 0; }
+}
+
+/* Long background sweeping lines — the "hyper-speed" effect */
+.loader-longfazers {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.loader-longfazers span {
+  position: absolute;
+  height: 2px;
+  width: 28%;
+  border-radius: 999px;
+  will-change: left, opacity;
+}
+
+.loader-longfazers span:nth-child(1) {
+  top: 14%;
+  background: linear-gradient(to right, transparent, rgba(79, 70, 229, 0.35), transparent);
+  animation: loader-longfazer 1.3s linear infinite;
+  animation-delay: -0.8s;
+}
+.loader-longfazers span:nth-child(2) {
+  top: 34%;
+  background: linear-gradient(to right, transparent, rgba(124, 58, 237, 0.32), transparent);
+  animation: loader-longfazer 1s linear infinite;
+  animation-delay: -0.3s;
+  width: 34%;
+}
+.loader-longfazers span:nth-child(3) {
+  top: 58%;
+  background: linear-gradient(to right, transparent, rgba(236, 72, 153, 0.28), transparent);
+  animation: loader-longfazer 1.2s linear infinite;
+  animation-delay: -1.2s;
+  width: 24%;
+}
+.loader-longfazers span:nth-child(4) {
+  top: 74%;
+  background: linear-gradient(to right, transparent, rgba(245, 158, 11, 0.25), transparent);
+  animation: loader-longfazer 0.85s linear infinite;
+  animation-delay: -0.6s;
+  width: 30%;
+}
+.loader-longfazers span:nth-child(5) {
+  top: 89%;
+  background: linear-gradient(to right, transparent, rgba(16, 185, 129, 0.25), transparent);
+  animation: loader-longfazer 1.1s linear infinite;
+  animation-delay: -0.1s;
+  width: 22%;
+}
+
+@keyframes loader-longfazer {
+  0%   { left: 100%; opacity: 0.9; }
+  90%  { opacity: 0.9; }
+  100% { left: -35%; opacity: 0; }
+}
+
+/* Progress bar — indeterminate sweep */
+.loader-progress {
+  width: 35%;
+  left: 0;
+  animation: loader-progress-sweep 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  will-change: left, width;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.35);
+}
+
+@keyframes loader-progress-sweep {
+  0%   { left: -35%; width: 35%; }
+  55%  { width: 55%; }
+  100% { left: 100%; width: 35%; }
+}
+
+/* Loading dots — animated ellipsis after the subtitle */
+.loader-dots::after {
+  content: '.';
+  display: inline-block;
+  width: 1.2em;
+  text-align: left;
+  animation: loader-dots-cycle 1.2s steps(4, end) infinite;
+}
+
+@keyframes loader-dots-cycle {
+  0%   { content: '.'; }
+  25%  { content: '..'; }
+  50%  { content: '...'; }
+  75%  { content: ''; }
+  100% { content: '.'; }
+}
+
+/* Ping on the status indicator dot */
+.loader-ping {
+  animation: loader-ping-scale 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes loader-ping-scale {
+  0%   { transform: scale(1); opacity: 0.75; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* Staggered fade-in for text rows */
+@keyframes loader-fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loader-fade-in-1 { animation: loader-fade-in-up 0.6s ease-out 0.1s both; }
+.loader-fade-in-2 { animation: loader-fade-in-up 0.7s ease-out 0.25s both; }
+.loader-fade-in-3 { animation: loader-fade-in-up 0.7s ease-out 0.4s both; }
+
+/* Respect reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .loader-speeder,
+  .loader-halo,
+  .loader-fazers span,
+  .loader-longfazers span,
+  .loader-progress,
+  .loader-dots::after,
+  .loader-ping {
+    animation: none !important;
+  }
+}

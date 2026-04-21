@@ -1,16 +1,20 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useFinancialState } from './hooks/useFinancialState';
 import { SummaryCard } from './components/SummaryCard';
 import { InputPanel } from './components/InputPanel';
 import { ChartsPanel } from './components/ChartsPanel';
 import { DataTable } from './components/DataTable';
+import { LoadingScreen } from './components/LoadingScreen';
 
 function App() {
   const { config, setConfig, result, resetToDefaults, exportJSON, importJSON } = useFinancialState();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(true);
 
   return (
     <>
+      {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
+
       <div className="mesh-bg" />
 
       <div className="relative z-10 min-h-screen">
