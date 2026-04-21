@@ -433,7 +433,7 @@ export function ChartsPanel({ result, config }: Props) {
                     stroke="#4f46e5"
                     strokeWidth={2}
                     strokeDasharray="6 4"
-                    label={{ value: `סגירת זינוק (${zinukYear})`, position: 'top', fontSize: 12, fill: '#4f46e5', fontWeight: 700 }}
+                    label={{ value: `הפסקת הכנסה מזינוק (${zinukYear})`, position: 'top', fontSize: 12, fill: '#4f46e5', fontWeight: 700 }}
                   />
                   {config.fullRetirementAge <= config.endAge && (
                     <ReferenceLine
@@ -514,7 +514,7 @@ export function ChartsPanel({ result, config }: Props) {
       {/* Legend */}
       <div className="mt-4 pt-4 border-t border-white/60 flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm text-slate-600 font-medium">
         <div className="flex flex-wrap gap-x-5 gap-y-2">
-          <LegendItem color="#4f46e5">סגירת זינוק</LegendItem>
+          <LegendItem color="#4f46e5">הפסקת הכנסה מזינוק</LegendItem>
           <LegendItem color="#f59e0b">פרישה מלאה</LegendItem>
           {metric === 'monthlyBalance' && <LegendItem color="#10b981">נקודת איזון</LegendItem>}
         </div>

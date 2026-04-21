@@ -92,7 +92,7 @@ export function LoadingScreen({ onComplete, minDuration = 2400 }: Props) {
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[0.95] loader-fade-in-2">
             <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-500 bg-clip-text text-transparent">
-              מודל תרחישים
+              ניהול סיכונים
             </span>
           </h1>
           <p className="font-he text-sm md:text-base text-slate-500 mt-4 loader-fade-in-3">
