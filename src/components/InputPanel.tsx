@@ -444,14 +444,15 @@ function HappinessSection({ config, update, setConfig }: {
   setConfig: (updater: (prev: ScenarioConfig) => ScenarioConfig) => void;
 }) {
   const h = config.happiness ?? {
-    weightTimeWithKids: 20, weightFamilyVacations: 12, weightFinancialCalm: 18,
-    weightOwnHome: 12, weightPersonalDevelopment: 12, weightCommunityImpact: 11,
-    weightTorahStudy: 15, oldestChildBirthYear: 2014, youngestChildBirthYear: 2023,
+    weightTimeWithKids: 18, weightFamilyVacations: 11, weightFinancialCalm: 16,
+    weightOwnHome: 11, weightPersonalDevelopment: 11, weightCommunityImpact: 10,
+    weightTorahStudy: 13, weightFamilyExpansion: 10,
+    oldestChildBirthYear: 2018, youngestChildBirthYear: 2026,
   };
 
   const sum = h.weightTimeWithKids + h.weightFamilyVacations + h.weightFinancialCalm +
               h.weightOwnHome + h.weightPersonalDevelopment + h.weightCommunityImpact +
-              h.weightTorahStudy;
+              h.weightTorahStudy + h.weightFamilyExpansion;
 
   // Current year to show kids' ages inline
   const simStart = config.simulationStartYear ?? 2026;
@@ -463,20 +464,24 @@ function HappinessSection({ config, update, setConfig }: {
   const applyPreset = (preset: 'family' | 'balanced' | 'spiritual' | 'freedom') => {
     const presets: Record<typeof preset, Partial<ScenarioConfig['happiness']>> = {
       family: {
-        weightTimeWithKids: 28, weightFamilyVacations: 18, weightFinancialCalm: 16,
-        weightOwnHome: 16, weightPersonalDevelopment: 6, weightCommunityImpact: 6, weightTorahStudy: 10,
+        weightTimeWithKids: 24, weightFamilyVacations: 16, weightFinancialCalm: 14,
+        weightOwnHome: 14, weightPersonalDevelopment: 6, weightCommunityImpact: 6,
+        weightTorahStudy: 8, weightFamilyExpansion: 12,
       },
       balanced: {
-        weightTimeWithKids: 14, weightFamilyVacations: 14, weightFinancialCalm: 14,
-        weightOwnHome: 14, weightPersonalDevelopment: 14, weightCommunityImpact: 14, weightTorahStudy: 16,
+        weightTimeWithKids: 12, weightFamilyVacations: 12, weightFinancialCalm: 13,
+        weightOwnHome: 12, weightPersonalDevelopment: 13, weightCommunityImpact: 12,
+        weightTorahStudy: 14, weightFamilyExpansion: 12,
       },
       spiritual: {
-        weightTimeWithKids: 15, weightFamilyVacations: 8, weightFinancialCalm: 12,
-        weightOwnHome: 10, weightPersonalDevelopment: 15, weightCommunityImpact: 18, weightTorahStudy: 22,
+        weightTimeWithKids: 14, weightFamilyVacations: 7, weightFinancialCalm: 10,
+        weightOwnHome: 8, weightPersonalDevelopment: 14, weightCommunityImpact: 18,
+        weightTorahStudy: 22, weightFamilyExpansion: 7,
       },
       freedom: {
-        weightTimeWithKids: 15, weightFamilyVacations: 15, weightFinancialCalm: 25,
-        weightOwnHome: 20, weightPersonalDevelopment: 12, weightCommunityImpact: 6, weightTorahStudy: 7,
+        weightTimeWithKids: 14, weightFamilyVacations: 14, weightFinancialCalm: 23,
+        weightOwnHome: 18, weightPersonalDevelopment: 11, weightCommunityImpact: 6,
+        weightTorahStudy: 7, weightFamilyExpansion: 7,
       },
     };
     const p = presets[preset];
@@ -527,6 +532,10 @@ function HappinessSection({ config, update, setConfig }: {
         percent={pct(h.weightTimeWithKids)}
         onChange={v => update('happiness.weightTimeWithKids', v)}
         help="המדד מחשב: עקומת הצרכים של הילדים לגיל (שיא 5-10, יורד אחרי 17) × זמינות ההורה. במודל שלך: זינוק 70% (המנכ״לית מנהלת יום-יום, עובד בעיקר מהבית), חלופי 55% (יותר עבודה אישית ישירה), פרישה 90%." />
+      <HappinessWeight label="הרחבת המשפחה" emoji="🍼" value={h.weightFamilyExpansion}
+        percent={pct(h.weightFamilyExpansion)}
+        onChange={v => update('happiness.weightFamilyExpansion', v)}
+        help="היתכנות להביא ילד נוסף בשנה נתונה. 4 רכיבים: (א) גיל האם — חלון פוריות (40% ממשקל המדד): עד 30 שיא, יורד 90→75→55→35→15 בגילאי 30-45. (ב) מרווח מהתינוק האחרון (25%): שיא 2-4 שנים. (ג) יציבות כלכלית (18%). (ד) פניות של ההורים (12%). המדד יירד משמעותית כשהדס מעל 43, וזה העיקר." />
       <HappinessWeight label="חופשות משפחתיות" emoji="✈️" value={h.weightFamilyVacations}
         percent={pct(h.weightFamilyVacations)}
         onChange={v => update('happiness.weightFamilyVacations', v)}

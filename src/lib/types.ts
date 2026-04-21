@@ -71,6 +71,7 @@ export interface HappinessConfig {
   weightPersonalDevelopment: number;
   weightCommunityImpact: number;
   weightTorahStudy: number;
+  weightFamilyExpansion: number;
   /** Birth year of the OLDEST child (used to model needs-parent-time curve) */
   oldestChildBirthYear: number;
   /** Birth year of the YOUNGEST child */
@@ -176,6 +177,7 @@ export interface YearResult {
   happinessPersonalDevelopment: number;
   happinessCommunityImpact: number;
   happinessTorahStudy: number;
+  happinessFamilyExpansion: number;
 }
 
 export interface SimulationResult {

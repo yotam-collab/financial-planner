@@ -59,18 +59,20 @@ export const DEFAULT_MARKET: MarketConfig = {
 };
 
 export const DEFAULT_HAPPINESS: HappinessConfig = {
-  // Weights — normalized at compute time. These defaults roughly balance the 7 dimensions
+  // Weights — normalized at compute time. These defaults roughly balance the 8 dimensions
   // with slight emphasis on family & financial calm (core to the framing of this app).
-  weightTimeWithKids: 20,
-  weightFamilyVacations: 12,
-  weightFinancialCalm: 18,
-  weightOwnHome: 12,
-  weightPersonalDevelopment: 12,
-  weightCommunityImpact: 11,
-  weightTorahStudy: 15,
-  // Kids birth years — adjust per family. Defaults assume 4 kids spanning 2014–2023.
-  oldestChildBirthYear: 2014,
-  youngestChildBirthYear: 2023,
+  weightTimeWithKids: 18,
+  weightFamilyVacations: 11,
+  weightFinancialCalm: 16,
+  weightOwnHome: 11,
+  weightPersonalDevelopment: 11,
+  weightCommunityImpact: 10,
+  weightTorahStudy: 13,
+  weightFamilyExpansion: 10,
+  // Kids birth years: 4 children — 2018, 2020, 2023, 2026. We only track oldest &
+  // youngest; middle two are interpolated through midpoint of the age range.
+  oldestChildBirthYear: 2018,
+  youngestChildBirthYear: 2026,
 };
 
 export function createDefaultConfig(): ScenarioConfig {

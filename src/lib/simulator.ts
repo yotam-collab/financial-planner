@@ -82,6 +82,7 @@ export function deflate(nominal: number, rate: number, years: number): number {
 interface HappinessInput {
   calendarYear: number;
   yotamAge: number;
+  hadasAge: number;
   phase: 'zinuk' | 'altIncome' | 'retired';
   monthlyBalance: number;
   monthlyExpenses: number;
@@ -101,6 +102,7 @@ interface HappinessScores {
   personalDevelopment: number;
   communityImpact: number;
   torahStudy: number;
+  familyExpansion: number;
 }
 
 function clamp0100(v: number): number {
@@ -221,11 +223,57 @@ export function computeHappinessScores(
   if (input.yotamAge >= 65) ts += 10;
   const torahStudy = clamp0100(ts);
 
+  // 8. Family expansion — viability of having another child this year.
+  //    Four gating factors:
+  //    (a) Mother's fertility age window (Hadas's age)
+  //    (b) Spacing since youngest child (biological recovery + sibling gap norms)
+  //    (c) Financial stability (another child = more expenses)
+  //    (d) Parent time/energy availability
+  // Sources: ACOG age-based fertility data; family-planning spacing norms (CDC/MoH 2-4y).
+  const yearsSinceYoungest = input.calendarYear - h.youngestChildBirthYear;
+
+  // (a) Mother's age factor — fertility window
+  let motherAgeFactor: number;
+  if (input.hadasAge < 30) motherAgeFactor = 100;
+  else if (input.hadasAge < 35) motherAgeFactor = 90;
+  else if (input.hadasAge < 38) motherAgeFactor = 75;
+  else if (input.hadasAge < 40) motherAgeFactor = 55;
+  else if (input.hadasAge < 43) motherAgeFactor = 35;
+  else if (input.hadasAge < 45) motherAgeFactor = 15;
+  else motherAgeFactor = 5;
+
+  // (b) Spacing — ideal gap is 2-4 years since last baby
+  let spacingFactor: number;
+  if (yearsSinceYoungest < 0) spacingFactor = 0;         // youngest not yet born
+  else if (yearsSinceYoungest === 0) spacingFactor = 25;  // just had a baby — recovery
+  else if (yearsSinceYoungest === 1) spacingFactor = 55;
+  else if (yearsSinceYoungest <= 4) spacingFactor = 100;  // ideal window
+  else if (yearsSinceYoungest <= 7) spacingFactor = 80;
+  else if (yearsSinceYoungest <= 10) spacingFactor = 55;
+  else spacingFactor = 35;                                 // large gap, less typical
+
+  // (c) Financial stability
+  let financeFactor = 30;
+  if (input.monthlyBalance >= 0) financeFactor += 25;
+  if (input.monthlyBalance >= 3000) financeFactor += 25;
+  if (input.monthlyBalance >= 8000) financeFactor += 20;
+
+  // (d) Parent availability (same curve as "time with kids")
+  const availabilityFactor = parentAvailability(input.phase);
+
+  // Weighted composite — mother's age dominates since it's the hard biological constraint
+  const familyExpansion = clamp0100(
+    motherAgeFactor * 0.45 +
+    spacingFactor * 0.25 +
+    financeFactor * 0.18 +
+    availabilityFactor * 0.12
+  );
+
   // Composite — weighted sum, auto-normalized
   const weightSum =
     h.weightTimeWithKids + h.weightFamilyVacations + h.weightFinancialCalm +
     h.weightOwnHome + h.weightPersonalDevelopment +
-    h.weightCommunityImpact + h.weightTorahStudy;
+    h.weightCommunityImpact + h.weightTorahStudy + h.weightFamilyExpansion;
   const total = weightSum > 0 ? Math.round(
     (timeWithKids * h.weightTimeWithKids +
      familyVacations * h.weightFamilyVacations +
@@ -233,7 +281,8 @@ export function computeHappinessScores(
      ownHome * h.weightOwnHome +
      personalDevelopment * h.weightPersonalDevelopment +
      communityImpact * h.weightCommunityImpact +
-     torahStudy * h.weightTorahStudy) / weightSum
+     torahStudy * h.weightTorahStudy +
+     familyExpansion * h.weightFamilyExpansion) / weightSum
   ) : 0;
 
   return {
@@ -245,6 +294,7 @@ export function computeHappinessScores(
     personalDevelopment,
     communityImpact,
     torahStudy,
+    familyExpansion,
   };
 }
 
@@ -452,6 +502,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       happinessPersonalDevelopment: 0,
       happinessCommunityImpact: 0,
       happinessTorahStudy: 0,
+      happinessFamilyExpansion: 0,
     });
 
     // Fill happiness scores for this year
@@ -460,6 +511,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       {
         calendarYear: last.calendarYear,
         yotamAge: last.yotamAge,
+        hadasAge: last.hadasAge,
         phase: last.phase,
         monthlyBalance: last.monthlyBalance,
         monthlyExpenses: last.monthlyExpenses,
@@ -470,9 +522,10 @@ function runCore(config: ScenarioConfig): YearResult[] {
         isPensionActive: yotamPensionActive || hadasPensionActive,
       },
       config.happiness ?? {
-        weightTimeWithKids: 20, weightFamilyVacations: 12, weightFinancialCalm: 18,
-        weightOwnHome: 12, weightPersonalDevelopment: 12, weightCommunityImpact: 11,
-        weightTorahStudy: 15, oldestChildBirthYear: 2014, youngestChildBirthYear: 2023,
+        weightTimeWithKids: 18, weightFamilyVacations: 11, weightFinancialCalm: 16,
+        weightOwnHome: 11, weightPersonalDevelopment: 11, weightCommunityImpact: 10,
+        weightTorahStudy: 13, weightFamilyExpansion: 10,
+        oldestChildBirthYear: 2018, youngestChildBirthYear: 2026,
       }
     );
     last.happinessTotal = scores.total;
@@ -483,6 +536,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
     last.happinessPersonalDevelopment = scores.personalDevelopment;
     last.happinessCommunityImpact = scores.communityImpact;
     last.happinessTorahStudy = scores.torahStudy;
+    last.happinessFamilyExpansion = scores.familyExpansion;
   }
   return results;
 }

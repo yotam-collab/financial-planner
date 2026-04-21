@@ -229,6 +229,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
               פירוט רכיבי האושר
             </p>
             <HappinessRow label="זמן עם הילדים" emoji="👨‍👩‍👧‍👦" value={d.happinessTimeWithKids} color="#f43f5e" />
+            <HappinessRow label="הרחבת המשפחה" emoji="🍼" value={d.happinessFamilyExpansion} color="#d946ef" />
             <HappinessRow label="חופשות משפחתיות" emoji="✈️" value={d.happinessFamilyVacations} color="#0ea5e9" />
             <HappinessRow label="רוגע כלכלי" emoji="💎" value={d.happinessFinancialCalm} color="#10b981" />
             <HappinessRow label="בית משלנו" emoji="🏠" value={d.happinessOwnHome} color="#8b5cf6" />
