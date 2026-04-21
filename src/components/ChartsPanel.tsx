@@ -76,7 +76,7 @@ function fmtK(v: number): string {
   return String(Math.round(v));
 }
 
-function makeChartTooltip(showReal: boolean) {
+function makeChartTooltip(showReal: boolean, metric: MetricType) {
   return function ChartTooltip({ active, payload }: any) {
     if (!active || !payload?.length) return null;
     const d = payload[0]?.payload;
@@ -92,22 +92,31 @@ function makeChartTooltip(showReal: boolean) {
     // Pick primary / secondary value based on toggle
     const pick = (nominal: number | undefined, real: number | undefined) =>
       showReal ? (real ?? 0) : (nominal ?? 0);
-    const pickSecondary = (nominal: number | undefined, real: number | undefined) =>
-      showReal ? (nominal ?? 0) : (real ?? 0);
 
     const primaryLabel = showReal ? 'בערכי היום' : 'נומינלי';
     const secondaryLabel = showReal ? 'נומינלי' : 'בערכי היום';
 
     const balance = pick(d.monthlyBalance, d.real?.monthlyBalance);
-    const balanceSecondary = pickSecondary(d.monthlyBalance, d.real?.monthlyBalance);
+
+    // HERO values — match the current chart metric
+    const metricCfg = METRICS[metric];
+    const heroNominal = (d as any)[metricCfg.nominalKey] ?? 0;
+    const heroReal = (d as any)[metricCfg.realKey] ?? heroNominal;
+    const heroPrimary = showReal ? heroReal : heroNominal;
+    const heroSecondary = showReal ? heroNominal : heroReal;
+    const isHeroSigned = metricCfg.isBiColor;
+    const heroPositive = heroPrimary >= 0;
+    const heroColor = isHeroSigned
+      ? (heroPositive ? '#10b981' : '#f43f5e')
+      : metricCfg.color;
 
     return (
-      <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[340px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
+      <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[360px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
+        {/* Header */}
         <div className="flex items-start justify-between mb-3 pb-3 border-b border-white/60">
           <div>
             <div className="flex items-baseline gap-2">
               <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.calendarYear ?? d.age}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{primaryLabel}</span>
             </div>
             <div className="flex items-center gap-3 text-[11px] mt-1 text-slate-600">
               <span className="flex items-center gap-1.5">
@@ -125,6 +134,38 @@ function makeChartTooltip(showReal: boolean) {
           </span>
         </div>
 
+        {/* HERO BLOCK — matches the currently-viewed chart metric */}
+        <div
+          className="rounded-xl px-3.5 py-3 mb-3 border"
+          style={{
+            background: `${heroColor}12`,
+            borderColor: `${heroColor}40`,
+          }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-base">{metricCfg.emoji}</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-600">
+              {metricCfg.label}
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <span
+              className="num font-display text-2xl md:text-3xl font-extrabold"
+              style={{ fontVariantNumeric: 'tabular-nums', color: heroColor }}
+            >
+              {isHeroSigned && heroPositive ? '+' : ''}{heroPrimary.toLocaleString('he-IL')} ₪
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex-shrink-0">{primaryLabel}</span>
+          </div>
+          <div className="flex items-baseline justify-between mt-1 gap-2">
+            <span className="num text-xs font-semibold text-slate-500" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              {isHeroSigned && heroSecondary >= 0 ? '+' : ''}{heroSecondary.toLocaleString('he-IL')} ₪
+            </span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">{secondaryLabel}</span>
+          </div>
+        </div>
+
+        {/* Income breakdown */}
         <div className="space-y-1.5 text-sm">
           {d.phase === 'zinuk' && d.monthlyZinukIncome > 0 && (
             <RowDual label="הכנסה מזינוק" nominal={d.monthlyZinukIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-indigo-500" />
@@ -144,30 +185,30 @@ function makeChartTooltip(showReal: boolean) {
           )}
         </div>
 
+        {/* Sustainable + expenses */}
         <div className="mt-3 pt-3 border-t border-white/60 space-y-1.5 text-sm">
           <RowDual label="סה״כ ברת-קיימא" nominal={d.monthlySustainableIncome} real={d.real?.monthlySustainableIncome} showReal={showReal} highlight dotColor="bg-violet-500" />
           <RowDual label="הוצאות" nominal={d.monthlyExpenses} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} highlight dotColor="bg-rose-500" />
         </div>
 
-        <div className={`mt-3 pt-3 border-t-2 ${balance >= 0 ? 'border-emerald-200' : 'border-rose-200'}`}>
-          <div className="flex items-baseline justify-between">
-            <span className="font-display text-base md:text-lg font-extrabold text-slate-900">יתרה חודשית</span>
-            <span className={`num font-display text-xl md:text-2xl font-extrabold ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+        {/* Monthly balance — compact line when not the hero */}
+        {metric !== 'monthlyBalance' && (
+          <div className="mt-2 pt-2 border-t border-white/60 flex items-baseline justify-between">
+            <span className="text-xs text-slate-600 font-semibold">יתרה חודשית</span>
+            <span className={`num text-sm font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
               {balance >= 0 ? '+' : ''}{balance.toLocaleString('he-IL')} ₪
             </span>
           </div>
-          <div className="flex items-baseline justify-between mt-1">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{secondaryLabel}</span>
-            <span className={`num text-xs font-semibold ${balanceSecondary >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-              {balanceSecondary >= 0 ? '+' : ''}{balanceSecondary.toLocaleString('he-IL')} ₪
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* Portfolio breakdown */}
         <div className="mt-4 pt-3 border-t border-white/60">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-            שווי נקי · <span className="num text-slate-900">{pick(d.netWorth, d.real?.netWorth).toLocaleString('he-IL')} ₪</span>
+            {metric === 'netWorth' ? (
+              <>פירוט שווי נקי</>
+            ) : (
+              <>שווי נקי · <span className="num text-slate-900">{pick(d.netWorth, d.real?.netWorth).toLocaleString('he-IL')} ₪</span></>
+            )}
             <span className="text-[10px] text-slate-400 font-normal mr-1">({primaryLabel})</span>
           </p>
           <div className="space-y-2">
@@ -376,7 +417,7 @@ export function ChartsPanel({ result, config }: Props) {
                 (dataMax: number) => Math.max(0, dataMax * 1.05),
               ]}
             />
-            <Tooltip content={makeChartTooltip(showReal) as any} cursor={<AvatarCursor />} />
+            <Tooltip content={makeChartTooltip(showReal, metric) as any} cursor={<AvatarCursor />} />
 
             <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1.5} opacity={0.5} />
 
