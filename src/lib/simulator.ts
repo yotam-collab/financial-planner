@@ -64,6 +64,168 @@ export function deflate(nominal: number, rate: number, years: number): number {
   return nominal / Math.pow(1 + rate, years);
 }
 
+/**
+ * Happiness index — 7 components scored 0–100, weighted by user preferences.
+ *
+ * Modeling philosophy: each component captures a life-satisfaction dimension that
+ * emerges from the financial-plan state. Not a measurement of happiness itself —
+ * a *structural* proxy that responds to timing choices (zinuk end, house, retirement).
+ *
+ * References consulted:
+ *  - Stevenson & Wolfers (income & life satisfaction, 2008): runway & financial calm
+ *  - Dunn/Gilchrist/Norton (time affluence > consumption, 2010): time-availability core
+ *  - Dunn & Norton (experiential spending, 2013): family-vacations weighting
+ *  - OECD Better Life Index methodology: multi-dimensional composite with user weights
+ *  - Jewish-Israeli cultural specifics: Torah study & community framed as active time dimensions
+ */
+
+interface HappinessInput {
+  calendarYear: number;
+  yotamAge: number;
+  phase: 'zinuk' | 'altIncome' | 'retired';
+  monthlyBalance: number;
+  monthlyExpenses: number;
+  liquidPortfolio: number;
+  housingStatus: 'renting' | 'owning';
+  homeEquity: number;
+  homeValue: number;
+  isPensionActive: boolean;
+}
+
+interface HappinessScores {
+  total: number;
+  timeWithKids: number;
+  familyVacations: number;
+  financialCalm: number;
+  ownHome: number;
+  personalDevelopment: number;
+  communityImpact: number;
+  torahStudy: number;
+}
+
+function clamp0100(v: number): number {
+  return Math.max(0, Math.min(100, Math.round(v)));
+}
+
+/** Kids' need-for-parent-time curve, peaks at 5-10 years old. */
+function kidsNeedParentTime(avgAge: number): number {
+  if (avgAge < 0) return 0;
+  if (avgAge <= 2) return 80;
+  if (avgAge <= 10) return 95;
+  if (avgAge <= 14) return 75;
+  if (avgAge <= 17) return 55;
+  if (avgAge <= 22) return 35;
+  if (avgAge <= 30) return 20;
+  return 10;
+}
+
+function parentAvailability(phase: 'zinuk' | 'altIncome' | 'retired'): number {
+  return phase === 'zinuk' ? 40 : phase === 'altIncome' ? 75 : 90;
+}
+
+export function computeHappinessScores(
+  input: HappinessInput,
+  happiness: ScenarioConfig['happiness']
+): HappinessScores {
+  const h = happiness;
+
+  const oldestKidAge = input.calendarYear - h.oldestChildBirthYear;
+  const youngestKidAge = input.calendarYear - h.youngestChildBirthYear;
+  const avgKidAge = (oldestKidAge + youngestKidAge) / 2;
+
+  // 1. Time with kids — need × availability
+  const timeWithKids = clamp0100(
+    (kidsNeedParentTime(avgKidAge) * parentAvailability(input.phase)) / 100
+  );
+
+  // 2. Family vacations — money × time × kids-home
+  const surplusFactor = clamp0100(
+    input.monthlyBalance >= 5000 ? 90 :
+    input.monthlyBalance >= 0 ? 50 + (input.monthlyBalance / 5000) * 40 :
+    Math.max(0, 50 + (input.monthlyBalance / 2000) * 50)
+  );
+  const kidsHomeFactor = clamp0100(
+    youngestKidAge <= 17 ? 100 :
+    youngestKidAge <= 22 ? 100 - (youngestKidAge - 17) * 12 :
+    Math.max(30, 100 - (youngestKidAge - 17) * 8)
+  );
+  const vacationTimeFactor =
+    input.phase === 'zinuk' ? 60 : input.phase === 'altIncome' ? 85 : 95;
+  const familyVacations = clamp0100(
+    surplusFactor * 0.45 + kidsHomeFactor * 0.3 + vacationTimeFactor * 0.25
+  );
+
+  // 3. Financial calm — sustainability + runway + comfort
+  let calm = 0;
+  if (input.monthlyBalance >= 0) calm += 50;
+  else calm += Math.max(0, 50 + (input.monthlyBalance / 1000) * 5);
+  const runwayMonths =
+    input.monthlyExpenses > 0 ? input.liquidPortfolio / input.monthlyExpenses : 0;
+  calm += Math.min(30, (runwayMonths / 24) * 30); // 2-year runway → +30
+  if (input.monthlyBalance > 0) {
+    calm += Math.min(20, (input.monthlyBalance / 10000) * 20);
+  }
+  const financialCalm = clamp0100(calm);
+
+  // 4. Own home — renting is stressful in Israel; equity adds security
+  let ownHome = 10;
+  if (input.housingStatus === 'owning') {
+    const equityRatio = input.homeValue > 0 ? input.homeEquity / input.homeValue : 0;
+    ownHome = 40 + 60 * equityRatio;
+  }
+  ownHome = clamp0100(ownHome);
+
+  // 5. Personal development — requires time (post-zinuk) + financial calm
+  let pd = 10;
+  if (input.phase !== 'zinuk') pd += 30;
+  if (input.monthlyBalance >= 0) pd += 25;
+  if (input.isPensionActive) pd += 15;
+  if (input.yotamAge > 75) pd -= (input.yotamAge - 75) * 2;
+  const personalDevelopment = clamp0100(pd);
+
+  // 6. Community impact — peaks in 55–80 "active civic" window
+  let ci = 15;
+  if (input.phase !== 'zinuk') ci += 25;
+  if (input.monthlyBalance >= 0) ci += 20;
+  if (input.yotamAge >= 55 && input.yotamAge <= 80) ci += 25;
+  if (input.yotamAge > 82) ci -= (input.yotamAge - 82) * 3;
+  const communityImpact = clamp0100(ci);
+
+  // 7. Torah study — rises post-zinuk, strong peak in retirement, no age cap
+  let ts = 15;
+  if (input.phase === 'altIncome') ts += 25;
+  if (input.phase === 'retired') ts += 45;
+  if (input.monthlyBalance >= 0) ts += 15;
+  if (input.yotamAge >= 65) ts += 10;
+  const torahStudy = clamp0100(ts);
+
+  // Composite — weighted sum, auto-normalized
+  const weightSum =
+    h.weightTimeWithKids + h.weightFamilyVacations + h.weightFinancialCalm +
+    h.weightOwnHome + h.weightPersonalDevelopment +
+    h.weightCommunityImpact + h.weightTorahStudy;
+  const total = weightSum > 0 ? Math.round(
+    (timeWithKids * h.weightTimeWithKids +
+     familyVacations * h.weightFamilyVacations +
+     financialCalm * h.weightFinancialCalm +
+     ownHome * h.weightOwnHome +
+     personalDevelopment * h.weightPersonalDevelopment +
+     communityImpact * h.weightCommunityImpact +
+     torahStudy * h.weightTorahStudy) / weightSum
+  ) : 0;
+
+  return {
+    total: clamp0100(total),
+    timeWithKids,
+    familyVacations,
+    financialCalm,
+    ownHome,
+    personalDevelopment,
+    communityImpact,
+    torahStudy,
+  };
+}
+
 function runCore(config: ScenarioConfig): YearResult[] {
   const { startAge, endAge, housePurchaseYear, zinukEndAge, pensionStartAge,
     hadasAge, hadasPensionStartAge, fullRetirementAge, hadasFullRetirementAge,
@@ -259,7 +421,46 @@ function runCore(config: ScenarioConfig): YearResult[] {
         monthlyBalance: Math.round(deflate(mBalance, market.inflationRate, ye)),
         monthlySustainableIncome: Math.round(deflate(mSustainable, market.inflationRate, ye)),
       },
+      // Happiness placeholders — filled below
+      happinessTotal: 0,
+      happinessTimeWithKids: 0,
+      happinessFamilyVacations: 0,
+      happinessFinancialCalm: 0,
+      happinessOwnHome: 0,
+      happinessPersonalDevelopment: 0,
+      happinessCommunityImpact: 0,
+      happinessTorahStudy: 0,
     });
+
+    // Fill happiness scores for this year
+    const last = results[results.length - 1];
+    const scores = computeHappinessScores(
+      {
+        calendarYear: last.calendarYear,
+        yotamAge: last.yotamAge,
+        phase: last.phase,
+        monthlyBalance: last.monthlyBalance,
+        monthlyExpenses: last.monthlyExpenses,
+        liquidPortfolio: last.liquidPortfolio,
+        housingStatus: last.housingStatus,
+        homeEquity: last.homeEquity,
+        homeValue: last.homeValue,
+        isPensionActive: yotamPensionActive || hadasPensionActive,
+      },
+      config.happiness ?? {
+        weightTimeWithKids: 20, weightFamilyVacations: 12, weightFinancialCalm: 18,
+        weightOwnHome: 12, weightPersonalDevelopment: 12, weightCommunityImpact: 11,
+        weightTorahStudy: 15, oldestChildBirthYear: 2014, youngestChildBirthYear: 2023,
+      }
+    );
+    last.happinessTotal = scores.total;
+    last.happinessTimeWithKids = scores.timeWithKids;
+    last.happinessFamilyVacations = scores.familyVacations;
+    last.happinessFinancialCalm = scores.financialCalm;
+    last.happinessOwnHome = scores.ownHome;
+    last.happinessPersonalDevelopment = scores.personalDevelopment;
+    last.happinessCommunityImpact = scores.communityImpact;
+    last.happinessTorahStudy = scores.torahStudy;
   }
   return results;
 }

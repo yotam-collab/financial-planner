@@ -431,6 +431,166 @@ export function InputPanel({ config, setConfig }: Props) {
           rec="2% — ריאלי, ארוך-טווח"
           help="עליית מחיר נדל״ן ריאלית (מעבר לאינפלציה). ארוך-טווח בישראל: 1.5-2.5% ריאלי. העשור האחרון (2014-2024): ~4% ריאלי — חריג. מחיר נומינלי = ריאלי + אינפלציה (לדוגמה 2% + 2.5% = 4.5% עליה נומינלית). נחשב מקדם חשוב להחלטת קנייה/שכירות." />
       </Section>
+
+      <HappinessSection config={config} update={update} setConfig={setConfig} />
     </div>
+  );
+}
+
+/** Happiness preferences — 7 weighted dimensions + kids birth years + presets */
+function HappinessSection({ config, update, setConfig }: {
+  config: ScenarioConfig;
+  update: (path: string, value: number) => void;
+  setConfig: (updater: (prev: ScenarioConfig) => ScenarioConfig) => void;
+}) {
+  const h = config.happiness ?? {
+    weightTimeWithKids: 20, weightFamilyVacations: 12, weightFinancialCalm: 18,
+    weightOwnHome: 12, weightPersonalDevelopment: 12, weightCommunityImpact: 11,
+    weightTorahStudy: 15, oldestChildBirthYear: 2014, youngestChildBirthYear: 2023,
+  };
+
+  const sum = h.weightTimeWithKids + h.weightFamilyVacations + h.weightFinancialCalm +
+              h.weightOwnHome + h.weightPersonalDevelopment + h.weightCommunityImpact +
+              h.weightTorahStudy;
+
+  // Current year to show kids' ages inline
+  const simStart = config.simulationStartYear ?? 2026;
+  const oldestAgeNow = simStart - h.oldestChildBirthYear;
+  const youngestAgeNow = simStart - h.youngestChildBirthYear;
+
+  const pct = (w: number) => sum > 0 ? Math.round((w / sum) * 100) : 0;
+
+  const applyPreset = (preset: 'family' | 'balanced' | 'spiritual' | 'freedom') => {
+    const presets: Record<typeof preset, Partial<ScenarioConfig['happiness']>> = {
+      family: {
+        weightTimeWithKids: 28, weightFamilyVacations: 18, weightFinancialCalm: 16,
+        weightOwnHome: 16, weightPersonalDevelopment: 6, weightCommunityImpact: 6, weightTorahStudy: 10,
+      },
+      balanced: {
+        weightTimeWithKids: 14, weightFamilyVacations: 14, weightFinancialCalm: 14,
+        weightOwnHome: 14, weightPersonalDevelopment: 14, weightCommunityImpact: 14, weightTorahStudy: 16,
+      },
+      spiritual: {
+        weightTimeWithKids: 15, weightFamilyVacations: 8, weightFinancialCalm: 12,
+        weightOwnHome: 10, weightPersonalDevelopment: 15, weightCommunityImpact: 18, weightTorahStudy: 22,
+      },
+      freedom: {
+        weightTimeWithKids: 15, weightFamilyVacations: 15, weightFinancialCalm: 25,
+        weightOwnHome: 20, weightPersonalDevelopment: 12, weightCommunityImpact: 6, weightTorahStudy: 7,
+      },
+    };
+    const p = presets[preset];
+    setConfig(prev => ({ ...prev, happiness: { ...prev.happiness, ...p } }));
+  };
+
+  return (
+    <Section title="מדד אושר — העדפות" icon="😊" color="pink">
+      {/* Presets */}
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-pink-600 mb-2">
+          🎯 מה הכי חשוב לנו
+        </p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <PresetChip label="משפחה" onClick={() => applyPreset('family')} />
+          <PresetChip label="איזון" onClick={() => applyPreset('balanced')} />
+          <PresetChip label="רוחני-קהילתי" onClick={() => applyPreset('spiritual')} />
+          <PresetChip label="חופש כלכלי" onClick={() => applyPreset('freedom')} />
+        </div>
+      </div>
+
+      {/* Kids birth years */}
+      <div className="pt-3 mt-2 border-t border-white/70">
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-pink-600 mb-2">
+          👶 שנות לידה
+        </p>
+      </div>
+      <NumInput label="הבן/בת הבכור/ה" value={h.oldestChildBirthYear}
+        onChange={v => update('happiness.oldestChildBirthYear', v)} step={1} suffix=""
+        note={`גיל ${oldestAgeNow} ב-${simStart}`}
+        help="שנת הלידה של הילד/ה המבוגר/ת. משמש לחישוב 'זמן עם הילדים' ו'חופשות משפחתיות' — עקומת הצרכים מהורה יורדת עם הגיל (שיא 5-10, יורד משמעותית אחרי 17)." />
+      <NumInput label="הבן/בת הצעיר/ה" value={h.youngestChildBirthYear}
+        onChange={v => update('happiness.youngestChildBirthYear', v)} step={1} suffix=""
+        note={`גיל ${youngestAgeNow} ב-${simStart}`}
+        help="שנת הלידה של הילד/ה הצעיר/ה. כשהילד הצעיר מגיע ל-18 'בית משפחתי' מתחיל להידלדל (יעזבו ללימודים/צבא)." />
+
+      {/* Weights */}
+      <div className="pt-3 mt-2 border-t border-white/70">
+        <div className="flex items-baseline justify-between mb-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-pink-600">
+            ⚖️ משקולות (נורמלי לאחוזים)
+          </p>
+          <span className="text-[10px] text-slate-500 font-semibold">סה״כ: <span className="num">{sum}</span></span>
+        </div>
+      </div>
+
+      <HappinessWeight label="זמן עם הילדים" emoji="👨‍👩‍👧‍👦" value={h.weightTimeWithKids}
+        percent={pct(h.weightTimeWithKids)}
+        onChange={v => update('happiness.weightTimeWithKids', v)}
+        help="כמה חשוב הזמן האיכותי עם הילדים. המדד מחשב: עקומת הצרכים של הילדים לגיל (שיא 5-10, יורד אחרי 17) × זמינות ההורה (40% בזינוק, 75% חלופי, 90% פרישה). הירידה בגיל הזינוק = יותר זמן איכותי עם הילדים." />
+      <HappinessWeight label="חופשות משפחתיות" emoji="✈️" value={h.weightFamilyVacations}
+        percent={pct(h.weightFamilyVacations)}
+        onChange={v => update('happiness.weightFamilyVacations', v)}
+        help="חוויות משותפות עם המשפחה. דורש: כסף פנוי (יתרה חיובית), זמן (פחות בזינוק), וילדים שעדיין בבית. מחקרים (Dunn & Norton) מראים שהוצאה על חוויות מייצרת יותר אושר מהוצאה על חפצים." />
+      <HappinessWeight label="רוגע כלכלי" emoji="💎" value={h.weightFinancialCalm}
+        percent={pct(h.weightFinancialCalm)}
+        onChange={v => update('happiness.weightFinancialCalm', v)}
+        help="שקט נפשי מהמצב הכלכלי. 3 רכיבים: (1) היתרה החודשית חיובית; (2) תקופת חירום — 2 שנות הוצאות בתיק הנזיל = מקסימום; (3) מרווח נוחות מעבר ליתרה אפס. Stevenson & Wolfers: עד רמה מסוימת כסף קונה רוגע." />
+      <HappinessWeight label="בית משלנו" emoji="🏠" value={h.weightOwnHome}
+        percent={pct(h.weightOwnHome)}
+        onChange={v => update('happiness.weightOwnHome', v)}
+        help="שייכות ויציבות הדיור. בשכירות: 10. בבעלות: 40 + 60×(הון עצמי/שווי). דירה משלוחררת ממשכנתא = 100. בהקשר הישראלי ('הבית הוא החלום') זה גורם משמעותי." />
+      <HappinessWeight label="זמן להתפתחות אישית" emoji="📚" value={h.weightPersonalDevelopment}
+        percent={pct(h.weightPersonalDevelopment)}
+        onChange={v => update('happiness.weightPersonalDevelopment', v)}
+        help="זמן ללמידה, תחביבים, וטיפוח עצמי. נמוך בזינוק (עסוקים), עולה משמעותית אחרי זינוק ובפנסיה. Dunn/Gilchrist/Norton: זמן חופשי הוא משאב יקר יותר מכסף מעל רמה בסיסית." />
+      <HappinessWeight label="קהילה והשפעה" emoji="🤝" value={h.weightCommunityImpact}
+        percent={pct(h.weightCommunityImpact)}
+        onChange={v => update('happiness.weightCommunityImpact', v)}
+        help="זמן להתנדבות, עזרה לאחרים, השפעה בקהילה. שיא בגילאים 55-80 (ניסיון + זמן + בריאות). מחקרים: התנדבות מקושרת ל-20-30% עלייה ברווחת חיים (life satisfaction)." />
+      <HappinessWeight label="לימוד תורה" emoji="📖" value={h.weightTorahStudy}
+        percent={pct(h.weightTorahStudy)}
+        onChange={v => update('happiness.weightTorahStudy', v)}
+        help="זמן ללימוד תורה וערכים רוחניים. נמוך בזינוק (זמן מצומצם), עולה אחרי זינוק ובעיקר בפנסיה (מסורת יהודית קלאסית של 'לימוד בזקנה'). אין קנס גיל — דווקא שם השיא." />
+    </Section>
+  );
+}
+
+function HappinessWeight({ label, emoji, value, percent, onChange, help }: {
+  label: string; emoji: string; value: number; percent: number;
+  onChange: (v: number) => void; help: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-sm md:text-[15px] text-slate-700 font-semibold flex items-center gap-1.5">
+          <span>{emoji}</span>
+          <span>{label}</span>
+          <HelpTooltip text={help} />
+        </label>
+        <span className="flex items-baseline gap-1.5">
+          <span className="num font-display text-sm font-bold text-slate-900">{value}</span>
+          <span className="text-[10px] text-pink-600 font-bold num">· {percent}%</span>
+        </span>
+      </div>
+      <input
+        type="range"
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        min={0}
+        max={30}
+        step={1}
+      />
+    </div>
+  );
+}
+
+function PresetChip({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-2 text-xs md:text-sm font-semibold rounded-xl bg-white border border-pink-200 text-pink-700 hover:bg-pink-50 hover:border-pink-400 transition-all"
+    >
+      {label}
+    </button>
   );
 }

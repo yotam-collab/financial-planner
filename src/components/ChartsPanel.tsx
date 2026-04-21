@@ -12,7 +12,7 @@ interface Props {
   config: ScenarioConfig;
 }
 
-type MetricType = 'monthlyBalance' | 'sustainableIncome' | 'fourPercent' | 'netWorth';
+type MetricType = 'monthlyBalance' | 'sustainableIncome' | 'fourPercent' | 'netWorth' | 'happiness';
 
 interface MetricConfig {
   label: string;
@@ -22,6 +22,8 @@ interface MetricConfig {
   colorSecondary?: string;
   gradientId: string;
   isBiColor: boolean;
+  /** For score-based metrics (e.g. happiness 0–100) — uses fixed axis + plain tick formatter */
+  isScore?: boolean;
   description: string;
   emoji: string;
 }
@@ -68,12 +70,50 @@ const METRICS: Record<MetricType, MetricConfig> = {
     description: 'תיק + פנסיה + נדל״ן',
     emoji: '🏆',
   },
+  happiness: {
+    label: 'מדד אושר',
+    nominalKey: 'happinessTotal',
+    realKey: 'happinessTotal',
+    color: '#ec4899',
+    gradientId: 'grad-happy',
+    isBiColor: false,
+    isScore: true,
+    description: 'מדד מורכב לפי העדפות אישיות · 0–100',
+    emoji: '😊',
+  },
 };
 
 function fmtK(v: number): string {
   if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
   if (Math.abs(v) >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
   return String(Math.round(v));
+}
+
+function scoreLabel(v: number): string {
+  if (v >= 85) return 'מצוין';
+  if (v >= 70) return 'טוב מאוד';
+  if (v >= 55) return 'טוב';
+  if (v >= 40) return 'בינוני';
+  if (v >= 25) return 'מאתגר';
+  return 'קשה';
+}
+
+function HappinessRow({ label, emoji, value, color }: {
+  label: string; emoji: string; value: number; color: string;
+}) {
+  const v = Math.max(0, Math.min(100, value ?? 0));
+  return (
+    <div className="flex items-center gap-2.5 text-sm">
+      <span className="text-sm flex-shrink-0">{emoji}</span>
+      <span className="text-slate-700 flex-shrink-0 w-[9.5rem]" style={{ fontSize: '12px' }}>{label}</span>
+      <div className="flex-1 h-1.5 bg-slate-200/60 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${v}%`, background: color }} />
+      </div>
+      <span className="num text-xs font-bold text-slate-800 w-8 text-left" style={{ fontVariantNumeric: 'tabular-nums' }}>
+        {Math.round(v)}
+      </span>
+    </div>
+  );
 }
 
 function makeChartTooltip(showReal: boolean, metric: MetricType) {
@@ -148,22 +188,55 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
               {metricCfg.label}
             </span>
           </div>
-          <div className="flex items-baseline justify-between gap-2">
-            <span
-              className="num font-display text-2xl md:text-3xl font-extrabold"
-              style={{ fontVariantNumeric: 'tabular-nums', color: heroColor }}
-            >
-              {isHeroSigned && heroPositive ? '+' : ''}{heroPrimary.toLocaleString('he-IL')} ₪
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex-shrink-0">{primaryLabel}</span>
-          </div>
-          <div className="flex items-baseline justify-between mt-1 gap-2">
-            <span className="num text-xs font-semibold text-slate-500" style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {isHeroSigned && heroSecondary >= 0 ? '+' : ''}{heroSecondary.toLocaleString('he-IL')} ₪
-            </span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">{secondaryLabel}</span>
-          </div>
+          {metricCfg.isScore ? (
+            <div className="flex items-baseline gap-2">
+              <span
+                className="num font-display text-3xl md:text-4xl font-extrabold"
+                style={{ fontVariantNumeric: 'tabular-nums', color: heroColor }}
+              >
+                {Math.round(heroPrimary)}
+              </span>
+              <span className="text-sm font-bold text-slate-400">/ 100</span>
+              <span className="mr-auto text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {scoreLabel(heroPrimary)}
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-baseline justify-between gap-2">
+                <span
+                  className="num font-display text-2xl md:text-3xl font-extrabold"
+                  style={{ fontVariantNumeric: 'tabular-nums', color: heroColor }}
+                >
+                  {isHeroSigned && heroPositive ? '+' : ''}{heroPrimary.toLocaleString('he-IL')} ₪
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex-shrink-0">{primaryLabel}</span>
+              </div>
+              <div className="flex items-baseline justify-between mt-1 gap-2">
+                <span className="num text-xs font-semibold text-slate-500" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {isHeroSigned && heroSecondary >= 0 ? '+' : ''}{heroSecondary.toLocaleString('he-IL')} ₪
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">{secondaryLabel}</span>
+              </div>
+            </>
+          )}
         </div>
+
+        {/* Happiness breakdown — only on happiness metric */}
+        {metric === 'happiness' && (
+          <div className="mb-3 pb-3 border-b border-white/60 space-y-1.5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">
+              פירוט רכיבי האושר
+            </p>
+            <HappinessRow label="זמן עם הילדים" emoji="👨‍👩‍👧‍👦" value={d.happinessTimeWithKids} color="#f43f5e" />
+            <HappinessRow label="חופשות משפחתיות" emoji="✈️" value={d.happinessFamilyVacations} color="#0ea5e9" />
+            <HappinessRow label="רוגע כלכלי" emoji="💎" value={d.happinessFinancialCalm} color="#10b981" />
+            <HappinessRow label="בית משלנו" emoji="🏠" value={d.happinessOwnHome} color="#8b5cf6" />
+            <HappinessRow label="התפתחות אישית" emoji="📚" value={d.happinessPersonalDevelopment} color="#f59e0b" />
+            <HappinessRow label="קהילה והשפעה" emoji="🤝" value={d.happinessCommunityImpact} color="#14b8a6" />
+            <HappinessRow label="לימוד תורה" emoji="📖" value={d.happinessTorahStudy} color="#6366f1" />
+          </div>
+        )}
 
         {/* Income breakdown */}
         <div className="space-y-1.5 text-sm">
@@ -409,13 +482,16 @@ export function ChartsPanel({ result, config }: Props) {
               tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => fmtK(v)}
+              tickFormatter={(v: number) => metricCfg.isScore ? String(Math.round(v)) : fmtK(v)}
               width={60}
               mirror
-              domain={[
-                (dataMin: number) => Math.min(0, dataMin * 1.1),
-                (dataMax: number) => Math.max(0, dataMax * 1.05),
-              ]}
+              domain={metricCfg.isScore
+                ? [0, 100]
+                : [
+                    (dataMin: number) => Math.min(0, dataMin * 1.1),
+                    (dataMax: number) => Math.max(0, dataMax * 1.05),
+                  ]}
+              ticks={metricCfg.isScore ? [0, 25, 50, 75, 100] : undefined}
             />
             <Tooltip content={makeChartTooltip(showReal, metric) as any} cursor={<AvatarCursor />} />
 
@@ -501,7 +577,7 @@ export function ChartsPanel({ result, config }: Props) {
                       fontWeight={700}
                       style={{ pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' }}
                     >
-                      {fmtK(v)}
+                      {metricCfg.isScore ? String(Math.round(v)) : fmtK(v)}
                     </text>
                   );
                 }}

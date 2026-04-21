@@ -62,6 +62,21 @@ export interface MarketConfig {
   pensionConversionFactor: number;
 }
 
+/** Happiness-index user preferences. All weights are 0–100 and normalized at compute-time. */
+export interface HappinessConfig {
+  weightTimeWithKids: number;
+  weightFamilyVacations: number;
+  weightFinancialCalm: number;
+  weightOwnHome: number;
+  weightPersonalDevelopment: number;
+  weightCommunityImpact: number;
+  weightTorahStudy: number;
+  /** Birth year of the OLDEST child (used to model needs-parent-time curve) */
+  oldestChildBirthYear: number;
+  /** Birth year of the YOUNGEST child */
+  youngestChildBirthYear: number;
+}
+
 export interface ScenarioConfig {
   /** Calendar year the simulation starts (default 2026) */
   simulationStartYear: number;
@@ -93,6 +108,7 @@ export interface ScenarioConfig {
   expenses: ExpenseConfig;
   house: HouseConfig;
   market: MarketConfig;
+  happiness: HappinessConfig;
 }
 
 export interface YearResult {
@@ -149,6 +165,17 @@ export interface YearResult {
     monthlyBalance: number;
     monthlySustainableIncome: number;
   };
+
+  /** Weighted-composite happiness index (0–100) */
+  happinessTotal: number;
+  /** Individual component scores (each 0–100) */
+  happinessTimeWithKids: number;
+  happinessFamilyVacations: number;
+  happinessFinancialCalm: number;
+  happinessOwnHome: number;
+  happinessPersonalDevelopment: number;
+  happinessCommunityImpact: number;
+  happinessTorahStudy: number;
 }
 
 export interface SimulationResult {

@@ -90,9 +90,9 @@ export function LoadingScreen({ onComplete, minDuration = 2400 }: Props) {
           <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.28em] mb-3 loader-fade-in-1">
             יותם והדס <span className="text-slate-400 mx-1">·</span> תכנון פיננסי
           </p>
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[0.95] loader-fade-in-2">
+          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold leading-[1.05] loader-fade-in-2">
             <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-500 bg-clip-text text-transparent">
-              ניהול סיכונים
+              תוכנית אושר משפחתית
             </span>
           </h1>
           <p className="font-he text-sm md:text-base text-slate-500 mt-4 loader-fade-in-3">

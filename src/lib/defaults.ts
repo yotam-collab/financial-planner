@@ -1,4 +1,4 @@
-import type { ScenarioConfig, AssetConfig, IncomeConfig, ExpenseConfig, HouseConfig, MarketConfig } from './types';
+import type { ScenarioConfig, AssetConfig, IncomeConfig, ExpenseConfig, HouseConfig, MarketConfig, HappinessConfig } from './types';
 
 export const DEFAULT_ASSETS: AssetConfig = {
   liquidPortfolio: 1_900_000,
@@ -58,6 +58,21 @@ export const DEFAULT_MARKET: MarketConfig = {
   pensionConversionFactor: 216,
 };
 
+export const DEFAULT_HAPPINESS: HappinessConfig = {
+  // Weights — normalized at compute time. These defaults roughly balance the 7 dimensions
+  // with slight emphasis on family & financial calm (core to the framing of this app).
+  weightTimeWithKids: 20,
+  weightFamilyVacations: 12,
+  weightFinancialCalm: 18,
+  weightOwnHome: 12,
+  weightPersonalDevelopment: 12,
+  weightCommunityImpact: 11,
+  weightTorahStudy: 15,
+  // Kids birth years — adjust per family. Defaults assume 4 kids spanning 2014–2023.
+  oldestChildBirthYear: 2014,
+  youngestChildBirthYear: 2023,
+};
+
 export function createDefaultConfig(): ScenarioConfig {
   return {
     simulationStartYear: 2026,
@@ -80,5 +95,6 @@ export function createDefaultConfig(): ScenarioConfig {
     expenses: { ...DEFAULT_EXPENSES },
     house: { ...DEFAULT_HOUSE },
     market: { ...DEFAULT_MARKET },
+    happiness: { ...DEFAULT_HAPPINESS },
   };
 }

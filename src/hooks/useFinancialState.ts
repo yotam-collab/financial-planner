@@ -57,6 +57,7 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
     expenses: { ...defaults.expenses, ...saved.expenses },
     house: mergedHouse,
     market: { ...defaults.market, ...saved.market },
+    happiness: { ...defaults.happiness, ...(saved.happiness ?? {}) },
   };
 }
 

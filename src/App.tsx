@@ -35,7 +35,7 @@ function App() {
                 יותם והדס
               </p>
               <h1 className="font-display text-lg font-extrabold text-white leading-tight drop-shadow">
-                ניהול סיכונים
+                תוכנית אושר משפחתית
               </h1>
             </div>
           </div>
@@ -65,8 +65,8 @@ function App() {
                 <p className="text-white/70 text-xs font-bold uppercase tracking-[0.28em] mb-3">
                   יותם והדס · תכנון פיננסי
                 </p>
-                <h1 className="font-display text-6xl lg:text-7xl font-extrabold text-white leading-[0.95]">
-                  ניהול סיכונים
+                <h1 className="font-display text-5xl lg:text-6xl font-extrabold text-white leading-[0.95]">
+                  תוכנית אושר משפחתית
                 </h1>
               </div>
               <div className="flex items-center gap-3 fade-up" style={{ animationDelay: '0.1s' }}>
