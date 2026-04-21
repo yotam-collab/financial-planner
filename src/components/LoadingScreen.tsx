@@ -11,7 +11,7 @@ interface Props {
  * around the couple's avatar, with sweeping motion lines in the app's
  * indigo/violet/pink palette. Fades out after minDuration + 700ms.
  */
-export function LoadingScreen({ onComplete, minDuration = 1400 }: Props) {
+export function LoadingScreen({ onComplete, minDuration = 2400 }: Props) {
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
