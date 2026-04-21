@@ -45,18 +45,33 @@ export function SummaryCard({ result }: Props) {
 
           {/* Title */}
           <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-extrabold text-white/90 leading-tight">
-            הגיל המוקדם ביותר <span className="text-white/60 font-bold">לסגירת העסק</span>
+            השנה המוקדמת ביותר <span className="text-white/60 font-bold">לפרישה מזינוק</span>
           </h2>
 
-          {/* Huge centered number */}
+          {/* Huge centered number — calendar year */}
           <div className="font-display text-[96px] md:text-[140px] lg:text-[180px] font-extrabold text-white leading-[0.8] tracking-tighter num drop-shadow-[0_6px_28px_rgba(0,0,0,0.2)]">
-            {earliestRetirementAge ?? '—'}
+            {retYear?.calendarYear ?? '—'}
           </div>
 
-          {earliestRetirementAge && (
-            <p className="text-white/80 text-sm md:text-base font-medium max-w-xl">
-              ההכנסה ברת-הקיימא מכסה את ההוצאות מגיל זה ואילך
-            </p>
+          {retYear && (
+            <>
+              {/* Ages sub-line */}
+              <div className="flex items-center gap-4 md:gap-6 text-white/95 text-sm md:text-base font-semibold">
+                <span className="flex items-baseline gap-1.5">
+                  <span className="text-white/70 text-[11px] md:text-xs uppercase tracking-[0.18em] font-bold">יותם</span>
+                  <span className="num font-display text-lg md:text-xl font-extrabold">{retYear.yotamAge}</span>
+                </span>
+                <span className="w-px h-4 md:h-5 bg-white/40" />
+                <span className="flex items-baseline gap-1.5">
+                  <span className="text-white/70 text-[11px] md:text-xs uppercase tracking-[0.18em] font-bold">הדס</span>
+                  <span className="num font-display text-lg md:text-xl font-extrabold">{retYear.hadasAge}</span>
+                </span>
+              </div>
+
+              <p className="text-white/80 text-sm md:text-base font-medium max-w-xl">
+                ההכנסה ברת-הקיימא מכסה את ההוצאות משנה זו ואילך
+              </p>
+            </>
           )}
         </div>
       </div>
