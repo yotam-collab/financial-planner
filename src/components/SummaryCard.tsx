@@ -45,7 +45,7 @@ export function SummaryCard({ result }: Props) {
 
           {/* Title */}
           <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-extrabold text-white/90 leading-tight">
-            השנה המוקדמת <span className="text-white/60 font-bold">לשחרור תלות בזינוק</span>
+            השנה המוקדמת ביותר <span className="text-white/60 font-bold">לחופש כלכלי</span>
           </h2>
 
           {/* Huge centered number — calendar year */}
