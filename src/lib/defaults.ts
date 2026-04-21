@@ -30,7 +30,7 @@ export const DEFAULT_INCOME: IncomeConfig = {
 };
 
 export const DEFAULT_EXPENSES: ExpenseConfig = {
-  monthlyNonHousingExpenses: 30_000,
+  monthlyNonHousingExpenses: 26_000,
   monthlyRent: 9_500,
 };
 
