@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ScenarioConfig } from '../lib/types';
 import { calcMonthlyMortgagePayment, calcPurchaseTax } from '../lib/simulator';
 import { HelpTooltip } from './HelpTooltip';
+import { ExpenseSimulatorModal } from './ExpenseSimulatorModal';
 
 const VAT_RATE = 0.18;
 
@@ -215,6 +216,8 @@ export function InputPanel({ config, setConfig }: Props) {
       ? 'מיידית'
       : `גיל ${config.startAge + housePurchaseSliderValue - 1}`;
 
+  const [expenseSimOpen, setExpenseSimOpen] = useState(false);
+
   return (
     <div className="widget-card-static p-5 md:p-6 space-y-1 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto w-full">
       {/* Header */}
@@ -380,14 +383,36 @@ export function InputPanel({ config, setConfig }: Props) {
       <Section title="הוצאות" icon="📊" color="rose">
         <NumInput label="הוצאות (ללא דיור)" value={config.expenses.monthlyNonHousingExpenses}
           onChange={v => update('expenses.monthlyNonHousingExpenses', v)} step={1000}
-          rec="33,000-46,000 ₪ — משפחה עם 4 ילדים (upper-middle, מבוסס על למ״ס)"
+          rec="22,000-26,000 ₪ — משפחה של 6 upper-middle (למ״ס 2023, מעודכן 2026)"
           note="כולל: אוכל, רכב, חוגים, ביטוחים, חופשות · לא כולל חסכונות"
-          help="הוצאות חודשיות ללא דיור (שכ״ד/משכנתא/אחזקת בית). לפי למ״ס 2024: משפחה ישראלית ממוצעת ~17K. עם 4 ילדים upper-middle: 33-46K. כולל: אוכל, רכב+דלק, חינוך+חוגים, חופשות, ביטוחים, טלפון/אינטרנט, בריאות. לא כולל: חסכון/השקעה (זה עובר לתיק)." />
+          help="הוצאות חודשיות ללא דיור (שכ״ד/משכנתא/אחזקת בית). לפי למ״ס 2023: ממוצע משק בית ישראלי 14,823 ₪ (3.1 נפשות). למשפחה של 6 × מכפיל 1.65 ≈ 24.5K ₪. upper-middle עם 4 ילדים: 22-26K מאוזן, 28-33K נדיב. כולל: אוכל, רכב+דלק, חינוך+חוגים, חופשות, ביטוחים, טלפון/אינטרנט, בריאות. לא כולל: חסכון/השקעה (זה עובר לתיק)." />
+
+        {/* Simulator button */}
+        <button
+          onClick={() => setExpenseSimOpen(true)}
+          className="w-full mt-1 px-4 py-3 rounded-xl bg-gradient-to-l from-rose-500 to-pink-500 text-white text-sm md:text-base font-semibold shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+        >
+          <span>🧮</span>
+          <span>סימולטור הוצאות אישי</span>
+          <span className="text-[11px] font-normal opacity-80">— חישוב מפורט לפי קטגוריות</span>
+        </button>
+        <p className="text-[11px] text-slate-500 mt-1 mr-1 italic">
+          כלי עזר — לא מעדכן את המכוון למעלה אוטומטית
+        </p>
+
         <NumInput label="שכר דירה" value={config.expenses.monthlyRent}
           onChange={v => update('expenses.monthlyRent', v)} step={500}
           rec="9,500 ₪ — מחיר שוק בפרדס חנה"
           help="שכר דירה חודשי לפני קניית בית. מוצמד למדד. פרדס חנה 5 חד׳: 8-10K ₪ (2026). ת״א מרכז: 12-18K ₪. כולל ועד בית סביר, לא כולל חניה/מחסן נפרדים. אם קונים בית, מוחלף בהוצאות משכנתא + אחזקה." />
       </Section>
+
+      {/* Expense Simulator Modal */}
+      {expenseSimOpen && (
+        <ExpenseSimulatorModal
+          onClose={() => setExpenseSimOpen(false)}
+          currentValue={config.expenses.monthlyNonHousingExpenses}
+        />
+      )}
 
       <Section title="הנחות שוק" icon="📈" color="amber">
         <SliderInput label="תשואה ריאלית" value={Math.round(config.market.realReturnRate * 100)}
