@@ -37,8 +37,13 @@ export const DEFAULT_EXPENSES: ExpenseConfig = {
 export const DEFAULT_HOUSE: HouseConfig = {
   priceToday: 4_800_000,
   renovationCost: 200_000,
+  // Legacy fields (auto-computed now, kept for migration)
   purchaseTaxRate: 0.03,
-  closingCosts: 130_000,
+  closingCosts: 0,
+  // Transaction fees (research-backed Israeli market standards, 2026)
+  lawyerFeeRate: 0.005,   // 0.5% + מע"מ — שיעור שוק מקובל (0.5-1%)
+  brokerFeeRate: 0.02,    // 2% + מע"מ — תקרה בחוק; 0 אם אין מתווך
+  otherClosingCosts: 15_000, // טאבו ~1.5K + שמאי ~3K + ביטוחי משכנתא ~2K + הובלה ~7K
   mortgageLTV: 0.70,
   mortgageRate: 0.052,
   mortgageTerm: 25,

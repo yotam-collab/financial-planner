@@ -36,7 +36,15 @@ export interface ExpenseConfig {
 export interface HouseConfig {
   priceToday: number;
   renovationCost: number;
+  /** DEPRECATED: now computed from progressive brackets. Kept for backward compat. */
   purchaseTaxRate: number;
+  /** Lawyer fee as % of price (default 0.005 = 0.5% + VAT auto) */
+  lawyerFeeRate: number;
+  /** Broker commission as % of price (default 0.02 = 2% + VAT, set 0 if no broker) */
+  brokerFeeRate: number;
+  /** Fixed other closing costs: טאבו, שמאי, הובלה, ביטוח משכנתא (today's values) */
+  otherClosingCosts: number;
+  /** DEPRECATED: replaced by fee components above. Kept for migration. */
   closingCosts: number;
   mortgageLTV: number;
   mortgageRate: number;

@@ -17,9 +17,40 @@ export function remainingMortgageBalance(principal: number, annualRate: number, 
   return Math.max(0, principal * (Math.pow(1 + r, n) - Math.pow(1 + r, p)) / (Math.pow(1 + r, n) - 1));
 }
 
-export function calcPurchaseTaxRate(price: number): number {
-  return price < 5_500_000 ? 0.03 : 0.04;
+/**
+ * Progressive Israeli purchase tax brackets for a *single* home (דירה יחידה), 2026.
+ * Source: רשות המסים — מדרגות מס רכישה לדירה יחידה (2025/26).
+ * Brackets are updated annually per CPI; values below reflect ~2026 estimate.
+ */
+const PURCHASE_TAX_BRACKETS_SINGLE_HOME: Array<{ upTo: number; rate: number }> = [
+  { upTo: 1_978_745, rate: 0 },
+  { upTo: 2_347_040, rate: 0.035 },
+  { upTo: 6_055_070, rate: 0.05 },
+  { upTo: 20_183_565, rate: 0.08 },
+  { upTo: Infinity, rate: 0.10 },
+];
+
+/** Compute total purchase tax in NIS using progressive single-home brackets. */
+export function calcPurchaseTax(price: number): number {
+  let tax = 0;
+  let prevCap = 0;
+  for (const br of PURCHASE_TAX_BRACKETS_SINGLE_HOME) {
+    if (price <= prevCap) break;
+    const inBracket = Math.min(price, br.upTo) - prevCap;
+    tax += inBracket * br.rate;
+    prevCap = br.upTo;
+  }
+  return tax;
 }
+
+/** Effective purchase tax rate (tax / price). */
+export function calcPurchaseTaxRate(price: number): number {
+  if (price <= 0) return 0;
+  return calcPurchaseTax(price) / price;
+}
+
+/** VAT rate in Israel (2026) */
+const VAT_RATE = 0.18;
 
 export function calcMonthlyPensionPayout(balance: number, mekaddem: number): number {
   return mekaddem <= 0 ? 0 : balance / mekaddem;
@@ -101,10 +132,17 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // House purchase
     if (housePurchaseYear !== null && year === housePurchaseYear && !ownsHome) {
       const p = inflate(house.priceToday, market.inflationRate, ye);
-      const tx = calcPurchaseTaxRate(p);
+      // Auto-compute purchase tax from progressive brackets
+      const purchaseTax = calcPurchaseTax(p);
       const nomReno = inflate(house.renovationCost, market.inflationRate, ye);
-      const nomClosing = inflate(house.closingCosts, market.inflationRate, ye);
-      const tot = p + nomReno + p * tx + nomClosing;
+      // Transaction fees — scale with price (price already inflates)
+      const lawyerFee = p * (house.lawyerFeeRate ?? 0) * (1 + VAT_RATE);
+      const brokerFee = p * (house.brokerFeeRate ?? 0) * (1 + VAT_RATE);
+      const nomOtherClosing = inflate(house.otherClosingCosts ?? 0, market.inflationRate, ye);
+      // Legacy field — fallback if new fields not set
+      const nomLegacyClosing = inflate(house.closingCosts ?? 0, market.inflationRate, ye);
+      const totalClosingAndFees = purchaseTax + lawyerFee + brokerFee + nomOtherClosing + nomLegacyClosing;
+      const tot = p + nomReno + totalClosingAndFees;
       const m = p * house.mortgageLTV;
       liquid -= (tot - m);
       ownsHome = true; homeVal = p; mortPrincipal = m; mortBal = m;

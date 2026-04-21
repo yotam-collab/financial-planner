@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import type { ScenarioConfig } from '../lib/types';
-import { calcMonthlyMortgagePayment } from '../lib/simulator';
+import { calcMonthlyMortgagePayment, calcPurchaseTax } from '../lib/simulator';
 import { HelpTooltip } from './HelpTooltip';
+
+const VAT_RATE = 0.18;
+
+function fmtK(v: number): string {
+  if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(v) >= 1_000) return `${Math.round(v / 1_000)}K`;
+  return String(Math.round(v));
+}
 
 function estimateGross(monthlyNet: number): number {
   const a = monthlyNet * 12;
@@ -79,6 +87,84 @@ function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, r
       </div>
       {rec && <p className="text-[11px] md:text-xs text-indigo-600 mt-0.5 mr-1 font-medium">💡 {rec}</p>}
       {note && <p className="text-[11px] md:text-xs text-slate-500 mt-0.5 mr-1 italic">{note}</p>}
+    </div>
+  );
+}
+
+function ClosingCostsPanel({ config, update }: {
+  config: ScenarioConfig;
+  update: (path: string, value: number) => void;
+}) {
+  const price = config.house.priceToday;
+  const lawyerRate = config.house.lawyerFeeRate ?? 0;
+  const brokerRate = config.house.brokerFeeRate ?? 0;
+  const otherClosing = config.house.otherClosingCosts ?? 0;
+
+  const purchaseTax = calcPurchaseTax(price);
+  const purchaseTaxEffectiveRate = price > 0 ? (purchaseTax / price) * 100 : 0;
+  const lawyerFee = price * lawyerRate * (1 + VAT_RATE);
+  const brokerFee = price * brokerRate * (1 + VAT_RATE);
+  const totalClosing = purchaseTax + lawyerFee + brokerFee + otherClosing;
+  const totalPct = price > 0 ? (totalClosing / price) * 100 : 0;
+
+  return (
+    <div className="pt-3 mt-2 border-t border-white/70">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600 flex items-center gap-1.5">
+          💰 הוצאות נלוות לקנייה
+          <HelpTooltip text="כל העלויות מעבר למחיר הבית: מס רכישה (מדרגתי לפי חוק), עו״ד (~0.5% + מע״מ), מתווך (עד 2% + מע״מ), והוצאות נוספות (טאבו, שמאי, הובלה). סה״כ: 4-6% מהמחיר בדירה יחידה." />
+        </p>
+        <span className="text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
+          סה״כ <span className="num">{fmtK(totalClosing)} ₪</span> · {totalPct.toFixed(1)}%
+        </span>
+      </div>
+
+      {/* Purchase tax — auto, display only */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-sm md:text-[15px] text-slate-800 font-semibold flex items-center gap-1.5">
+            מס רכישה <span className="text-[11px] font-normal text-violet-600">(חישוב אוטומטי)</span>
+            <HelpTooltip text="מס רכישה בישראל לדירה יחידה (2026) — מדרגתי: 0% עד 1.98M, 3.5% עד 2.35M, 5% עד 6.05M, 8% עד 20.18M, 10% מעל. חישוב אוטומטי מהמחיר. לדירה שנייה/משקיעים: 8% על כל הסכום." />
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-500">({purchaseTaxEffectiveRate.toFixed(2)}%)</span>
+            <span className="num text-sm md:text-base font-bold text-violet-700" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              {Math.round(purchaseTax).toLocaleString('he-IL')} ₪
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Lawyer fee — slider % */}
+      <SliderInput
+        label="שכר טרחת עו״ד"
+        value={Math.round(lawyerRate * 1000) / 10}
+        onChange={v => update('house.lawyerFeeRate', v / 100)}
+        min={0} max={1.5} step={0.1}
+        displayValue={`${(lawyerRate * 100).toFixed(1)}% · ${fmtK(lawyerFee)} ₪`}
+        rec="0.5% + מע״מ — סטנדרט שוק (0.5-1%)"
+        note={`${(lawyerRate * 100).toFixed(1)}% × ${fmtK(price)} + 18% מע״מ = ${Math.round(lawyerFee).toLocaleString('he-IL')} ₪`}
+        help="שכר טרחת עו״ד קונה. שוק: 0.5-1% + מע״מ. סטנדרט: 0.5% לעסקה פשוטה. בעסקה מורכבת (קבלן, ירושה): 0.75-1%. מקביל — עו״ד מוכר על חשבון המוכר. עלויות נוספות כלולות: אגרות, טאבו — לרוב נכללות." />
+
+      {/* Broker fee — slider % */}
+      <SliderInput
+        label="דמי תיווך"
+        value={Math.round(brokerRate * 1000) / 10}
+        onChange={v => update('house.brokerFeeRate', v / 100)}
+        min={0} max={2.5} step={0.1}
+        displayValue={brokerRate === 0 ? 'ללא מתווך' : `${(brokerRate * 100).toFixed(1)}% · ${fmtK(brokerFee)} ₪`}
+        rec="עד 2% + מע״מ (תקרה בחוק) · 0 אם ישירות מול מוכר"
+        note={brokerRate === 0 ? 'קנייה ישירות מבעלים — אין דמי תיווך' : `${(brokerRate * 100).toFixed(1)}% × ${fmtK(price)} + 18% מע״מ = ${Math.round(brokerFee).toLocaleString('he-IL')} ₪`}
+        help="דמי תיווך לרוכש. תקרה בחוק: 2% + מע״מ. מקובל: 1-2% (לפי שווי ומו״מ). בעסקאות ישירות או דרך מוכר בלבד: 0%. לעתים אפשר לסגור ל-1% או דמי תיווך קבועים. המוכר משלם לרוב את חלקו בנפרד." />
+
+      {/* Other closing costs — manual */}
+      <NumInput
+        label="הוצאות נוספות (קבוע)"
+        value={otherClosing}
+        onChange={v => update('house.otherClosingCosts', v)} step={1000}
+        rec="~15,000 ₪ — טאבו + שמאי + הובלה + ביטוחים"
+        note="טאבו ~1.5K · שמאי ~3K · ביטוח משכנתא ~2K · הובלה ~8K"
+        help="הוצאות קבועות שאינן תלויות במחיר הבית: רישום בטאבו (~1,500 ₪), שמאי למשכנתא (~2,500-3,500 ₪), ביטוח חיים ומבנה לבנק (~2,000 ₪ שנה ראשונה), הובלה וריהוט ראשוני (~5,000-15,000 ₪). סה״כ מקובל 12-20K ₪." />
     </div>
   );
 }
@@ -195,7 +281,7 @@ export function InputPanel({ config, setConfig }: Props) {
             <NumInput label="מחיר (ערכי היום)" value={config.house.priceToday}
               onChange={v => update('house.priceToday', v)} step={100000}
               rec="4,800,000 ₪ — בית בפרדס חנה"
-              help="מחיר הבית בערכי היום (לפני אינפלציה). המערכת מצמידה למדד לשנת הקנייה. בית 5 חד׳ בפרדס חנה ~4.5-5.5M₪ (2026). ת״א/מרכז: +50-100%. מומלץ להוסיף 3% מס רכישה + 130K₪ עלויות סגירה." />
+              help="מחיר הבית בערכי היום (לפני אינפלציה). המערכת מצמידה למדד לשנת הקנייה. בית 5 חד׳ בפרדס חנה ~4.5-5.5M₪ (2026). ת״א/מרכז: +50-100%. עלויות נלוות (מס רכישה, עו״ד, מתווך, שמאי) מחושבות אוטומטית למטה." />
             <NumInput label="שיפוץ" value={config.house.renovationCost}
               onChange={v => update('house.renovationCost', v)} step={10000}
               help="עלות שיפוץ נטו — אחרי מה שעובר דרך העסק. שיפוץ עמוק: 150-300K₪. שיפוץ בינוני: 80-150K₪. מוצמד למדד לשנת הקנייה. משולם מהתיק הנזיל (מקטין אותו)." />
@@ -212,6 +298,9 @@ export function InputPanel({ config, setConfig }: Props) {
             <NumInput label="תקופה" value={config.house.mortgageTerm}
               onChange={v => update('house.mortgageTerm', v)} step={1} suffix="שנים"
               help="אורך המשכנתא בשנים. מקסימום חוקי: 30 שנים. 25 שנים = איזון טוב: תשלום חודשי סביר + ריבית כוללת נמוכה. 30 שנים = תשלום חודשי נמוך אבל משלמים הרבה יותר ריבית. 15-20 שנים = חסכון משמעותי בריבית, אבל תשלום חודשי כבד." />
+
+            {/* Closing costs — auto-computed */}
+            <ClosingCostsPanel config={config} update={update} />
 
             {/* Passive income from home */}
             <div className="pt-3 mt-2 border-t border-white/70">

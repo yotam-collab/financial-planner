@@ -30,6 +30,18 @@ function saveToStorage(state: PersistedState) {
 /** Merge saved config with defaults to handle new fields */
 function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: ScenarioConfig): ScenarioConfig {
   if (!saved) return defaults;
+
+  // House schema migration: if saved is from old schema (no lawyerFeeRate field),
+  // zero out the legacy closingCosts field to prevent double-counting with the new
+  // auto-computed lawyer/broker/other fees.
+  const savedHouse = saved.house as Partial<ScenarioConfig['house']> | undefined;
+  const isOldHouseSchema = savedHouse && savedHouse.lawyerFeeRate === undefined;
+  const mergedHouse = {
+    ...defaults.house,
+    ...(savedHouse ?? {}),
+    ...(isOldHouseSchema ? { closingCosts: 0 } : {}),
+  };
+
   return {
     ...defaults,
     ...saved,
@@ -43,7 +55,7 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
     assets: { ...defaults.assets, ...saved.assets },
     income: { ...defaults.income, ...saved.income },
     expenses: { ...defaults.expenses, ...saved.expenses },
-    house: { ...defaults.house, ...saved.house },
+    house: mergedHouse,
     market: { ...defaults.market, ...saved.market },
   };
 }
