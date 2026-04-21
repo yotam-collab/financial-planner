@@ -119,8 +119,17 @@ function kidsNeedParentTime(avgAge: number): number {
   return 10;
 }
 
+/**
+ * Yotam's actual working reality (not the classic "owner-operator always busy" trope):
+ * - During zinuk he has a CEO managing day-to-day; works 1 day/week from office,
+ *   few hours/day from home → relatively high family-time availability, though
+ *   with mental load from oversight responsibilities.
+ * - Post-zinuk (altIncome) he's more hands-on himself (consulting/solo work)
+ *   → fewer at-home hours than in zinuk.
+ * - Retirement: fully free.
+ */
 function parentAvailability(phase: 'zinuk' | 'altIncome' | 'retired'): number {
-  return phase === 'zinuk' ? 40 : phase === 'altIncome' ? 75 : 90;
+  return phase === 'zinuk' ? 70 : phase === 'altIncome' ? 55 : 90;
 }
 
 export function computeHappinessScores(
@@ -149,8 +158,10 @@ export function computeHappinessScores(
     youngestKidAge <= 22 ? 100 - (youngestKidAge - 17) * 12 :
     Math.max(30, 100 - (youngestKidAge - 17) * 8)
   );
+  // Vacation flexibility: zinuk > altIncome because CEO runs ops day-to-day.
+  // Post-zinuk solo work is harder to step away from.
   const vacationTimeFactor =
-    input.phase === 'zinuk' ? 60 : input.phase === 'altIncome' ? 85 : 95;
+    input.phase === 'zinuk' ? 75 : input.phase === 'altIncome' ? 60 : 95;
   const familyVacations = clamp0100(
     surplusFactor * 0.45 + kidsHomeFactor * 0.3 + vacationTimeFactor * 0.25
   );
@@ -175,26 +186,37 @@ export function computeHappinessScores(
   }
   ownHome = clamp0100(ownHome);
 
-  // 5. Personal development — requires time (post-zinuk) + financial calm
+  // 5. Personal development — time to learn + mental bandwidth.
+  //   Zinuk: has time (CEO runs ops) but mental load → +20
+  //   AltIncome: less time but clearer focus → +15
+  //   Retired: maximum time AND focus → +35
   let pd = 10;
-  if (input.phase !== 'zinuk') pd += 30;
+  if (input.phase === 'zinuk') pd += 20;
+  else if (input.phase === 'altIncome') pd += 15;
+  else pd += 35;
   if (input.monthlyBalance >= 0) pd += 25;
   if (input.isPensionActive) pd += 15;
   if (input.yotamAge > 75) pd -= (input.yotamAge - 75) * 2;
   const personalDevelopment = clamp0100(pd);
 
-  // 6. Community impact — peaks in 55–80 "active civic" window
+  // 6. Community impact — similar time/bandwidth logic, with a 55-80 civic peak.
   let ci = 15;
-  if (input.phase !== 'zinuk') ci += 25;
+  if (input.phase === 'zinuk') ci += 18;       // at-home days enable community work
+  else if (input.phase === 'altIncome') ci += 15;
+  else ci += 30;
   if (input.monthlyBalance >= 0) ci += 20;
-  if (input.yotamAge >= 55 && input.yotamAge <= 80) ci += 25;
+  if (input.yotamAge >= 55 && input.yotamAge <= 80) ci += 20;
   if (input.yotamAge > 82) ci -= (input.yotamAge - 82) * 3;
   const communityImpact = clamp0100(ci);
 
-  // 7. Torah study — rises post-zinuk, strong peak in retirement, no age cap
+  // 7. Torah study — some time all phases; classic peak in retirement.
+  //   Zinuk: fragmented time but present → +18
+  //   AltIncome: less daily time → +15
+  //   Retired: classic lifelong-learning peak → +45
   let ts = 15;
-  if (input.phase === 'altIncome') ts += 25;
-  if (input.phase === 'retired') ts += 45;
+  if (input.phase === 'zinuk') ts += 18;
+  else if (input.phase === 'altIncome') ts += 15;
+  else ts += 45;
   if (input.monthlyBalance >= 0) ts += 15;
   if (input.yotamAge >= 65) ts += 10;
   const torahStudy = clamp0100(ts);

@@ -526,11 +526,11 @@ function HappinessSection({ config, update, setConfig }: {
       <HappinessWeight label="זמן עם הילדים" emoji="👨‍👩‍👧‍👦" value={h.weightTimeWithKids}
         percent={pct(h.weightTimeWithKids)}
         onChange={v => update('happiness.weightTimeWithKids', v)}
-        help="כמה חשוב הזמן האיכותי עם הילדים. המדד מחשב: עקומת הצרכים של הילדים לגיל (שיא 5-10, יורד אחרי 17) × זמינות ההורה (40% בזינוק, 75% חלופי, 90% פרישה). הירידה בגיל הזינוק = יותר זמן איכותי עם הילדים." />
+        help="המדד מחשב: עקומת הצרכים של הילדים לגיל (שיא 5-10, יורד אחרי 17) × זמינות ההורה. במודל שלך: זינוק 70% (המנכ״לית מנהלת יום-יום, עובד בעיקר מהבית), חלופי 55% (יותר עבודה אישית ישירה), פרישה 90%." />
       <HappinessWeight label="חופשות משפחתיות" emoji="✈️" value={h.weightFamilyVacations}
         percent={pct(h.weightFamilyVacations)}
         onChange={v => update('happiness.weightFamilyVacations', v)}
-        help="חוויות משותפות עם המשפחה. דורש: כסף פנוי (יתרה חיובית), זמן (פחות בזינוק), וילדים שעדיין בבית. מחקרים (Dunn & Norton) מראים שהוצאה על חוויות מייצרת יותר אושר מהוצאה על חפצים." />
+        help="חוויות משותפות עם המשפחה. דורש: כסף פנוי (יתרה חיובית), וילדים שעדיין בבית, וגמישות לצאת לחופשה. בזינוק גמישות 75 (המנכ״לית מחזיקה את העסק), חלופי 60 (קשה יותר להיעלם מעבודת ייעוץ אישית), פרישה 95. Dunn & Norton: הוצאה על חוויות מייצרת יותר אושר מחפצים." />
       <HappinessWeight label="רוגע כלכלי" emoji="💎" value={h.weightFinancialCalm}
         percent={pct(h.weightFinancialCalm)}
         onChange={v => update('happiness.weightFinancialCalm', v)}
@@ -538,19 +538,19 @@ function HappinessSection({ config, update, setConfig }: {
       <HappinessWeight label="בית משלנו" emoji="🏠" value={h.weightOwnHome}
         percent={pct(h.weightOwnHome)}
         onChange={v => update('happiness.weightOwnHome', v)}
-        help="שייכות ויציבות הדיור. בשכירות: 10. בבעלות: 40 + 60×(הון עצמי/שווי). דירה משלוחררת ממשכנתא = 100. בהקשר הישראלי ('הבית הוא החלום') זה גורם משמעותי." />
+        help="שייכות ויציבות הדיור. בשכירות: 10. בבעלות: 40 + 60×(הון עצמי/שווי). דירה משוחררת ממשכנתא = 100. בהקשר הישראלי ('הבית הוא החלום') זה גורם משמעותי." />
       <HappinessWeight label="זמן להתפתחות אישית" emoji="📚" value={h.weightPersonalDevelopment}
         percent={pct(h.weightPersonalDevelopment)}
         onChange={v => update('happiness.weightPersonalDevelopment', v)}
-        help="זמן ללמידה, תחביבים, וטיפוח עצמי. נמוך בזינוק (עסוקים), עולה משמעותית אחרי זינוק ובפנסיה. Dunn/Gilchrist/Norton: זמן חופשי הוא משאב יקר יותר מכסף מעל רמה בסיסית." />
+        help="זמן ללמידה, תחביבים, וטיפוח עצמי. במודל שלך: זינוק +20 (יש זמן אבל עומס מנטלי של אחריות), חלופי +15 (פחות זמן אבל פוקוס טוב יותר), פרישה +35 (שיא — זמן ופוקוס מרביים). Dunn/Gilchrist/Norton: זמן חופשי יקר יותר מכסף מעל רמה בסיסית." />
       <HappinessWeight label="קהילה והשפעה" emoji="🤝" value={h.weightCommunityImpact}
         percent={pct(h.weightCommunityImpact)}
         onChange={v => update('happiness.weightCommunityImpact', v)}
-        help="זמן להתנדבות, עזרה לאחרים, השפעה בקהילה. שיא בגילאים 55-80 (ניסיון + זמן + בריאות). מחקרים: התנדבות מקושרת ל-20-30% עלייה ברווחת חיים (life satisfaction)." />
+        help="זמן להתנדבות, עזרה לאחרים, השפעה בקהילה. במודל שלך: זינוק +18 (ימי עבודה מהבית מאפשרים), חלופי +15, פרישה +30. שיא אזרחי-קהילתי בגילאים 55-80. מחקרים: התנדבות מקושרת ל-20-30% עלייה ברווחת חיים." />
       <HappinessWeight label="לימוד תורה" emoji="📖" value={h.weightTorahStudy}
         percent={pct(h.weightTorahStudy)}
         onChange={v => update('happiness.weightTorahStudy', v)}
-        help="זמן ללימוד תורה וערכים רוחניים. נמוך בזינוק (זמן מצומצם), עולה אחרי זינוק ובעיקר בפנסיה (מסורת יהודית קלאסית של 'לימוד בזקנה'). אין קנס גיל — דווקא שם השיא." />
+        help="זמן ללימוד תורה וערכים רוחניים. במודל שלך: זינוק +18 (זמן מפוזר אבל קיים), חלופי +15, פרישה +45 (שיא קלאסי — מסורת 'לימוד בזקנה'). בונוס גיל 65+, ללא קנס גיל." />
     </Section>
   );
 }
