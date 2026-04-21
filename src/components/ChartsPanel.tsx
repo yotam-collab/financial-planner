@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Area, ComposedChart,
-  Cell, Bar,
+  Cell, Bar, LabelList,
 } from 'recharts';
 import type { SimulationResult, ScenarioConfig, YearResult } from '../lib/types';
 import { DetailModal } from './DetailModal';
@@ -383,7 +383,7 @@ export function ChartsPanel({ result, config }: Props) {
         <ResponsiveContainer width="100%" height={420}>
           <ComposedChart
             data={data}
-            margin={{ top: 30, right: 0, left: 0, bottom: 0 }}
+            margin={{ top: 42, right: 0, left: 0, bottom: 8 }}
             onClick={(e: any) => {
               if (e?.activePayload?.[0]?.payload) {
                 const clicked = e.activePayload[0].payload as YearResult;
@@ -474,6 +474,38 @@ export function ChartsPanel({ result, config }: Props) {
                   : metricCfg.color;
                 return <Cell key={i} fill={fill} fillOpacity={0.85} style={{ cursor: 'pointer' }} />;
               })}
+              <LabelList
+                dataKey={dataKey}
+                content={(props: any) => {
+                  const { x, y, width, height, value, index } = props;
+                  if (value == null || index == null) return null;
+                  const v = Number(value);
+                  // Hide labels on very small bars (noise) — keep visible ones readable
+                  const maxAbs = Math.max(
+                    1,
+                    ...data.map(d => Math.abs((d as any)[dataKey] ?? 0))
+                  );
+                  if (Math.abs(v) < maxAbs * 0.015) return null;
+                  // For dense charts (>28 bars) show every other label to prevent overlap
+                  if (data.length > 28 && index % 2 !== 0) return null;
+                  const cx = (x || 0) + (width || 0) / 2;
+                  const isPositive = v >= 0;
+                  const cy = isPositive ? (y || 0) - 6 : (y || 0) + (height || 0) + 12;
+                  return (
+                    <text
+                      x={cx}
+                      y={cy}
+                      textAnchor="middle"
+                      fill={isPositive ? '#475569' : '#9f1239'}
+                      fontSize={10}
+                      fontWeight={700}
+                      style={{ pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      {fmtK(v)}
+                    </text>
+                  );
+                }}
+              />
             </Bar>
           </ComposedChart>
         </ResponsiveContainer>
