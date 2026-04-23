@@ -122,7 +122,7 @@ function HeroButton({ children, onClick, danger = false }: {
     <button
       onClick={onClick}
       className={`
-        px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold
+        min-h-[36px] md:min-h-[40px] px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold
         rounded-2xl backdrop-blur-md border transition-all duration-300
         ${danger
           ? 'bg-rose-500/30 text-white hover:bg-rose-500/50 border-rose-300/40'
