@@ -484,8 +484,7 @@ export function ChartsPanel({ result, config }: Props) {
               tickLine={false}
               axisLine={false}
               tickFormatter={(v: number) => metricCfg.isScore ? String(Math.round(v)) : fmtK(v)}
-              width={60}
-              mirror
+              width={46}
               domain={metricCfg.isScore
                 ? [0, 100]
                 : [
