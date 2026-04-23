@@ -258,6 +258,19 @@ input[type="range"]::-moz-range-thumb {
   direction: rtl;
 }
 
+/* Force LTR on chart axis tick labels + bar value labels so digits render
+   in the correct order inside the SVG (otherwise the RTL parent bleeds
+   into SVG text and clips "60K" → "K"). */
+.recharts-wrapper svg text {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+/* But reference-line labels are Hebrew — keep them RTL. */
+.recharts-reference-line text {
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
 /* ─── Gradient text ─── */
 .gradient-text {
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
