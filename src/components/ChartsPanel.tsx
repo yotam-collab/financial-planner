@@ -440,14 +440,14 @@ export function ChartsPanel({ result, config }: Props) {
           <button
             key={m}
             onClick={() => setMetric(m)}
-            className={`flex-1 min-w-[90px] md:min-w-[120px] px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-sm md:text-[15px] font-bold transition-all duration-200 cursor-pointer ${
+            className={`flex-1 min-w-[90px] md:min-w-[120px] inline-flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-sm md:text-[15px] font-bold transition-all duration-200 cursor-pointer ${
               metric === m
                 ? 'bg-white text-slate-900 shadow-lg shadow-indigo-500/10'
                 : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
             }`}
           >
-            <span className="ml-1">{METRICS[m].emoji}</span>
-            {METRICS[m].label}
+            <span aria-hidden="true">{METRICS[m].emoji}</span>
+            <span>{METRICS[m].label}</span>
           </button>
         ))}
       </div>

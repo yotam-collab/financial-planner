@@ -45,7 +45,7 @@ function Section({ title, icon, color = 'indigo', defaultOpen = false, children 
   return (
     <div className={`rounded-2xl transition-all duration-300 ${open ? 'bg-white/40 ring-1 ring-white/60' : 'bg-transparent'}`}>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-3 px-4 py-3.5 text-right cursor-pointer group">
-        <span className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110`}>
+        <span aria-hidden="true" className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110`}>
           {icon}
         </span>
         <span className="font-display text-base md:text-lg font-bold text-slate-900 flex-1">

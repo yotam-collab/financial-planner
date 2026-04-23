@@ -34,7 +34,7 @@ export function DataTable({ result, onExportJSON }: Props) {
         className="w-full px-5 md:px-8 py-5 md:py-6 flex items-center justify-between text-right cursor-pointer hover:bg-white/40 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-xl">
+          <span aria-hidden="true" className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-xl">
             📋
           </span>
           <div>
