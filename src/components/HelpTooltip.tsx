@@ -36,7 +36,7 @@ export function HelpTooltip({ text, placement = 'top' }: Props) {
         onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold text-slate-500 bg-slate-200/80 hover:bg-indigo-500 hover:text-white transition-colors cursor-help flex-shrink-0"
+        className="relative inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold text-slate-500 bg-slate-200/80 hover:bg-indigo-500 hover:text-white transition-colors cursor-help flex-shrink-0 before:content-[''] before:absolute before:-inset-3 before:rounded-full"
         aria-label="הסבר"
       >
         ?
