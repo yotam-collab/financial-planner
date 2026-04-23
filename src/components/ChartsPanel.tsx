@@ -520,13 +520,22 @@ export function ChartsPanel({ result, config }: Props) {
                       label={{ value: `פרישה מלאה (${fullRetYear})`, position: 'top', fontSize: 12, fill: '#f59e0b', fontWeight: 700 }}
                     />
                   )}
-                  {retYear != null && metric === 'monthlyBalance' && (
+                  {retYear != null && metric === 'monthlyBalance' && retYear !== zinukYear && (
                     <ReferenceLine
                       x={retYear}
                       stroke="#10b981"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
                       label={{ value: `נקודת איזון (${retYear})`, position: 'insideTopLeft', fontSize: 12, fill: '#10b981', fontWeight: 800 }}
+                    />
+                  )}
+                  {retYear != null && metric === 'monthlyBalance' && retYear === zinukYear && (
+                    <ReferenceLine
+                      x={retYear}
+                      stroke="#10b981"
+                      strokeWidth={2.5}
+                      strokeDasharray="4 3"
+                      label={{ value: `+ איזון`, position: 'insideBottomLeft', fontSize: 11, fill: '#10b981', fontWeight: 800 }}
                     />
                   )}
                 </>
