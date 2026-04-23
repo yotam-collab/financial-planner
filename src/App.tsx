@@ -23,7 +23,7 @@ function App() {
           <img
             src={`${import.meta.env.BASE_URL}hero.png`}
             alt=""
-            className="w-full h-40 md:h-72 lg:h-[28rem] xl:h-[32rem] 2xl:h-[36rem] object-cover object-top"
+            className="w-full h-40 md:h-60 lg:h-80 xl:h-[22rem] 2xl:h-[26rem] object-cover object-top"
           />
           {/* Dark gradient: stronger at bottom (where desktop title sits), subtle at top (mobile title) */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-slate-900/30 md:to-transparent" />
