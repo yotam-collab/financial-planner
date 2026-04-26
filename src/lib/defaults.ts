@@ -2,13 +2,12 @@ import type { ScenarioConfig, AssetConfig, IncomeConfig, ExpenseConfig, HouseCon
 
 export const DEFAULT_ASSETS: AssetConfig = {
   liquidPortfolio: 2_824_050,
-  yotamPension: 800_000,
-  hadasPension: 200_000,
-  // Per-person keren hishtalmut. Defaults split the previous shared 176K
-  // ~equally; user can adjust per person from the input panel.
-  yotamKerenHishtalmut: 120_000,
+  yotamPension: 567_961,
+  hadasPension: 183_889,
+  // Per-person keren hishtalmut.
+  yotamKerenHishtalmut: 106_603,
   yotamKerenHishtalmutLiquidAge: 47,
-  hadasKerenHishtalmut: 56_000,
+  hadasKerenHishtalmut: 70_400,
   hadasKerenHishtalmutLiquidAge: 38,
   // Legacy fields kept for migration only — see useFinancialState mergeConfig.
   kerenHishtalmut: 0,
@@ -23,15 +22,14 @@ export const DEFAULT_ASSETS: AssetConfig = {
 
 export const DEFAULT_INCOME: IncomeConfig = {
   // Yotam — salaried at own company during zinuk, consulting/alt post-zinuk
-  yotamNetIncomeZinuk: 22_000,
+  // Net is post-pension (תלוש already deducts the contribution)
+  yotamNetIncomeZinuk: 30_000,
   yotamNetIncomePostZinuk: 15_000,
-  // Yotam pension: 6%+6.5%+6% capped at max deposit = 5,645
-  yotamMonthlyPensionContribution: 5_645,
-  // Hadas — self-employed
-  hadasNetIncomeZinuk: 25_000,
+  yotamMonthlyPensionContribution: 5_529,
+  // Hadas — עוסק מורשה. Net is BEFORE she sends her pension contribution.
+  hadasNetIncomeZinuk: 23_000,
   hadasNetIncomePostZinuk: 10_000,
-  // Self-employed mandatory pension (4.45% + 12.55% on avg wage)
-  hadasMonthlyPensionContribution: 1_170,
+  hadasMonthlyPensionContribution: 4_075,
   monthlyLiquidContributionRenting: 17_000,
   monthlyLiquidContributionOwning: 10_000,
 };
