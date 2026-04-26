@@ -190,6 +190,8 @@ export interface YearResult {
 export interface SimulationResult {
   years: YearResult[];
   earliestRetirementAge: number | null;
+  /** Earliest calendar year in which BOTH Yotam and Hadas can fully retire and stay solvent. */
+  earliestFullRetirementYear: number | null;
   depletionAge: number | null;
   scenarioLabel: string;
 }

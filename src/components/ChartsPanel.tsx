@@ -394,6 +394,7 @@ export function ChartsPanel({ result, config }: Props) {
     realNetWorth: y.real.netWorth,
   }));
   const retAge = result.earliestRetirementAge;
+  const fullRetirementYear = result.earliestFullRetirementYear;
   const metricCfg = METRICS[metric];
   const dataKey = showReal ? metricCfg.realKey : metricCfg.nominalKey;
 
@@ -538,6 +539,24 @@ export function ChartsPanel({ result, config }: Props) {
                       label={{ value: `+ איזון`, position: 'insideBottomLeft', fontSize: 11, fill: '#10b981', fontWeight: 800 }}
                     />
                   )}
+                  {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear !== fullRetYear && (
+                    <ReferenceLine
+                      x={fullRetirementYear}
+                      stroke="#7c3aed"
+                      strokeWidth={2.5}
+                      strokeDasharray="4 3"
+                      label={{ value: `איזון לפרישה מלאה (${fullRetirementYear})`, position: 'insideBottom', fontSize: 12, fill: '#7c3aed', fontWeight: 800 }}
+                    />
+                  )}
+                  {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear === fullRetYear && (
+                    <ReferenceLine
+                      x={fullRetirementYear}
+                      stroke="#7c3aed"
+                      strokeWidth={2.5}
+                      strokeDasharray="4 3"
+                      label={{ value: `+ איזון לפרישה`, position: 'insideBottom', fontSize: 11, fill: '#7c3aed', fontWeight: 800 }}
+                    />
+                  )}
                 </>
               );
             })()}
@@ -601,7 +620,8 @@ export function ChartsPanel({ result, config }: Props) {
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           <LegendItem color="#4f46e5">הפסקת הכנסה מזינוק</LegendItem>
           <LegendItem color="#f59e0b">פרישה מלאה</LegendItem>
-          {metric === 'monthlyBalance' && <LegendItem color="#10b981">נקודת איזון</LegendItem>}
+          {metric === 'monthlyBalance' && <LegendItem color="#10b981">איזון מזינוק</LegendItem>}
+          {metric === 'monthlyBalance' && fullRetirementYear != null && <LegendItem color="#7c3aed">איזון לפרישה מלאה</LegendItem>}
         </div>
         <span className="text-[11px] md:text-xs text-slate-400 italic">💡 לחץ על נקודה בגרף לפירוט מלא</span>
       </div>

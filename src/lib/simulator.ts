@@ -585,8 +585,41 @@ export function findEarliestRetirementAge(config: ScenarioConfig): number | null
   return null;
 }
 
+/**
+ * Find the earliest CALENDAR YEAR in which BOTH Yotam and Hadas can fully retire
+ * (zero earned income from then on) and the plan remains sustainable.
+ *
+ * Criterion: when both fully retire in year Y (each at the age they happen to be),
+ * every year from Y onward has monthlyBalance >= 0 AND the portfolio doesn't
+ * deplete. Both must already be past their zinuk-end before they can fully retire.
+ */
+export function findEarliestFullRetirementYear(config: ScenarioConfig): number | null {
+  const startYear = config.simulationStartYear ?? 2026;
+  const lastYear = startYear + (config.endAge - config.startAge);
+  for (let y = startYear; y <= lastYear; y++) {
+    const offset = y - startYear;
+    const yotamAgeAtY = config.startAge + offset;
+    const hadasAgeAtY = config.hadasAge + offset;
+    // Both must have already finished zinuk before fully retiring
+    if (yotamAgeAtY < config.zinukEndAge) continue;
+    const testConfig: ScenarioConfig = {
+      ...config,
+      fullRetirementAge: yotamAgeAtY,
+      hadasFullRetirementAge: hadasAgeAtY,
+    };
+    const years = runCore(testConfig);
+    const postFull = years.filter(yr => yr.calendarYear >= y);
+    if (postFull.length === 0) continue;
+    if (postFull.some(yr => yr.monthlyBalance < 0)) continue;
+    if (years.some(yr => yr.isDepleted)) continue;
+    return y;
+  }
+  return null;
+}
+
 export function simulate(config: ScenarioConfig): SimulationResult {
   const earliestRetirementAge = findEarliestRetirementAge(config);
+  const earliestFullRetirementYear = findEarliestFullRetirementYear(config);
   const years = runCore(config);
   const dep = years.find(y => y.isDepleted && y.phase !== 'zinuk');
   const { housePurchaseYear: hpy, startAge } = config;
@@ -595,5 +628,11 @@ export function simulate(config: ScenarioConfig): SimulationResult {
     : hpy === 1
       ? 'קנייה מיידית'
       : `קנייה בגיל ${startAge + hpy - 1}`;
-  return { years, earliestRetirementAge, depletionAge: dep?.age ?? null, scenarioLabel: label };
+  return {
+    years,
+    earliestRetirementAge,
+    earliestFullRetirementYear,
+    depletionAge: dep?.age ?? null,
+    scenarioLabel: label,
+  };
 }
