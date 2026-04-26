@@ -330,16 +330,17 @@ export function InputPanel({ config, setConfig }: Props) {
       <Section title="יותם — הכנסה ופנסיה" icon="👨‍💼" color="indigo">
         <NumInput label="נטו לפני זינוק" value={config.income.yotamNetIncomeZinuk}
           onChange={v => update('income.yotamNetIncomeZinuk', v)} step={1000}
-          note={`ברוטו: ~${estimateGross(config.income.yotamNetIncomeZinuk).toLocaleString('he-IL')} ₪`}
-          help="הכנסה חודשית נטו בשלב הזינוק — אחרי מס הכנסה, ביטוח לאומי, ובריאות. זו ההכנסה הזמינה לצריכה/חסכון. יחס נטו/ברוטו: ~75% בשכר נמוך-בינוני, ~65% בשכר גבוה, ~55% בשכר מאוד גבוה (מדרגות מס)." />
+          note={`ברוטו: ~${estimateGross(config.income.yotamNetIncomeZinuk).toLocaleString('he-IL')} ₪ · נטו זה כבר אחרי הפרשת פנסיה`}
+          help="ההכנסה החודשית נטו על התלוש שאתה מקבל מהחברה — אחרי מס הכנסה, ביטוח לאומי, בריאות, וגם אחרי שההפקדה לפנסיה כבר ירדה. זאת הסכום שבפועל מגיע לחשבון הבנק. המודל לא מקזז שוב את ההפקדה לפנסיה (כדי שלא נספור פעמיים)." />
         <NumInput label="נטו אחרי זינוק" value={config.income.yotamNetIncomePostZinuk}
           onChange={v => update('income.yotamNetIncomePostZinuk', v)} step={1000}
-          note={config.income.yotamNetIncomePostZinuk > 0 ? `ברוטו: ~${estimateGross(config.income.yotamNetIncomePostZinuk).toLocaleString('he-IL')} ₪` : 'ללא הכנסה'}
-          help="הכנסה נטו חודשית אחרי סגירת העסק — בד״כ ייעוץ/עבודת שכיר חלקית/פרויקטים. זו תקופת המעבר לפני פרישה מלאה. 0 = ללא הכנסה כלל. מעבר מ-22K ל-15K נטו = ירידה של ~32%." />
+          note={config.income.yotamNetIncomePostZinuk > 0 ? `ברוטו: ~${estimateGross(config.income.yotamNetIncomePostZinuk).toLocaleString('he-IL')} ₪ · אחרי הפרשת פנסיה` : 'ללא הכנסה'}
+          help="הכנסה נטו חודשית אחרי סגירת העסק — בד״כ ייעוץ/עבודת שכיר חלקית/פרויקטים. נטו = מה שנכנס לחשבון, אחרי שכל המסים והפנסיה כבר ירדו. 0 = ללא הכנסה כלל." />
         <NumInput label="הפקדה לפנסיה" value={config.income.yotamMonthlyPensionContribution}
           onChange={v => update('income.yotamMonthlyPensionContribution', v)} step={100}
           rec="תקרת שכיר: 5,645 ₪"
-          help="הפקדה חודשית כוללת לפנסיה. שכיר בישראל: 6% עובד + 6.5% תגמולים + 6% מעביד = 18.5% מהשכר. תקרה סטטוטורית: 5,645 ₪/חודש (2026). מעל התקרה — אין הטבת מס. ההפקדה מצטברת בקרן ומגדילה את יתרת הפנסיה." />
+          note="כבר מקוזז מהנטו · רק מצטבר ליתרת הפנסיה"
+          help="הפקדה חודשית כוללת לפנסיה. שכיר בישראל: 6% עובד + 6.5% תגמולים + 6% מעביד = 18.5% מהשכר. תקרה סטטוטורית: 5,645 ₪/חודש (2026). מאחר והנטו שאתה מקבל בתלוש כבר אחרי הפרשת פנסיה — הסכום הזה רק מצטבר ליתרת הפנסיה ולא מקזז שוב מההכנסה." />
         <NumInput label="יתרת פנסיה" value={config.assets.yotamPension}
           onChange={v => update('assets.yotamPension', v)} step={50000}
           note={`נעולה עד גיל ${config.pensionStartAge}`}
@@ -349,16 +350,17 @@ export function InputPanel({ config, setConfig }: Props) {
       <Section title="הדס — הכנסה ופנסיה" icon="👩‍💼" color="pink">
         <NumInput label="נטו לפני זינוק" value={config.income.hadasNetIncomeZinuk}
           onChange={v => update('income.hadasNetIncomeZinuk', v)} step={1000}
-          note={`עצמאית בת ${config.hadasAge} · ברוטו: ~${estimateGross(config.income.hadasNetIncomeZinuk).toLocaleString('he-IL')} ₪`}
-          help="הכנסה נטו חודשית מעסק עצמאי. עצמאית משלמת: מס הכנסה שולי, ביטוח לאומי ~17% (מחצית השכר הממוצע ומעלה), בריאות, פנסיה חובה. נטו = אחרי כל אלה. היחס נטו/ברוטו לעצמאי גבוה מעט משכיר (אין חלק מעביד בביטוח לאומי)." />
+          note={`עוסק מורשה בת ${config.hadasAge} · נטו לפני הפרשת פנסיה`}
+          help="הכנסה נטו חודשית מהעסק העצמאי — אחרי מס הכנסה וביטוח לאומי, אבל **לפני** שהדס מפרישה לעצמה לפנסיה. בעוסק מורשה הפנסיה היא תשלום נפרד שהדס שולחת בעצמה, ולכן המודל מקזז את ההפקדה לפנסיה מהנטו הזה לחישוב הכנסה זמינה לצריכה." />
         <NumInput label="נטו אחרי זינוק" value={config.income.hadasNetIncomePostZinuk}
           onChange={v => update('income.hadasNetIncomePostZinuk', v)} step={1000}
-          note={config.income.hadasNetIncomePostZinuk > 0 ? `ברוטו: ~${estimateGross(config.income.hadasNetIncomePostZinuk).toLocaleString('he-IL')} ₪` : 'ללא הכנסה'}
-          help="הכנסה נטו חודשית אחרי הורדת היקף העסק — עבודה חלקית, ייעוץ, פרויקטים. 0 = הפסקה מלאה. שלב מעבר לפני פרישה מלאה — מאפשר לגדל את התיק מבלי לשחוק אותו." />
+          note={config.income.hadasNetIncomePostZinuk > 0 ? `נטו לפני הפרשת פנסיה` : 'ללא הכנסה'}
+          help="הכנסה נטו אחרי הורדת היקף העסק. כמו לפני זינוק — נטו לפני שהדס מפרישה את הפנסיה לעצמה. אם יש הכנסה והיא מפרישה גם בתקופה זו, המודל יקזז את ההפקדה לפנסיה." />
         <NumInput label="הפקדה לפנסיה" value={config.income.hadasMonthlyPensionContribution}
           onChange={v => update('income.hadasMonthlyPensionContribution', v)} step={100}
           rec="חובת עצמאית: 1,170 ₪"
-          help="הפקדה חודשית לפנסיה. חובת עצמאית (2017 ואילך): 4.45% על חצי השכר הממוצע במשק, 12.55% מעל. בד״כ ~1,170 ₪/חודש בתחילת הדרך, עד 2,500+ ₪ בעסקים גדולים. עצמאית משלמת הכל מעצמה (אין חלק מעביד)." />
+          note="מקוזז מהנטו של הדס + מצטבר ליתרת הפנסיה"
+          help="הפקדה חודשית לפנסיה. חובת עצמאית (2017 ואילך): 4.45% על חצי השכר הממוצע במשק, 12.55% מעל. בד״כ ~1,170 ₪/חודש בתחילת הדרך, עד 2,500+ ₪ בעסקים גדולים. בעוסק מורשה ההפקדה משולמת מההכנסה האישית — לכן המודל מוריד אותה מהנטו של הדס בנוסף להוספה לקרן." />
         <NumInput label="יתרת פנסיה" value={config.assets.hadasPension}
           onChange={v => update('assets.hadasPension', v)} step={50000}
           note={`עוד ${config.hadasPensionStartAge - config.hadasAge} שנים לפנסיה`}

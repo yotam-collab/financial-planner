@@ -410,20 +410,32 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const nomSolar = ownsHome ? inflate(house.solarIncome ?? 0, market.inflationRate, ye) : 0;
     const mHomePassive = nomRentalUnit + nomSolar;
 
-    // Sustainable income = income + pension + home-passive + 4% (full picture)
-    const mSustainable = (yotamIncome + hadasIncome) + totalPensionPayout + mHomePassive + m4pct;
+    // ─── Pension contribution semantics differ by employment status ───
+    // Yotam (salaried at his own company): the תלוש "net" already deducts the
+    //   pension contribution. So `yotamIncome` is take-home AFTER pension; do NOT
+    //   subtract `nomYPC` again — that would double-count.
+    // Hadas (עוסק מורשה / self-employed): the "net" she records is BEFORE she pays
+    //   her own pension. She has to send `nomHPC` to the pension fund herself,
+    //   which reduces her real spendable cashflow.
+    const yotamSpendable = yotamIncome;
+    const hadasSpendable = hadasIncome > 0 ? Math.max(0, hadasIncome - nomHPC) : 0;
+    const totalSpendable = yotamSpendable + hadasSpendable;
+
+    // Sustainable income = spendable income + pension annuity + home-passive + 4% (full picture)
+    const mSustainable = totalSpendable + totalPensionPayout + mHomePassive + m4pct;
 
     // ─── Monthly balance shown in chart ───
     const mBalance = mSustainable - mExp;
 
-    // ─── Pension contributions (separate from liquid cashflow) ───
+    // ─── Pension contributions (added to pension balance) ───
     if (yotamIncome > 0) yotamPension += nomYPC * 12;
     if (hadasIncome > 0) hadasPension += nomHPC * 12;
 
     // ─── Actual cashflow to/from liquid ───
-    // Includes earned income + pension annuity + home passive - expenses.
+    // Includes spendable earned income + pension annuity + home passive - expenses.
+    // For Hadas the pension contribution is already subtracted via `hadasSpendable`.
     // The 4% is REFERENCE only, not added (avoids double-counting with compound growth).
-    const actualCashflow = ((yotamIncome + hadasIncome) + totalPensionPayout + mHomePassive - mExp) * 12;
+    const actualCashflow = (totalSpendable + totalPensionPayout + mHomePassive - mExp) * 12;
     liquid += actualCashflow;
     const cf = actualCashflow;
 
