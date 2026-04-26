@@ -4,6 +4,13 @@ export interface AssetConfig {
   liquidPortfolio: number;
   yotamPension: number;
   hadasPension: number;
+  /** Per-person keren hishtalmut balances + their own liquidation ages
+   *  (each keren has its own 6-year clock from the first deposit). */
+  yotamKerenHishtalmut: number;
+  yotamKerenHishtalmutLiquidAge: number;
+  hadasKerenHishtalmut: number;
+  hadasKerenHishtalmutLiquidAge: number;
+  /** DEPRECATED — kept for migration from the old shared model. Will be split. */
   kerenHishtalmut: number;
   kerenHishtalmutLiquidAge: number;
   apartmentNetProceeds: number;

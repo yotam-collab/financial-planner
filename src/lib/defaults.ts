@@ -4,7 +4,14 @@ export const DEFAULT_ASSETS: AssetConfig = {
   liquidPortfolio: 2_824_050,
   yotamPension: 800_000,
   hadasPension: 200_000,
-  kerenHishtalmut: 176_000,
+  // Per-person keren hishtalmut. Defaults split the previous shared 176K
+  // ~equally; user can adjust per person from the input panel.
+  yotamKerenHishtalmut: 120_000,
+  yotamKerenHishtalmutLiquidAge: 47,
+  hadasKerenHishtalmut: 56_000,
+  hadasKerenHishtalmutLiquidAge: 38,
+  // Legacy fields kept for migration only — see useFinancialState mergeConfig.
+  kerenHishtalmut: 0,
   kerenHishtalmutLiquidAge: 47,
   apartmentNetProceeds: 1_180_000,
   usRealEstateNonProducing: 365_000,

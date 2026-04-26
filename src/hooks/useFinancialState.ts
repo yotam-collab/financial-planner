@@ -42,6 +42,28 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
     ...(isOldHouseSchema ? { closingCosts: 0 } : {}),
   };
 
+  // Assets schema migration: if saved is from old (shared kerenHishtalmut) schema
+  // and the new per-person fields are absent, split the shared balance ~equally
+  // (a sensible default; user can re-tune from the input panel).
+  const savedAssets = saved.assets as Partial<ScenarioConfig['assets']> | undefined;
+  const isOldAssetsSchema =
+    savedAssets &&
+    savedAssets.yotamKerenHishtalmut === undefined &&
+    savedAssets.kerenHishtalmut !== undefined;
+  let mergedAssets = { ...defaults.assets, ...(savedAssets ?? {}) };
+  if (isOldAssetsSchema) {
+    const sharedBalance = savedAssets.kerenHishtalmut ?? 0;
+    const sharedAge = savedAssets.kerenHishtalmutLiquidAge ?? defaults.assets.yotamKerenHishtalmutLiquidAge;
+    mergedAssets = {
+      ...mergedAssets,
+      yotamKerenHishtalmut: Math.round(sharedBalance * 0.6),
+      hadasKerenHishtalmut: Math.round(sharedBalance * 0.4),
+      yotamKerenHishtalmutLiquidAge: sharedAge,
+      hadasKerenHishtalmutLiquidAge: defaults.assets.hadasKerenHishtalmutLiquidAge,
+      kerenHishtalmut: 0, // legacy field zeroed so it doesn't double-count
+    };
+  }
+
   return {
     ...defaults,
     ...saved,
@@ -52,7 +74,7 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
     hadasBirthYear: saved.hadasBirthYear ?? defaults.hadasBirthYear,
     hadasBirthMonth: saved.hadasBirthMonth ?? defaults.hadasBirthMonth,
     hadasFullRetirementAge: saved.hadasFullRetirementAge ?? defaults.hadasFullRetirementAge,
-    assets: { ...defaults.assets, ...saved.assets },
+    assets: mergedAssets,
     income: { ...defaults.income, ...saved.income },
     expenses: { ...defaults.expenses, ...saved.expenses },
     house: mergedHouse,

@@ -309,8 +309,12 @@ function runCore(config: ScenarioConfig): YearResult[] {
   let liquid = assets.liquidPortfolio + assets.apartmentNetProceeds;
   let yotamPension = assets.yotamPension;
   let hadasPension = assets.hadasPension;
-  let keren = assets.kerenHishtalmut;
-  let kerenMerged = false;
+  // Per-person keren hishtalmut. Each becomes liquid at its own age and is
+  // then merged into the main liquid portfolio.
+  let yotamKeren = assets.yotamKerenHishtalmut ?? 0;
+  let yotamKerenMerged = false;
+  let hadasKeren = assets.hadasKerenHishtalmut ?? 0;
+  let hadasKerenMerged = false;
   let ownsHome = false;
   let homeVal = 0, mortBal = 0, mortPayment = 0, mortPrincipal = 0, mortStartYear = 0;
   let yotamPensionActive = false, yotamPensionPayout = 0;
@@ -359,8 +363,13 @@ function runCore(config: ScenarioConfig): YearResult[] {
     if (year === assets.usRealEstateProducingSellYear)
       liquid += assets.usRealEstateProducing * assets.usRealEstateProducingSellMultiplier;
 
-    if (!kerenMerged && age >= assets.kerenHishtalmutLiquidAge) {
-      liquid += keren; keren = 0; kerenMerged = true;
+    // Yotam's keren liquidates at his configured age (his ages = `age`)
+    if (!yotamKerenMerged && age >= (assets.yotamKerenHishtalmutLiquidAge ?? Infinity)) {
+      liquid += yotamKeren; yotamKeren = 0; yotamKerenMerged = true;
+    }
+    // Hadas's keren liquidates at her configured age (use her current age)
+    if (!hadasKerenMerged && hadasCurrentAge >= (assets.hadasKerenHishtalmutLiquidAge ?? Infinity)) {
+      liquid += hadasKeren; hadasKeren = 0; hadasKerenMerged = true;
     }
 
     // House purchase
@@ -443,7 +452,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
     if (liquid > 0) liquid *= (1 + nomRet);
     if (!yotamPensionActive) yotamPension *= (1 + nomRet);
     if (!hadasPensionActive) hadasPension *= (1 + nomRet);
-    if (!kerenMerged) keren *= (1 + nomRet);
+    if (!yotamKerenMerged) yotamKeren *= (1 + nomRet);
+    if (!hadasKerenMerged) hadasKeren *= (1 + nomRet);
 
     if (ownsHome) {
       if (year > mortStartYear) homeVal *= (1 + nomHA);
@@ -458,7 +468,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const yPenNW = yotamPensionActive ? 0 : yotamPension;
     const hPenNW = hadasPensionActive ? 0 : hadasPension;
     const totalPensionNW = yPenNW + hPenNW;
-    const kNW = kerenMerged ? 0 : keren;
+    const kNW = (yotamKerenMerged ? 0 : yotamKeren) + (hadasKerenMerged ? 0 : hadasKeren);
     const nw = liquid + totalPensionNW + kNW + hEq;
 
     results.push({

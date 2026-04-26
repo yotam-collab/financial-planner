@@ -345,6 +345,17 @@ export function InputPanel({ config, setConfig }: Props) {
           onChange={v => update('assets.yotamPension', v)} step={50000}
           note={`נעולה עד גיל ${config.pensionStartAge}`}
           help="יתרה נוכחית בקרן פנסיה/ביטוח מנהלים. נעולה עד גיל 60 (משיכה מוקדמת = קנס 35% מס + מיסים על רווחים). מגיל 60 אפשר קצבה חודשית לכל החיים: יתרה ÷ 216 (מקדם המרה). דוגמה: 800K ₪ → 3,704 ₪/חודש; 2M ₪ → 9,259 ₪/חודש." />
+        <NumInput label="יתרת קה״ש" value={config.assets.yotamKerenHishtalmut}
+          onChange={v => update('assets.yotamKerenHishtalmut', v)} step={10000}
+          note={`נזילה בגיל ${config.assets.yotamKerenHishtalmutLiquidAge}`}
+          help="יתרה נוכחית בקרן ההשתלמות של יותם. אחרי 6 שנים מההפקדה הראשונה — נזילה ופטורה ממס רווח הון. תקרת הפקדה עם הטבת מס לשכיר: 18,854 ₪/שנה (2026). כשמגיע לגיל הנזילות — מצטרפת אוטומטית לתיק הנזיל." />
+        <SliderInput label="קה״ש — גיל נזילות"
+          value={config.assets.yotamKerenHishtalmutLiquidAge ?? 47}
+          onChange={v => update('assets.yotamKerenHishtalmutLiquidAge', v)}
+          min={config.startAge} max={70}
+          displayValue={`גיל ${config.assets.yotamKerenHishtalmutLiquidAge ?? 47}`}
+          note="6 שנים מההפקדה הראשונה"
+          help="הגיל שבו הקה״ש של יותם הופכת לנזילה (6 שנים מהפקדה ראשונה). אחר־כך הסכום מצטרף לתיק הנזיל ונכלל בכלל ה-4%." />
       </Section>
 
       <Section title="הדס — הכנסה ופנסיה" icon="👩‍💼" color="pink">
@@ -365,6 +376,17 @@ export function InputPanel({ config, setConfig }: Props) {
           onChange={v => update('assets.hadasPension', v)} step={50000}
           note={`עוד ${config.hadasPensionStartAge - config.hadasAge} שנים לפנסיה`}
           help="יתרת פנסיה של הדס. נעולה עד גיל פרישה לנשים (עולה בהדרגה ל-65 עד 2032). קצבה חודשית = יתרה ÷ 216. לנשים תוחלת חיים ~5 שנים ארוכה יותר → קצבה חודשית מעט נמוכה יותר לאותה יתרה במחירים שונים של מקדם המרה." />
+        <NumInput label="יתרת קה״ש" value={config.assets.hadasKerenHishtalmut}
+          onChange={v => update('assets.hadasKerenHishtalmut', v)} step={10000}
+          note={`נזילה בגיל ${config.assets.hadasKerenHishtalmutLiquidAge}`}
+          help="יתרה נוכחית בקרן ההשתלמות של הדס (עוסק מורשה). אחרי 6 שנים מההפקדה הראשונה — נזילה ופטורה ממס רווח הון. תקרת הפקדה עם הטבת מס לעצמאי: 20,520 ₪/שנה (2026). כשמגיע לגיל הנזילות — מצטרפת אוטומטית לתיק הנזיל." />
+        <SliderInput label="קה״ש — גיל נזילות"
+          value={config.assets.hadasKerenHishtalmutLiquidAge ?? 38}
+          onChange={v => update('assets.hadasKerenHishtalmutLiquidAge', v)}
+          min={config.hadasAge} max={70}
+          displayValue={`גיל ${config.assets.hadasKerenHishtalmutLiquidAge ?? 38}`}
+          note="6 שנים מההפקדה הראשונה"
+          help="הגיל שבו הקה״ש של הדס הופכת לנזילה (6 שנים מהפקדה ראשונה). אחר־כך הסכום מצטרף לתיק הנזיל ונכלל בכלל ה-4%." />
       </Section>
 
       <Section title="נכסים משותפים" icon="💎" color="emerald">
@@ -372,14 +394,13 @@ export function InputPanel({ config, setConfig }: Props) {
           onChange={v => update('assets.liquidPortfolio', v)} step={50000}
           rec="USD + קרנות + money market"
           help="סך הכסף הזמין לשימוש מיידי ללא קנסות: מניות, ETF, קרנות, מט״ח, מזומן, money market. זה התיק שעליו חל כלל ה-4% (משיכה שנתית בת-קיימא). גדל כל שנה בתשואה ריאלית (ברירת מחדל: 6% אחרי מס)." />
-        <NumInput label="קרן השתלמות" value={config.assets.kerenHishtalmut}
-          onChange={v => update('assets.kerenHishtalmut', v)} step={10000}
-          note={`נזילה בגיל ${config.assets.kerenHishtalmutLiquidAge}`}
-          help="חסכון מס-דחוי. אחרי 6 שנים — רווחים פטורים ממס רווח הון (25%). תקרת הפקדה עם הטבת מס: שכיר 18,854 ₪/שנה, עצמאי 20,520 ₪ (2026). אחרי תקופת הנעילה נזילה ומצטרפת לתיק הנזיל." />
         <NumInput label="תמורת דירה (נטו)" value={config.assets.apartmentNetProceeds}
           onChange={v => update('assets.apartmentNetProceeds', v)} step={50000}
           rec="אור עקיבא · פטור ממס שבח"
           help="נטו ממכירת דירה קיימת — אחרי מס שבח/פטור ועלויות מכירה. פטור על דירה יחידה (סעיף 49(ב)): פטור מלא אם אין דירה אחרת בבעלות 18 חודשים אחורה. נכנס לתיק הנזיל בשנה 1 של הסימולציה." />
+        <p className="text-[11px] text-slate-500 italic mt-1 mr-1">
+          קה״ש מופיעה כעת בנפרד תחת ״יותם״ ו״הדס״ — לכל אחד יתרה וגיל נזילות נפרדים.
+        </p>
       </Section>
 
       <Section title="הוצאות" icon="📊" color="rose">
