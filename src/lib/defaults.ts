@@ -1,10 +1,10 @@
 import type { ScenarioConfig, AssetConfig, IncomeConfig, ExpenseConfig, HouseConfig, MarketConfig, HappinessConfig } from './types';
 
 export const DEFAULT_ASSETS: AssetConfig = {
-  liquidPortfolio: 1_900_000,
+  liquidPortfolio: 2_824_050,
   yotamPension: 800_000,
   hadasPension: 200_000,
-  kerenHishtalmut: 200_000,
+  kerenHishtalmut: 176_000,
   kerenHishtalmutLiquidAge: 47,
   apartmentNetProceeds: 1_180_000,
   usRealEstateNonProducing: 365_000,
