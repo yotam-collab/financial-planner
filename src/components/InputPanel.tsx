@@ -61,10 +61,31 @@ function Section({ title, icon, color = 'indigo', defaultOpen = false, children 
   );
 }
 
-function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, rec, help }: {
+function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, rec, help, noCommas = false }: {
   label: string; value: number; onChange: (v: number) => void;
   step?: number; suffix?: string; note?: string; rec?: string; help?: string;
+  /** Set true for year inputs and other values where thousands separators don't make sense. */
+  noCommas?: boolean;
 }) {
+  // Local draft state so the user can type freely (without commas re-flowing the cursor),
+  // and the displayed value snaps back to the formatted form on blur.
+  const [focused, setFocused] = useState(false);
+  const [draft, setDraft] = useState('');
+
+  const v = value ?? 0;
+  const formatted = noCommas
+    ? String(v)
+    : v.toLocaleString('he-IL', { maximumFractionDigits: 6 });
+  const display = focused ? draft : formatted;
+
+  // Allow digits, dot (decimal), and a single leading minus.
+  const parse = (raw: string): number => {
+    const cleaned = raw.replace(/[^\d.\-]/g, '');
+    if (cleaned === '' || cleaned === '-' || cleaned === '.') return 0;
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? 0 : n;
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-1">
@@ -77,11 +98,39 @@ function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, r
           style={{ background: '#ffffff' }}
         >
           <input
-            type="number" value={value ?? 0}
-            onChange={e => onChange(Number(e.target.value) || 0)}
-            step={step}
+            type="text"
+            inputMode="decimal"
+            value={display}
+            onFocus={(e) => {
+              setFocused(true);
+              setDraft(String(v));
+              // Select-all so typing replaces the value cleanly.
+              const target = e.currentTarget;
+              setTimeout(() => target.select(), 0);
+            }}
+            onBlur={() => setFocused(false)}
+            onChange={e => {
+              const raw = e.target.value;
+              setDraft(raw);
+              onChange(parse(raw));
+            }}
+            onKeyDown={e => {
+              // Up/Down arrows still nudge by `step`, like the old number input.
+              if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const next = v + step;
+                onChange(next);
+                if (focused) setDraft(String(next));
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const next = v - step;
+                onChange(next);
+                if (focused) setDraft(String(next));
+              }
+            }}
             className="num w-24 md:w-28 text-sm md:text-base font-bold outline-none text-left"
             style={{ background: 'transparent', color: '#0f172a' }}
+            aria-label={label}
           />
           <span className="text-xs font-medium" style={{ color: '#64748b' }}>{suffix}</span>
         </div>
@@ -533,11 +582,11 @@ function HappinessSection({ config, update, setConfig }: {
         </p>
       </div>
       <NumInput label="הבן/בת הבכור/ה" value={h.oldestChildBirthYear}
-        onChange={v => update('happiness.oldestChildBirthYear', v)} step={1} suffix=""
+        onChange={v => update('happiness.oldestChildBirthYear', v)} step={1} suffix="" noCommas
         note={`גיל ${oldestAgeNow} ב-${simStart}`}
         help="שנת הלידה של הילד/ה המבוגר/ת. משמש לחישוב 'זמן עם הילדים' ו'חופשות משפחתיות' — עקומת הצרכים מהורה יורדת עם הגיל (שיא 5-10, יורד משמעותית אחרי 17)." />
       <NumInput label="הבן/בת הצעיר/ה" value={h.youngestChildBirthYear}
-        onChange={v => update('happiness.youngestChildBirthYear', v)} step={1} suffix=""
+        onChange={v => update('happiness.youngestChildBirthYear', v)} step={1} suffix="" noCommas
         note={`גיל ${youngestAgeNow} ב-${simStart}`}
         help="שנת הלידה של הילד/ה הצעיר/ה. כשהילד הצעיר מגיע ל-18 'בית משפחתי' מתחיל להידלדל (יעזבו ללימודים/צבא)." />
 
