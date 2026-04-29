@@ -255,15 +255,26 @@ export function InputPanel({ config, setConfig }: Props) {
   const mortAmt = Math.round(config.house.priceToday * config.house.mortgageLTV);
   const mortPay = Math.round(calcMonthlyMortgagePayment(mortAmt, config.house.mortgageRate, config.house.mortgageTerm));
 
-  const housePurchaseSliderValue = config.housePurchaseYear ?? 0;
+  // Single slider drives BOTH "should we keep Or Akiva?" and "when to buy a house?"
+  //   -1 = keep Or Akiva, no new house
+  //    0 = sell Or Akiva, don't buy a new house (stay renting)
+  //    1 = buy immediately (Or Akiva sold)
+  //    2..N = buy at age (config.startAge + N - 1), Or Akiva sold
+  const housePurchaseSliderValue = config.assets.orAkivaKeep
+    ? -1
+    : (config.housePurchaseYear ?? 0);
   const setHousePurchaseYear = (v: number) => {
-    setConfig(prev => ({ ...prev, housePurchaseYear: v === 0 ? null : v }));
+    setConfig(prev => ({
+      ...prev,
+      housePurchaseYear: v <= 0 ? null : v,
+      assets: { ...prev.assets, orAkivaKeep: v === -1 },
+    }));
   };
-  const housePurchaseDisplayValue = housePurchaseSliderValue === 0
-    ? 'לא לקנות'
-    : housePurchaseSliderValue === 1
-      ? 'מיידית'
-      : `גיל ${config.startAge + housePurchaseSliderValue - 1}`;
+  const housePurchaseDisplayValue =
+    housePurchaseSliderValue === -1 ? '🏘 השארת דירה באור עקיבא'
+    : housePurchaseSliderValue === 0 ? 'לא לקנות'
+    : housePurchaseSliderValue === 1 ? 'מיידית'
+    : `גיל ${config.startAge + housePurchaseSliderValue - 1}`;
 
   const [expenseSimOpen, setExpenseSimOpen] = useState(false);
 
@@ -323,10 +334,10 @@ export function InputPanel({ config, setConfig }: Props) {
         <SliderInput label="שנת קנייה"
           value={housePurchaseSliderValue}
           onChange={setHousePurchaseYear}
-          min={0} max={30}
+          min={-1} max={30}
           displayValue={housePurchaseDisplayValue}
-          note="0 = לא לקנות · 1 = מיידית · 2+ = בעתיד"
-          help="באיזו שנה לקנות בית. 0 = נשארים שוכרים. לפני הקנייה כל הכסף הולך להשקעות (ריבית דריבית). עם הקנייה — מקדמה יוצאת מהתיק הנזיל, אבל הון עצמי בנדל״ן נצבר. המחיר צמוד למדד — ב-2040 בית של 4.8M₪ היום יעלה ~6.4M₪." />
+          note="‑1 = החזקת אור עקיבא · 0 = מכירה ולא קונים · 1 = מיידית · 2+ = בעתיד"
+          help="באיזו שנה לקנות בית, ומה לעשות עם דירת אור עקיבא. ‑1 = להשאיר את אור עקיבא ולא לקנות בית חדש (הכנסה משכ״ד נטו). 0 = למכור את אור עקיבא ולהמשיך לשכור. 1+ = למכור את אור עקיבא והתמורה הופכת למקדמה לבית חדש. המחיר של הבית החדש צמוד למדד." />
 
         {config.housePurchaseYear !== null && (
           <>
@@ -449,30 +460,11 @@ export function InputPanel({ config, setConfig }: Props) {
       </Section>
 
       <Section title="דירה באור עקיבא" icon="🏘" color="emerald">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-600 mb-2">🔀 בחירת מסלול</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setConfig(prev => ({ ...prev, assets: { ...prev.assets, orAkivaKeep: false } }))}
-              className={`px-3 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ${
-                !config.assets.orAkivaKeep
-                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
-                  : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'
-              }`}
-            >
-              💰 מכירה (כעת)
-            </button>
-            <button
-              onClick={() => setConfig(prev => ({ ...prev, assets: { ...prev.assets, orAkivaKeep: true } }))}
-              className={`px-3 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ${
-                config.assets.orAkivaKeep
-                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
-                  : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'
-              }`}
-            >
-              🏘 החזקה והשכרה
-            </button>
-          </div>
+        <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 px-3 py-2.5 text-[11px] md:text-xs text-emerald-800 leading-snug">
+          <strong>המסלול נקבע בסליידר ״שנת קנייה״</strong> בקטע ״קניית בית״:<br/>
+          <span className="text-emerald-700">‑1</span> = החזקה והשכרה ·{' '}
+          <span className="text-emerald-700">0</span> = מכירה ולא קונים ·{' '}
+          <span className="text-emerald-700">1+</span> = מכירה והקנייה הופכת לבית חדש.
         </div>
 
         {!config.assets.orAkivaKeep && (
