@@ -14,16 +14,18 @@ export const DEFAULT_ASSETS: AssetConfig = {
   kerenHishtalmutLiquidAge: 47,
   apartmentNetProceeds: 1_180_000,
   // Or Akiva apartment — defaults reflect: SELL (current behavior). When keep=true,
-  // values reflect the actual mortgage payoff document (Mizrahi-Tefahot 04/2026):
-  //   Part 1 balance: 575,689; Part 2 balance: 193,341; total ≈ 769,030
-  //   Combined monthly: ~4,500 (estimate from balances/rates/term)
-  //   End year: 2053 (longest part)
-  //   Market value ≈ net proceeds + mortgage = 1.18M + 0.77M ≈ 1.95M
+  // values combine BOTH Mizrahi-Tefahot mortgages on the property (04/2026 docs):
+  //   Original (tik 437264203): balance 472,187, monthly 4,479 (parts 6+7)
+  //   Refinance (tik 442338257): balance 766,438, monthly 3,288 (part 1) + ~1,200 (part 2)
+  //   User-reported total outstanding: ~1,040,000
+  //   Combined monthly: ~7,800 (sum of the active monthly debits)
+  //   End year: 2053 (the longest of the four parts)
+  //   Current market value: 2,350,000 (user-provided)
   orAkivaKeep: false,
-  orAkivaCurrentValue: 1_950_000,
+  orAkivaCurrentValue: 2_350_000,
   orAkivaMonthlyRent: 6_200,
-  orAkivaMortgageBalance: 770_000,
-  orAkivaMonthlyMortgage: 4_500,
+  orAkivaMortgageBalance: 1_040_000,
+  orAkivaMonthlyMortgage: 7_800,
   orAkivaMortgageEndYear: 2053,
   orAkivaMonthlyExpenses: 500,
   usRealEstateNonProducing: 365_000,
