@@ -306,7 +306,12 @@ function runCore(config: ScenarioConfig): YearResult[] {
   const totalYears = endAge - startAge + 1;
   const results: YearResult[] = [];
 
-  let liquid = assets.liquidPortfolio + assets.apartmentNetProceeds;
+  // If keeping Or Akiva, the proceeds are NOT injected into liquid (we hold the
+  // apartment instead). Otherwise, inject as before.
+  let liquid = assets.liquidPortfolio + (assets.orAkivaKeep ? 0 : assets.apartmentNetProceeds);
+  // Or Akiva apartment state — only meaningful if orAkivaKeep is true
+  let orAkivaValue = assets.orAkivaKeep ? (assets.orAkivaCurrentValue ?? 0) : 0;
+  let orAkivaMortBal = assets.orAkivaKeep ? (assets.orAkivaMortgageBalance ?? 0) : 0;
   let yotamPension = assets.yotamPension;
   let hadasPension = assets.hadasPension;
   // Per-person keren hishtalmut. Each becomes liquid at its own age and is
@@ -417,17 +422,68 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // Both are inflation-adjusted from today's values, only applicable when owning
     const nomRentalUnit = ownsHome ? inflate(house.rentalIncomeFromUnit ?? 0, market.inflationRate, ye) : 0;
     const nomSolar = ownsHome ? inflate(house.solarIncome ?? 0, market.inflationRate, ye) : 0;
-    const mHomePassive = nomRentalUnit + nomSolar;
 
-    // ─── Pension contribution semantics differ by employment status ───
-    // Yotam (salaried at his own company): the תלוש "net" already deducts the
-    //   pension contribution. So `yotamIncome` is take-home AFTER pension; do NOT
-    //   subtract `nomYPC` again — that would double-count.
-    // Hadas (עוסק מורשה / self-employed): the "net" she records is BEFORE she pays
-    //   her own pension. She has to send `nomHPC` to the pension fund herself,
-    //   which reduces her real spendable cashflow.
-    const yotamSpendable = yotamIncome;
-    const hadasSpendable = hadasIncome > 0 ? Math.max(0, hadasIncome - nomHPC) : 0;
+    // ─── Or Akiva apartment (when held) ───
+    // Net monthly: rent (CPI-adjusted) - mortgage (nominal-fixed, until end year) - expenses (CPI)
+    let mOrAkivaNet = 0;
+    if (assets.orAkivaKeep) {
+      const oRent = inflate(assets.orAkivaMonthlyRent ?? 0, market.inflationRate, ye);
+      const oExp = inflate(assets.orAkivaMonthlyExpenses ?? 0, market.inflationRate, ye);
+      const mortgageActive = calendarYear < (assets.orAkivaMortgageEndYear ?? 0);
+      const oMort = mortgageActive ? (assets.orAkivaMonthlyMortgage ?? 0) : 0;
+      mOrAkivaNet = oRent - oMort - oExp;
+    }
+    const mHomePassive = nomRentalUnit + nomSolar + mOrAkivaNet;
+
+    // ─── Pension contribution semantics ───
+    // ZINUK phase:
+    //   Yotam (salaried at his own company): תלוש "net" already deducts pension.
+    //     `yotamIncome` is take-home AFTER pension → do NOT subtract `nomYPC`.
+    //   Hadas (עוסק מורשה): "net" is BEFORE she pays her own pension. She sends
+    //     the contribution to the fund herself, reducing spendable cashflow.
+    //
+    // ALT-INCOME (post-zinuk) phase:
+    //   Both Yotam and Hadas are now self-employed (consulting / solo work).
+    //   Both deduct pension from net at the SAME RATE they had in zinuk
+    //   (= their personal "recommended" pension fraction). This scales the
+    //   contribution proportionally to the lower post-zinuk income.
+    const yotamPensionRateZinuk =
+      income.yotamNetIncomeZinuk > 0
+        ? income.yotamMonthlyPensionContribution / income.yotamNetIncomeZinuk
+        : 0;
+    const hadasPensionRateZinuk =
+      income.hadasNetIncomeZinuk > 0
+        ? income.hadasMonthlyPensionContribution / income.hadasNetIncomeZinuk
+        : 0;
+
+    // This year's pension contribution amounts (per person) and how much
+    // comes out of net (vs. already-deducted-on-paycheck).
+    let yotamContribThisYear = 0;
+    let yotamDeductFromNet = 0;
+    if (yotamIncome > 0) {
+      if (phase === 'zinuk') {
+        yotamContribThisYear = nomYPC;
+        yotamDeductFromNet = 0; // already in תלוש math
+      } else {
+        // alt-income: scaled rate on post-zinuk net (which is now pre-pension)
+        yotamContribThisYear = yotamIncome * yotamPensionRateZinuk;
+        yotamDeductFromNet = yotamContribThisYear;
+      }
+    }
+    let hadasContribThisYear = 0;
+    let hadasDeductFromNet = 0;
+    if (hadasIncome > 0) {
+      if (phase === 'zinuk') {
+        hadasContribThisYear = nomHPC;
+        hadasDeductFromNet = nomHPC; // עוסק מורשה pays out of net even in zinuk
+      } else {
+        hadasContribThisYear = hadasIncome * hadasPensionRateZinuk;
+        hadasDeductFromNet = hadasContribThisYear;
+      }
+    }
+
+    const yotamSpendable = Math.max(0, yotamIncome - yotamDeductFromNet);
+    const hadasSpendable = Math.max(0, hadasIncome - hadasDeductFromNet);
     const totalSpendable = yotamSpendable + hadasSpendable;
 
     // Sustainable income = spendable income + pension annuity + home-passive + 4% (full picture)
@@ -437,8 +493,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const mBalance = mSustainable - mExp;
 
     // ─── Pension contributions (added to pension balance) ───
-    if (yotamIncome > 0) yotamPension += nomYPC * 12;
-    if (hadasIncome > 0) hadasPension += nomHPC * 12;
+    if (yotamContribThisYear > 0) yotamPension += yotamContribThisYear * 12;
+    if (hadasContribThisYear > 0) hadasPension += hadasContribThisYear * 12;
 
     // ─── Actual cashflow to/from liquid ───
     // Includes spendable earned income + pension annuity + home passive - expenses.
@@ -462,14 +518,29 @@ function runCore(config: ScenarioConfig): YearResult[] {
       if (ysp >= house.mortgageTerm) mortPayment = 0;
     }
 
+    // Or Akiva: appreciate value, amortize mortgage (rough straight-line until end year).
+    if (assets.orAkivaKeep) {
+      orAkivaValue *= (1 + nomHA);
+      if (calendarYear < (assets.orAkivaMortgageEndYear ?? 0)) {
+        const yearsLeft = (assets.orAkivaMortgageEndYear ?? calendarYear) - calendarYear;
+        // ~1/yearsLeft of the current balance counts as principal this year (approx).
+        // Final year payment zeros out the balance.
+        const principalThisYear = yearsLeft > 0 ? orAkivaMortBal / yearsLeft : orAkivaMortBal;
+        orAkivaMortBal = Math.max(0, orAkivaMortBal - principalThisYear);
+      } else {
+        orAkivaMortBal = 0;
+      }
+    }
+
     const hEq = ownsHome ? Math.max(0, homeVal - mortBal) : 0;
+    const orAkivaEq = assets.orAkivaKeep ? Math.max(0, orAkivaValue - orAkivaMortBal) : 0;
     const dep = liquid <= 0;
     if (dep) liquid = 0;
     const yPenNW = yotamPensionActive ? 0 : yotamPension;
     const hPenNW = hadasPensionActive ? 0 : hadasPension;
     const totalPensionNW = yPenNW + hPenNW;
     const kNW = (yotamKerenMerged ? 0 : yotamKeren) + (hadasKerenMerged ? 0 : hadasKeren);
-    const nw = liquid + totalPensionNW + kNW + hEq;
+    const nw = liquid + totalPensionNW + kNW + hEq + orAkivaEq;
 
     results.push({
       year, age, phase, isWorking,

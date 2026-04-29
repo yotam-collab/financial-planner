@@ -14,6 +14,20 @@ export interface AssetConfig {
   kerenHishtalmut: number;
   kerenHishtalmutLiquidAge: number;
   apartmentNetProceeds: number;
+  /**
+   * Or Akiva apartment — alternative path: keep & rent instead of selling.
+   * When `keep=true`, `apartmentNetProceeds` is IGNORED (the cash isn't injected
+   * into the liquid portfolio). Instead the apartment is held, generates rent,
+   * carries a mortgage that runs until `mortgageEndYear`, and adds equity to
+   * net worth (value - remaining mortgage).
+   */
+  orAkivaKeep: boolean;
+  orAkivaCurrentValue: number;       // today's market value
+  orAkivaMonthlyRent: number;        // today's NIS, inflates with CPI
+  orAkivaMortgageBalance: number;    // outstanding balance today
+  orAkivaMonthlyMortgage: number;    // nominal fixed (קל"צ-style)
+  orAkivaMortgageEndYear: number;    // calendar year when mortgage ends
+  orAkivaMonthlyExpenses: number;    // maintenance + arnona-landlord + vacancy reserve, today's NIS
   usRealEstateNonProducing: number;
   usRealEstateProducing: number;
   usRealEstateProducingYieldRate: number;

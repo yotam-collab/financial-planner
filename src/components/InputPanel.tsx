@@ -383,13 +383,13 @@ export function InputPanel({ config, setConfig }: Props) {
           help="ההכנסה החודשית נטו על התלוש שאתה מקבל מהחברה — אחרי מס הכנסה, ביטוח לאומי, בריאות, וגם אחרי שההפקדה לפנסיה כבר ירדה. זאת הסכום שבפועל מגיע לחשבון הבנק. המודל לא מקזז שוב את ההפקדה לפנסיה (כדי שלא נספור פעמיים)." />
         <NumInput label="נטו אחרי זינוק" value={config.income.yotamNetIncomePostZinuk}
           onChange={v => update('income.yotamNetIncomePostZinuk', v)} step={1000}
-          note={config.income.yotamNetIncomePostZinuk > 0 ? `ברוטו: ~${estimateGross(config.income.yotamNetIncomePostZinuk).toLocaleString('he-IL')} ₪ · אחרי הפרשת פנסיה` : 'ללא הכנסה'}
-          help="הכנסה נטו חודשית אחרי סגירת העסק — בד״כ ייעוץ/עבודת שכיר חלקית/פרויקטים. נטו = מה שנכנס לחשבון, אחרי שכל המסים והפנסיה כבר ירדו. 0 = ללא הכנסה כלל." />
-        <NumInput label="הפקדה לפנסיה" value={config.income.yotamMonthlyPensionContribution}
+          note={config.income.yotamNetIncomePostZinuk > 0 ? `נטו לפני הפרשת פנסיה (כי כעת אתה עצמאי)` : 'ללא הכנסה'}
+          help="הכנסה נטו חודשית אחרי סגירת העסק — ייעוץ / עבודה עצמאית / פרויקטים. **לאחר זינוק כבר אין תלוש** ולכן הנטו כאן הוא לפני הפרשת פנסיה. המודל מנכה אוטומטית פנסיה באותו אחוז שהיה לך בזינוק (פה: ~18%), כך שהיא מתעדכנת לרמה המומלצת בהתאם לגובה ההכנסה החדש." />
+        <NumInput label="הפקדה לפנסיה (זינוק)" value={config.income.yotamMonthlyPensionContribution}
           onChange={v => update('income.yotamMonthlyPensionContribution', v)} step={100}
           rec="תקרת שכיר: 5,645 ₪"
-          note="כבר מקוזז מהנטו · רק מצטבר ליתרת הפנסיה"
-          help="הפקדה חודשית כוללת לפנסיה. שכיר בישראל: 6% עובד + 6.5% תגמולים + 6% מעביד = 18.5% מהשכר. תקרה סטטוטורית: 5,645 ₪/חודש (2026). מאחר והנטו שאתה מקבל בתלוש כבר אחרי הפרשת פנסיה — הסכום הזה רק מצטבר ליתרת הפנסיה ולא מקזז שוב מההכנסה." />
+          note="כבר מקוזז מהנטו (תלוש) · בזינוק רק מצטבר ליתרת הפנסיה"
+          help="הפקדה חודשית כוללת לפנסיה בשלב הזינוק. שכיר בישראל: 6% עובד + 6.5% תגמולים + 6% מעביד = 18.5% מהשכר. תקרה: 5,645 ₪/חודש (2026). בזינוק הסכום כבר מקוזז מהתלוש ולכן רק מצטבר ליתרה. אחרי זינוק (עצמאי) — המודל מחיל את אותו האחוז ממך זינוק על ההכנסה החדשה ומקזז אוטומטית מהנטו של אותה תקופה." />
         <NumInput label="יתרת פנסיה" value={config.assets.yotamPension}
           onChange={v => update('assets.yotamPension', v)} step={50000}
           note={`נעולה עד גיל ${config.pensionStartAge}`}
@@ -415,12 +415,12 @@ export function InputPanel({ config, setConfig }: Props) {
         <NumInput label="נטו אחרי זינוק" value={config.income.hadasNetIncomePostZinuk}
           onChange={v => update('income.hadasNetIncomePostZinuk', v)} step={1000}
           note={config.income.hadasNetIncomePostZinuk > 0 ? `נטו לפני הפרשת פנסיה` : 'ללא הכנסה'}
-          help="הכנסה נטו אחרי הורדת היקף העסק. כמו לפני זינוק — נטו לפני שהדס מפרישה את הפנסיה לעצמה. אם יש הכנסה והיא מפרישה גם בתקופה זו, המודל יקזז את ההפקדה לפנסיה." />
-        <NumInput label="הפקדה לפנסיה" value={config.income.hadasMonthlyPensionContribution}
+          help="הכנסה נטו אחרי הורדת היקף העסק — נטו לפני שהדס מפרישה לפנסיה. המודל מנכה את הפנסיה אוטומטית באותו אחוז שהיה בזינוק (פה: ~17%), כך שההפקדה יורדת באופן יחסי להכנסה החדשה." />
+        <NumInput label="הפקדה לפנסיה (זינוק)" value={config.income.hadasMonthlyPensionContribution}
           onChange={v => update('income.hadasMonthlyPensionContribution', v)} step={100}
           rec="חובת עצמאית: 1,170 ₪"
-          note="מקוזז מהנטו של הדס + מצטבר ליתרת הפנסיה"
-          help="הפקדה חודשית לפנסיה. חובת עצמאית (2017 ואילך): 4.45% על חצי השכר הממוצע במשק, 12.55% מעל. בד״כ ~1,170 ₪/חודש בתחילת הדרך, עד 2,500+ ₪ בעסקים גדולים. בעוסק מורשה ההפקדה משולמת מההכנסה האישית — לכן המודל מוריד אותה מהנטו של הדס בנוסף להוספה לקרן." />
+          note="מקוזז מהנטו של הדס · אחרי זינוק נשמר אותו אחוז"
+          help="הפקדה חודשית לפנסיה בשלב הזינוק. חובת עצמאית (2017 ואילך): 4.45% על חצי השכר הממוצע, 12.55% מעל. בעוסק מורשה ההפקדה משולמת מההכנסה האישית — לכן המודל מוריד אותה מהנטו של הדס. אחרי זינוק נשמר אותו אחוז ביחס להכנסה החדשה." />
         <NumInput label="יתרת פנסיה" value={config.assets.hadasPension}
           onChange={v => update('assets.hadasPension', v)} step={50000}
           note={`עוד ${config.hadasPensionStartAge - config.hadasAge} שנים לפנסיה`}
@@ -443,13 +443,75 @@ export function InputPanel({ config, setConfig }: Props) {
           onChange={v => update('assets.liquidPortfolio', v)} step={50000}
           rec="USD + קרנות + money market"
           help="סך הכסף הזמין לשימוש מיידי ללא קנסות: מניות, ETF, קרנות, מט״ח, מזומן, money market. זה התיק שעליו חל כלל ה-4% (משיכה שנתית בת-קיימא). גדל כל שנה בתשואה ריאלית (ברירת מחדל: 6% אחרי מס)." />
-        <NumInput label="תמורת דירה (נטו)" value={config.assets.apartmentNetProceeds}
-          onChange={v => update('assets.apartmentNetProceeds', v)} step={50000}
-          rec="אור עקיבא · פטור ממס שבח"
-          help="נטו ממכירת דירה קיימת — אחרי מס שבח/פטור ועלויות מכירה. פטור על דירה יחידה (סעיף 49(ב)): פטור מלא אם אין דירה אחרת בבעלות 18 חודשים אחורה. נכנס לתיק הנזיל בשנה 1 של הסימולציה." />
         <p className="text-[11px] text-slate-500 italic mt-1 mr-1">
           קה״ש מופיעה כעת בנפרד תחת ״יותם״ ו״הדס״ — לכל אחד יתרה וגיל נזילות נפרדים.
         </p>
+      </Section>
+
+      <Section title="דירה באור עקיבא" icon="🏘" color="emerald">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-600 mb-2">🔀 בחירת מסלול</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setConfig(prev => ({ ...prev, assets: { ...prev.assets, orAkivaKeep: false } }))}
+              className={`px-3 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ${
+                !config.assets.orAkivaKeep
+                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
+                  : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'
+              }`}
+            >
+              💰 מכירה (כעת)
+            </button>
+            <button
+              onClick={() => setConfig(prev => ({ ...prev, assets: { ...prev.assets, orAkivaKeep: true } }))}
+              className={`px-3 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ${
+                config.assets.orAkivaKeep
+                  ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
+                  : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'
+              }`}
+            >
+              🏘 החזקה והשכרה
+            </button>
+          </div>
+        </div>
+
+        {!config.assets.orAkivaKeep && (
+          <NumInput label="תמורת מכירה (נטו)" value={config.assets.apartmentNetProceeds}
+            onChange={v => update('assets.apartmentNetProceeds', v)} step={50000}
+            rec="פטור ממס שבח (סעיף 49(ב))"
+            help="נטו ממכירת הדירה — אחרי מס שבח/פטור ועלויות מכירה. נכנס לתיק הנזיל בשנה 1 של הסימולציה." />
+        )}
+
+        {!!config.assets.orAkivaKeep && (
+          <>
+            <NumInput label="שווי שוק נוכחי" value={config.assets.orAkivaCurrentValue}
+              onChange={v => update('assets.orAkivaCurrentValue', v)} step={50000}
+              note="גדל בהתאם לעליית מחירי דיור"
+              help="שווי שוק של הדירה היום (ערכי 2026). הדירה תצמח בשיעור 'עליית מחירי דיור' (ברירת מחדל 2% ריאלי + אינפלציה ≈ 4.5% נומינלי)." />
+            <NumInput label="שכ״ד חודשי (נטו)" value={config.assets.orAkivaMonthlyRent}
+              onChange={v => update('assets.orAkivaMonthlyRent', v)} step={100}
+              rec="6,200 ₪ — מחיר השכרה נוכחי"
+              note="מוצמד למדד · נטו אחרי דמי תיווך השנתיים"
+              help="שכר דירה חודשי שמתקבל מהשוכרים, נטו אחרי עלויות תיווך שנתיות. מוצמד למדד. אחרי תקופת המשכנתא הוא הופך להכנסה פאסיבית כמעט נטו (פחות אחזקה)." />
+            <NumInput label="יתרת משכנתא" value={config.assets.orAkivaMortgageBalance}
+              onChange={v => update('assets.orAkivaMortgageBalance', v)} step={10000}
+              note={`לפי מסמך סילוקין מזרחי טפחות 04/2026: ~770K ₪`}
+              help="סך יתרת המשכנתא של הדירה היום. לפי מסמך הסילוקין: חלק 1 575K + חלק 2 193K = ~770K. מתפחתת בקירוב באופן ליניארי עד תאריך סיום." />
+            <NumInput label="תשלום חודשי משכנתא" value={config.assets.orAkivaMonthlyMortgage}
+              onChange={v => update('assets.orAkivaMonthlyMortgage', v)} step={100}
+              note="קל״צ — נומינלי קבוע · יורד ערכו עם האינפלציה"
+              help="סך התשלום החודשי של שני חלקי המשכנתא. נומינלי קבוע (קל״צ) — לא צמוד למדד, ערכו הריאלי יורד עם השנים." />
+            <NumInput label="שנת סיום משכנתא" value={config.assets.orAkivaMortgageEndYear}
+              onChange={v => update('assets.orAkivaMortgageEndYear', v)} step={1} suffix="" noCommas
+              note="חלק 1 מסתיים 2053 (החלק הארוך)"
+              help="השנה שבה התשלום החודשי מסתיים והדירה תהפוך להכנסה פאסיבית כמעט נטו. במסמך: חלק 1 ב-15/12/2053, חלק 2 ב-15/12/2048. הזמן הארוך נספר." />
+            <NumInput label="הוצאות חודשיות" value={config.assets.orAkivaMonthlyExpenses}
+              onChange={v => update('assets.orAkivaMonthlyExpenses', v)} step={50}
+              rec="ארנונה משלמי משכ״ד + תחזוקה + רזרבה לזמן ללא שוכר"
+              note="מוצמד למדד"
+              help="הוצאות חודשיות של בעל הדירה: תחזוקה (תיקונים), ועד בית, רזרבה לזמן ללא שוכר (vacancy), ארנונה כשאין שוכר. מוצמד למדד." />
+          </>
+        )}
       </Section>
 
       <Section title="הוצאות" icon="📊" color="rose">
