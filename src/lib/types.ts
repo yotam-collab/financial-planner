@@ -28,6 +28,9 @@ export interface AssetConfig {
   orAkivaMonthlyMortgage: number;    // nominal fixed (קל"צ-style)
   orAkivaMortgageEndYear: number;    // calendar year when mortgage ends
   orAkivaMonthlyExpenses: number;    // maintenance + arnona-landlord + vacancy reserve, today's NIS
+  /** DEPRECATED (2026-04 audit): no longer used by the engine. These fields used
+   *  to inject invisible windfalls into the liquid portfolio with no UI control.
+   *  Kept only so old saved configs still parse. */
   usRealEstateNonProducing: number;
   usRealEstateProducing: number;
   usRealEstateProducingYieldRate: number;
@@ -80,7 +83,11 @@ export interface MarketConfig {
   realReturnRate: number;
   inflationRate: number;
   realHomeAppreciation: number;
+  /** Annuity conversion factor at anchor age 61 (auto-adjusted ±4.7/yr by actual start age). */
   pensionConversionFactor: number;
+  /** Sustainable-withdrawal reference rate (e.g. 0.04 = 4%). Display metric only —
+   *  never added to actual cashflow. Morningstar 2025: ~3.3% for 40-year horizons. */
+  withdrawalRate: number;
 }
 
 /** Happiness-index user preferences. All weights are 0–100 and normalized at compute-time. */

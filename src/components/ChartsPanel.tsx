@@ -47,11 +47,11 @@ const METRICS: Record<MetricType, MetricConfig> = {
     color: '#7c3aed',
     gradientId: 'grad-sustain',
     isBiColor: false,
-    description: 'הכנסה + 4% + פנסיה',
+    description: 'הכנסה + משיכה בת-קיימא + פנסיה',
     emoji: '💎',
   },
   fourPercent: {
-    label: '4% מהתיק',
+    label: 'משיכה מהתיק',
     nominalKey: 'monthly4pctWithdrawal',
     realKey: 'realMonthly4pctWithdrawal',
     color: '#4f46e5',
@@ -247,7 +247,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
           {d.phase === 'altIncome' && d.monthlyAltIncome > 0 && (
             <RowDual label="הכנסה חלופית" nominal={d.monthlyAltIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-emerald-500" />
           )}
-          <RowDual label="4% מהתיק" nominal={d.monthly4pctWithdrawal} real={d.real?.monthly4pctWithdrawal} showReal={showReal} dotColor="bg-indigo-600" />
+          <RowDual label="משיכה מהתיק" nominal={d.monthly4pctWithdrawal} real={d.real?.monthly4pctWithdrawal} showReal={showReal} dotColor="bg-indigo-600" />
           {d.monthlyPensionIncome > 0 && (
             <RowDual label="קצבת פנסיה" nominal={d.monthlyPensionIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-amber-500" />
           )}

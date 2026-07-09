@@ -48,6 +48,8 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
   const cashSurplus = totalAllIncome - y.monthlyExpenses;
 
   const liquidTotal = y.liquidPortfolio;
+  // Sustainable-withdrawal rate for display ("4" or "3.3")
+  const swrPct = (((config.market.withdrawalRate ?? 0.04) * 100).toFixed(1)).replace(/\.0$/, '');
 
   return (
     <div
@@ -186,17 +188,17 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             </div>
           </section>
 
-          {/* ─── Potential 4% Withdrawal ─── */}
+          {/* ─── Potential sustainable withdrawal ─── */}
           <section>
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-indigo-500 rounded-full" />
-              פוטנציאל משיכה · 4% מהתיק
-              <HelpTooltip placement="bottom" text="כלל Bengen (1994, Trinity Study): אם מושכים 4% מהתיק בשנה הראשונה ומצמידים למדד — התיק שורד 30+ שנים ב-95% מהמקרים היסטוריים. המדד התקני לבדיקת היתכנות פרישה. תיק של 10M₪ → 33K ₪/חודש בר-קיימא." />
+              פוטנציאל משיכה · {swrPct}% מהתיק
+              <HelpTooltip placement="bottom" text={`כלל Bengen (1994): משיכת 4% בשנה הראשונה + הצמדה למדד שורדת 30 שנה ב~95% מהמקרים ההיסטוריים. לאופק של 40+ שנה (פרישה בשנות ה-50) Morningstar 2025 ממליץ 3.0-3.3%. השיעור (${swrPct}%) ניתן לכיוון בהנחות שוק.`} />
             </h3>
             <div className="bg-indigo-50 rounded-2xl border border-indigo-200 px-5 py-4 shadow-sm">
               <div className="flex items-baseline justify-between mb-2">
                 <span className="text-sm text-slate-700">
-                  4% מ-<span className="num font-bold">{fmt(liquidTotal)} ₪</span> ÷ 12
+                  {swrPct}% מ-<span className="num font-bold">{fmt(liquidTotal)} ₪</span> ÷ 12
                 </span>
                 <span className="num font-display text-lg md:text-xl font-bold text-indigo-700" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   = {fmt(y.monthly4pctWithdrawal)} ₪
@@ -214,14 +216,14 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               <div className="flex items-baseline justify-between">
                 <span className="font-display text-base md:text-lg font-bold text-slate-800 flex items-center gap-1.5">
                   יתרה חודשית (בר-קיימא)
-                  <HelpTooltip placement="bottom" text="אינדיקטור יכולת כלכלית: יתרה בהנחה שמשתמשים בתיק לפי כלל 4%. חיובי = הפרישה בת-קיימא (התיק לא נשחק); שלילי = צריך למשוך יותר מ-4% → התיק נשחק מוקדם. זה המדד להחליט מתי אפשר לפרוש." />
+                  <HelpTooltip placement="bottom" text={`אינדיקטור יכולת כלכלית: יתרה בהנחה שמושכים מהתיק לפי שיעור המשיכה (${swrPct}%). חיובי = הפרישה בת-קיימא (התיק לא נשחק); שלילי = צריך למשוך יותר → התיק נשחק מוקדם. זה המדד להחליט מתי אפשר לפרוש.`} />
                 </span>
                 <span className={`num font-display text-xl font-extrabold ${y.monthlyBalance >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                   {y.monthlyBalance >= 0 ? '+' : ''}{fmt(y.monthlyBalance)} ₪
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                = סה״כ הכנסה + 4% מהתיק − הוצאות
+                = סה״כ הכנסה + {swrPct}% מהתיק − הוצאות
               </p>
             </div>
           </section>
@@ -254,7 +256,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               {y.real.pension > 0 && <RealStat label="פנסיה" value={y.real.pension} />}
               <RealStat label="שווי נקי" value={y.real.netWorth} bold />
               <RealStat label="יתרה חודשית" value={y.real.monthlyBalance} sign />
-              <RealStat label="4% חודשי" value={y.real.monthly4pctWithdrawal} />
+              <RealStat label="משיכה חודשית" value={y.real.monthly4pctWithdrawal} />
             </div>
           </section>
 

@@ -309,13 +309,13 @@ export function InputPanel({ config, setConfig }: Props) {
           min={60} max={67}
           displayValue={`גיל ${config.pensionStartAge} · ${(config.simulationStartYear ?? 2026) + config.pensionStartAge - config.startAge}`}
           rec="גיל 60 — מינימום חוקי לגברים"
-          help="גיל תחילת קצבה חודשית. בישראל מגיל 60 מותר (גברים). דחייה עד 67 מגדילה את הקצבה כי ממשיכים לצבור + תוחלת חיים קצרה יותר. מקדם המרה ≈216: קצבה=יתרה÷216. משיכה לפני 60 = קנס 35% מס." />
+          help="גיל תחילת קצבה חודשית. בישראל מגיל 60 מותר (גברים). דחייה עד 67 מגדילה את הקצבה כי ממשיכים לצבור + מקדם ההמרה יורד עם הגיל. המודל מתאים את המקדם אוטומטית לגיל: 60→221, 64→202, 67→188 (מכויל לטבלאות מנורה 2025/26, נשוי + 60% שארים). הקצבה צמודה למדד לכל החיים. משיכה לפני 60 = קנס 35% מס." />
         <SliderInput label="תחילת קצבת הדס" value={config.hadasPensionStartAge}
           onChange={v => setConfig(prev => ({ ...prev, hadasPensionStartAge: v }))}
           min={60} max={65}
           displayValue={`גיל ${config.hadasPensionStartAge} · ${(config.simulationStartYear ?? 2026) + config.hadasPensionStartAge - config.hadasAge}`}
           rec="גיל 62-65 — גיל פרישה לנשים"
-          help="גיל פרישה רשמי לנשים עולה בהדרגה ל-65 (עד 2032). קצבה מחושבת לפי יתרה÷216. לנשים תוחלת חיים ארוכה יותר → קצבה חודשית לרוב נמוכה יותר לאותה יתרה." />
+          help="גיל פרישה רשמי לנשים עולה בהדרגה ל-65 (עד 2032). המקדם מותאם אוטומטית לגיל תחילת הקצבה (למשל 65→197, 62→211). בפועל, בזוג נשוי עם ביטוח שארים, מקדמי גברים ונשים כמעט זהים. הקצבה צמודה למדד." />
         <SliderInput label="פרישה מלאה — יותם" value={config.fullRetirementAge}
           onChange={v => setConfig(prev => ({ ...prev, fullRetirementAge: v }))}
           min={config.zinukEndAge} max={85}
@@ -355,9 +355,9 @@ export function InputPanel({ config, setConfig }: Props) {
               help="אחוז מימון (Loan-to-Value). חוק: דירה יחידה עד 75%, דירה שנייה עד 70%, משקיעים עד 50%. LTV גבוה = משכנתא גדולה = יותר מינוף. מתחת ל-60% אין חובת ביטוח חיים נוסף." />
             <NumInput label="ריבית" value={Math.round(config.house.mortgageRate * 1000) / 10}
               onChange={v => update('house.mortgageRate', v / 100)} step={0.1} suffix="%"
-              rec="5.0-5.5% — ריבית משוקללת (פריים ~5.5%, קל״צ ~5.2%, צמודה ~3.5%+מדד)"
-              note="בנק ישראל: ריבית בנק 4% · פריים=BOI+1.5%"
-              help="ריבית שנתית משוקללת. משכנתא ישראלית = תמהיל 3 מסלולים (חובה לפחות 1/3 קבוע): פריים (צמוד לבנק ישראל), קל״צ (קבועה לא צמודה), צמודה למדד. ריבית כלכלית אמיתית = קל״צ ~5.2%. ההשפעה קריטית: 1% הפרש = עשרות אלפי ₪ לאורך חיי המשכנתא." />
+              rec="4.7-5.0% — ריבית משוקללת (בנק ישראל ירד ל-3.5%, 07/2026)"
+              note="בנק ישראל: 3.5% (07/2026) · פריים 5.0% · קל״צ 20+ שנה ~4.9%"
+              help="ריבית שנתית משוקללת. משכנתא ישראלית = תמהיל 3 מסלולים (חובה לפחות 1/3 קבוע): פריים (צמוד לבנק ישראל), קל״צ (קבועה לא צמודה), צמודה למדד. נכון ל-07/2026: בנק ישראל 3.5% אחרי שתי הורדות, קל״צ ארוכה ~4.9%, צמודה ~3.5% ריאלי. תמהיל חדש 25 שנה ≈ 4.7-5.0%. 1% הפרש = מאות אלפי ₪ לאורך חיי המשכנתא." />
             <NumInput label="תקופה" value={config.house.mortgageTerm}
               onChange={v => update('house.mortgageTerm', v)} step={1} suffix="שנים"
               help="אורך המשכנתא בשנים. מקסימום חוקי: 30 שנים. 25 שנים = איזון טוב: תשלום חודשי סביר + ריבית כוללת נמוכה. 30 שנים = תשלום חודשי נמוך אבל משלמים הרבה יותר ריבית. 15-20 שנים = חסכון משמעותי בריבית, אבל תשלום חודשי כבד." />
@@ -371,12 +371,12 @@ export function InputPanel({ config, setConfig }: Props) {
                 💡 הכנסות נוספות מהבית
               </p>
             </div>
-            <NumInput label="השכרת יחידת דיור (חודשי, נטו)"
+            <NumInput label="השכרת יחידת דיור (חודשי, ברוטו)"
               value={config.house.rentalIncomeFromUnit}
               onChange={v => update('house.rentalIncomeFromUnit', v)} step={500}
               rec="3,000-5,000 ₪ — יחידת דיור בפרדס חנה"
-              note="0 = אין יחידה להשכיר · מוצמד למדד"
-              help="הכנסה מהשכרת יחידה נפרדת בבית (מרתף, קומה, וכו׳). פטור ממס עד ~5,654 ₪/חודש (2026). מעל — מס 10%. נטו = אחרי עלויות אחזקה (תיקונים, בלאי). מוצמד למדד כל שנה. מגדיל משמעותית את ה-ROI של הבית." />
+              note="0 = אין יחידה · מוצמד למדד · מס שכ״ד מחושב אוטומטית"
+              help="הכנסה מהשכרת יחידה נפרדת בבית (מרתף, קומה, וכו׳), ברוטו. פטור ממס עד 5,654 ₪/חודש (2026, צמוד). מעל התקרה — המודל מחשב אוטומטית את המס לפי המסלול הזול (10% קבוע או פטור חלקי) ומקזז. מוצמד למדד כל שנה." />
             <NumInput label="הכנסה מסולארי (חודשי, נטו)"
               value={config.house.solarIncome}
               onChange={v => update('house.solarIncome', v)} step={100}
@@ -404,7 +404,7 @@ export function InputPanel({ config, setConfig }: Props) {
         <NumInput label="יתרת פנסיה" value={config.assets.yotamPension}
           onChange={v => update('assets.yotamPension', v)} step={50000}
           note={`נעולה עד גיל ${config.pensionStartAge}`}
-          help="יתרה נוכחית בקרן פנסיה/ביטוח מנהלים. נעולה עד גיל 60 (משיכה מוקדמת = קנס 35% מס + מיסים על רווחים). מגיל 60 אפשר קצבה חודשית לכל החיים: יתרה ÷ 216 (מקדם המרה). דוגמה: 800K ₪ → 3,704 ₪/חודש; 2M ₪ → 9,259 ₪/חודש." />
+          help="יתרה נוכחית בקרן פנסיה/ביטוח מנהלים. נעולה עד גיל 60 (משיכה מוקדמת = קנס 35% מס). מגיל 60 — קצבה חודשית צמודת-מדד לכל החיים: יתרה ÷ מקדם המרה תלוי-גיל (60→221, 67→188). דוגמה: 1M ₪ בגיל 60 → ~4,525 ₪/חודש; בגיל 67 → ~5,320 ₪/חודש." />
         <NumInput label="יתרת קה״ש" value={config.assets.yotamKerenHishtalmut}
           onChange={v => update('assets.yotamKerenHishtalmut', v)} step={10000}
           note={`נזילה בגיל ${config.assets.yotamKerenHishtalmutLiquidAge}`}
@@ -435,11 +435,11 @@ export function InputPanel({ config, setConfig }: Props) {
         <NumInput label="יתרת פנסיה" value={config.assets.hadasPension}
           onChange={v => update('assets.hadasPension', v)} step={50000}
           note={`עוד ${config.hadasPensionStartAge - config.hadasAge} שנים לפנסיה`}
-          help="יתרת פנסיה של הדס. נעולה עד גיל פרישה לנשים (עולה בהדרגה ל-65 עד 2032). קצבה חודשית = יתרה ÷ 216. לנשים תוחלת חיים ~5 שנים ארוכה יותר → קצבה חודשית מעט נמוכה יותר לאותה יתרה במחירים שונים של מקדם המרה." />
+          help="יתרת פנסיה של הדס. נעולה עד גיל פרישה לנשים (עולה בהדרגה ל-65 עד 2032). קצבה חודשית צמודת-מדד = יתרה ÷ מקדם תלוי-גיל (65→197, 62→211). בזוג נשוי עם ביטוח שארים מקדמי נשים וגברים כמעט זהים (טבלאות מנורה 2025/26)." />
         <NumInput label="יתרת קה״ש" value={config.assets.hadasKerenHishtalmut}
           onChange={v => update('assets.hadasKerenHishtalmut', v)} step={10000}
           note={`נזילה בגיל ${config.assets.hadasKerenHishtalmutLiquidAge}`}
-          help="יתרה נוכחית בקרן ההשתלמות של הדס (עוסק מורשה). אחרי 6 שנים מההפקדה הראשונה — נזילה ופטורה ממס רווח הון. תקרת הפקדה עם הטבת מס לעצמאי: 20,520 ₪/שנה (2026). כשמגיע לגיל הנזילות — מצטרפת אוטומטית לתיק הנזיל." />
+          help="יתרה נוכחית בקרן ההשתלמות של הדס (עוסק מורשה). אחרי 6 שנים מההפקדה הראשונה — נזילה ופטורה ממס רווח הון. תקרת הפטור ממס רווח הון לעצמאי: 20,566 ₪/שנה (2026). כשמגיע לגיל הנזילות — מצטרפת אוטומטית לתיק הנזיל." />
         <SliderInput label="קה״ש — גיל נזילות"
           value={config.assets.hadasKerenHishtalmutLiquidAge ?? 38}
           onChange={v => update('assets.hadasKerenHishtalmutLiquidAge', v)}
@@ -453,7 +453,7 @@ export function InputPanel({ config, setConfig }: Props) {
         <NumInput label="תיק נזיל" value={config.assets.liquidPortfolio}
           onChange={v => update('assets.liquidPortfolio', v)} step={50000}
           rec="USD + קרנות + money market"
-          help="סך הכסף הזמין לשימוש מיידי ללא קנסות: מניות, ETF, קרנות, מט״ח, מזומן, money market. זה התיק שעליו חל כלל ה-4% (משיכה שנתית בת-קיימא). גדל כל שנה בתשואה ריאלית (ברירת מחדל: 6% אחרי מס)." />
+          help="סך הכסף הזמין לשימוש מיידי ללא קנסות: מניות, ETF, קרנות, מט״ח, מזומן, money market. זה התיק שעליו חל שיעור המשיכה בת-קיימא (מוגדר בהנחות שוק). גדל כל שנה בתשואה הריאלית (ברירת מחדל: 4.5% אחרי מס)." />
         <p className="text-[11px] text-slate-500 italic mt-1 mr-1">
           קה״ש מופיעה כעת בנפרד תחת ״יותם״ ו״הדס״ — לכל אחד יתרה וגיל נזילות נפרדים.
         </p>
@@ -480,11 +480,11 @@ export function InputPanel({ config, setConfig }: Props) {
               onChange={v => update('assets.orAkivaCurrentValue', v)} step={50000}
               note="גדל בהתאם לעליית מחירי דיור"
               help="שווי שוק של הדירה היום (ערכי 2026). הדירה תצמח בשיעור 'עליית מחירי דיור' (ברירת מחדל 2% ריאלי + אינפלציה ≈ 4.5% נומינלי)." />
-            <NumInput label="שכ״ד חודשי (נטו)" value={config.assets.orAkivaMonthlyRent}
+            <NumInput label="שכ״ד חודשי (ברוטו)" value={config.assets.orAkivaMonthlyRent}
               onChange={v => update('assets.orAkivaMonthlyRent', v)} step={100}
               rec="6,200 ₪ — מחיר השכרה נוכחי"
-              note="מוצמד למדד · נטו אחרי דמי תיווך השנתיים"
-              help="שכר דירה חודשי שמתקבל מהשוכרים, נטו אחרי עלויות תיווך שנתיות. מוצמד למדד. אחרי תקופת המשכנתא הוא הופך להכנסה פאסיבית כמעט נטו (פחות אחזקה)." />
+              note="מוצמד למדד · מס שכ״ד מעל תקרת הפטור מחושב אוטומטית"
+              help="שכר דירה חודשי ברוטו מהשוכרים, מוצמד למדד. מעל תקרת הפטור (5,654 ₪/חודש, 2026) המודל מקזז אוטומטית מס לפי המסלול הזול — ב-6,200 ₪ זה מסלול הפטור החלקי (~380 ₪/חודש), זול מ-10% קבוע (620 ₪). אחרי סוף המשכנתא הדירה הופכת להכנסה פאסיבית כמעט נטו." />
             <NumInput label="יתרת משכנתא" value={config.assets.orAkivaMortgageBalance}
               onChange={v => update('assets.orAkivaMortgageBalance', v)} step={10000}
               note="המקורית + הממוחזרת · ~1.04M ₪ (מזרחי טפחות, 04/2026)"
@@ -541,11 +541,17 @@ export function InputPanel({ config, setConfig }: Props) {
       )}
 
       <Section title="הנחות שוק" icon="📈" color="amber">
-        <SliderInput label="תשואה ריאלית" value={Math.round(config.market.realReturnRate * 100)}
+        <SliderInput label="תשואה ריאלית" value={Math.round(config.market.realReturnRate * 100 * 10) / 10}
           onChange={v => update('market.realReturnRate', v / 100)}
-          min={3} max={10} displayValue={`${Math.round(config.market.realReturnRate * 100)}%`}
-          rec="6% — ממוצע ארוך-טווח"
-          help="תשואה שנתית אחרי אינפלציה ואחרי מס. S&P 500 ארוך-טווח (100 שנה): 10% נומינלי / ~7% ריאלי לפני מס, ~5-6% אחרי מס. תיק מגוון (60/40 מניות/אג״ח): ~4-5% ריאלי. 6% = הנחה אופטימית-סבירה לתיק מניות מגוון. ירידה ל-4% → צריך 50% יותר הון לאותה פרישה." />
+          min={3} max={10} step={0.5} displayValue={`${(config.market.realReturnRate * 100).toFixed(1)}%`}
+          rec="4-5% — ריאלי אחרי מס (בסיס מומלץ 4.5%) · 6% תרחיש אופטימי"
+          help="תשואה שנתית אחרי אינפלציה ואחרי מס. מניות עולמיות (DMS Yearbook, 125 שנה): ~5.2% ריאלי לפני מס; S&P 500 לבדו ~7% — השוק הטוב בהיסטוריה. מס ישראלי 25% על הרווח הריאלי → ~4-5% ריאלי אחרי מס לתיק מנייתי. 6% מניח ביצועי-עבר אמריקאיים שיימשכו — תרחיש אופטימי, לא בסיס תכנון." />
+        <SliderInput label="שיעור משיכה בת-קיימא" value={Math.round((config.market.withdrawalRate ?? 0.04) * 100 * 10) / 10}
+          onChange={v => update('market.withdrawalRate', v / 100)}
+          min={2.5} max={5} step={0.1}
+          displayValue={`${((config.market.withdrawalRate ?? 0.04) * 100).toFixed(1)}%`}
+          rec="4% קלאסי (אופק 30 שנה) · 3.0-3.3% לאופק 40+ שנה (Morningstar 2025)"
+          help="שיעור המשיכה השנתי מהתיק שנחשב בר-קיימא — מדד ייחוס בלבד (לא נמשך בפועל). כלל Bengen 4% נבדק לאופק 30 שנה; פרישה בגיל ~52 = אופק 40+ שנה, ושם Morningstar 2025 מצא 3.0-3.3% (90% הצלחה). הורדת השיעור מקטינה את 'ההכנסה ברת-קיימא' בגרף — ומזיזה את שנת החופש הכלכלי." />
         <SliderInput label="אינפלציה" value={Math.round(config.market.inflationRate * 100 * 10) / 10}
           onChange={v => update('market.inflationRate', v / 100)}
           min={1} max={6} step={0.5} displayValue={`${(config.market.inflationRate * 100).toFixed(1)}%`}

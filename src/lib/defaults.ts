@@ -28,11 +28,13 @@ export const DEFAULT_ASSETS: AssetConfig = {
   orAkivaMonthlyMortgage: 7_800,
   orAkivaMortgageEndYear: 2053,
   orAkivaMonthlyExpenses: 500,
-  usRealEstateNonProducing: 365_000,
-  usRealEstateProducing: 290_000,
-  usRealEstateProducingYieldRate: 0.06,
-  usRealEstateProducingSellYear: 4,
-  usRealEstateProducingSellMultiplier: 2,
+  // DEPRECATED — ignored by the engine since the 2026-04 audit (they used to
+  // inject invisible cash). Zeroed so no stale value ever resurfaces.
+  usRealEstateNonProducing: 0,
+  usRealEstateProducing: 0,
+  usRealEstateProducingYieldRate: 0,
+  usRealEstateProducingSellYear: 0,
+  usRealEstateProducingSellMultiplier: 0,
 };
 
 export const DEFAULT_INCOME: IncomeConfig = {
@@ -65,17 +67,26 @@ export const DEFAULT_HOUSE: HouseConfig = {
   brokerFeeRate: 0.02,    // 2% + מע"מ — תקרה בחוק; 0 אם אין מתווך
   otherClosingCosts: 15_000, // טאבו ~1.5K + שמאי ~3K + ביטוחי משכנתא ~2K + הובלה ~7K
   mortgageLTV: 0.70,
-  mortgageRate: 0.052,
+  // BOI cut to 3.5% (07/2026); new 25y blended mixes run ~4.7-5.0% nominal
+  mortgageRate: 0.049,
   mortgageTerm: 25,
   rentalIncomeFromUnit: 3_400,
   solarIncome: 500,
 };
 
 export const DEFAULT_MARKET: MarketConfig = {
-  realReturnRate: 0.06,
+  // Real, after-tax. DMS Yearbook world equities ~5.2% real BEFORE tax since 1900;
+  // Israel taxes 25% of REAL gains → ~4-5% real after tax for an equity-heavy mix.
+  // 6% was optimistic; keep it available on the slider as an explicit upside case.
+  realReturnRate: 0.045,
   inflationRate: 0.025,
   realHomeAppreciation: 0.02,
+  // Interpreted at anchor age 61 (auto-adjusts ±4.7/yr by actual retirement age;
+  // calibrated to Menora 2025/26 tables: 60→221, 67→188)
   pensionConversionFactor: 216,
+  // Reference withdrawal rate. Bengen 4% = 30-year horizons; Morningstar 2025
+  // recommends ~3.0-3.3% for 40-year horizons (retiring in early 50s).
+  withdrawalRate: 0.04,
 };
 
 export const DEFAULT_HAPPINESS: HappinessConfig = {

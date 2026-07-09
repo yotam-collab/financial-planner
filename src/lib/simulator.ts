@@ -56,6 +56,40 @@ export function calcMonthlyPensionPayout(balance: number, mekaddem: number): num
   return mekaddem <= 0 ? 0 : balance / mekaddem;
 }
 
+/**
+ * Age-dependent annuity conversion factor (מקדם המרה) approximation.
+ * Calibrated against Menora 2025/26 kranot-pensia-chadashot tables (married,
+ * 60% survivor pension) — married men's and women's factors are nearly equal:
+ *   age 60 ≈ 215-225, age 67 ≈ 186-188, slope ≈ 4.7 per year.
+ * The configured base factor (default 216) is interpreted at anchor age 61;
+ * the factor falls ~4.7 per year of later retirement (shorter payout period).
+ *   base 216 → 60: 221, 61: 216, 64: 202, 67: 188.
+ */
+export function mekaddemForStartAge(base: number, startAge: number): number {
+  const anchorAge = 61;
+  const slopePerYear = 4.7;
+  return Math.max(1, base - (startAge - anchorAge) * slopePerYear);
+}
+
+/**
+ * Monthly income tax on residential rent (Israel), choosing the better of the
+ * two legal routes when rent exceeds the exemption ceiling:
+ *  - Partial-exemption route: adjusted ceiling = 2×ceiling − rent (floor 0);
+ *    the excess above the adjusted ceiling is taxed at the marginal rate.
+ *  - Flat 10% route (סעיף 122): 10% of the FULL rent, no deductions.
+ * Below the ceiling → 0 tax.
+ */
+export function calcMonthlyRentTax(monthlyRent: number, ceilingNow: number, marginalRate = 0.35): number {
+  if (monthlyRent <= ceilingNow) return 0;
+  const adjustedCeiling = Math.max(0, 2 * ceilingNow - monthlyRent);
+  const exemptRouteTax = Math.max(0, monthlyRent - adjustedCeiling) * marginalRate;
+  const flatRouteTax = monthlyRent * 0.10;
+  return Math.min(exemptRouteTax, flatRouteTax);
+}
+
+/** Residential-rent tax exemption ceiling, ₪/month (2026, CPI-indexed in the sim). */
+export const RENT_TAX_EXEMPTION_CEILING_2026 = 5_654;
+
 export function inflate(base: number, rate: number, years: number): number {
   return base * Math.pow(1 + rate, years);
 }
@@ -322,8 +356,10 @@ function runCore(config: ScenarioConfig): YearResult[] {
   let hadasKerenMerged = false;
   let ownsHome = false;
   let homeVal = 0, mortBal = 0, mortPayment = 0, mortPrincipal = 0, mortStartYear = 0;
-  let yotamPensionActive = false, yotamPensionPayout = 0;
-  let hadasPensionActive = false, hadasPensionPayout = 0;
+  // Annuity state: base payout fixed at activation, then CPI-indexed each year
+  // (kranot pensia chadashot pay מדד-linked annuities).
+  let yotamPensionActive = false, yotamPensionPayoutBase = 0, yotamPensionStartYe = 0;
+  let hadasPensionActive = false, hadasPensionPayoutBase = 0, hadasPensionStartYe = 0;
 
   const nomRet = (1 + market.realReturnRate) * (1 + market.inflationRate) - 1;
   const nomHA = (1 + market.realHomeAppreciation) * (1 + market.inflationRate) - 1;
@@ -361,12 +397,9 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const nomYPC = inflate(income.yotamMonthlyPensionContribution, market.inflationRate, ye);
     const nomHPC = inflate(income.hadasMonthlyPensionContribution, market.inflationRate, ye);
 
-    // Windfalls
-    if (year === 1) liquid += assets.usRealEstateNonProducing;
-    if (year <= assets.usRealEstateProducingSellYear)
-      liquid += assets.usRealEstateProducing * assets.usRealEstateProducingYieldRate;
-    if (year === assets.usRealEstateProducingSellYear)
-      liquid += assets.usRealEstateProducing * assets.usRealEstateProducingSellMultiplier;
+    // NOTE: legacy usRealEstate* windfall injections were REMOVED (2026-04 audit).
+    // They silently added ~1M ₪ to liquid with no UI visibility. If US real estate
+    // exists and is not already included in liquidPortfolio, model it explicitly.
 
     // Yotam's keren liquidates at his configured age (his ages = `age`)
     if (!yotamKerenMerged && age >= (assets.yotamKerenHishtalmutLiquidAge ?? Infinity)) {
@@ -398,40 +431,61 @@ function runCore(config: ScenarioConfig): YearResult[] {
       mortStartYear = year;
     }
 
-    // Pension annuity activation
+    // Pension annuity activation — age-dependent mekaddem, base fixed at activation
     if (age >= pensionStartAge && !yotamPensionActive) {
       yotamPensionActive = true;
-      yotamPensionPayout = calcMonthlyPensionPayout(yotamPension, market.pensionConversionFactor);
+      yotamPensionPayoutBase = calcMonthlyPensionPayout(
+        yotamPension, mekaddemForStartAge(market.pensionConversionFactor, pensionStartAge));
+      yotamPensionStartYe = ye;
     }
     if (hadasCurrentAge >= hadasPensionStartAge && !hadasPensionActive) {
       hadasPensionActive = true;
-      hadasPensionPayout = calcMonthlyPensionPayout(hadasPension, market.pensionConversionFactor);
+      hadasPensionPayoutBase = calcMonthlyPensionPayout(
+        hadasPension, mekaddemForStartAge(market.pensionConversionFactor, hadasPensionStartAge));
+      hadasPensionStartYe = ye;
     }
 
+    // Annuities are CPI-indexed after activation (real value preserved)
+    const yotamPensionPayout = yotamPensionActive
+      ? yotamPensionPayoutBase * Math.pow(1 + market.inflationRate, ye - yotamPensionStartYe)
+      : 0;
+    const hadasPensionPayout = hadasPensionActive
+      ? hadasPensionPayoutBase * Math.pow(1 + market.inflationRate, ye - hadasPensionStartYe)
+      : 0;
     const totalPensionPayout = yotamPensionPayout + hadasPensionPayout;
 
     // Monthly calcs
     const mHousing = ownsHome ? mortPayment : nomRent;
     const mExp = nomNH + mHousing;
-    const m4pct = Math.max(0, liquid * 0.04 / 12);
+    // Sustainable-withdrawal reference (configurable; Morningstar 2025: ~3.0-3.3%
+    // for a 40-year horizon, classic Bengen 4% for 30 years)
+    const swr = market.withdrawalRate ?? 0.04;
+    const m4pct = Math.max(0, liquid * swr / 12);
 
     const mZinuk = phase === 'zinuk' ? yotamIncome + hadasIncome : 0;
     const mAlt = phase === 'altIncome' ? yotamIncome + hadasIncome : 0;
 
+    // Residential-rent tax exemption ceiling, CPI-indexed from its 2026 level
+    const rentCeilingNom = inflate(RENT_TAX_EXEMPTION_CEILING_2026, market.inflationRate, ye);
+
     // ─── Passive income from owned home (sub-unit rental + solar) ───
-    // Both are inflation-adjusted from today's values, only applicable when owning
-    const nomRentalUnit = ownsHome ? inflate(house.rentalIncomeFromUnit ?? 0, market.inflationRate, ye) : 0;
+    // Both are inflation-adjusted from today's values, only applicable when owning.
+    // Sub-unit rent above the exemption ceiling is taxed (best legal route).
+    const grossRentalUnit = ownsHome ? inflate(house.rentalIncomeFromUnit ?? 0, market.inflationRate, ye) : 0;
+    const nomRentalUnit = grossRentalUnit - calcMonthlyRentTax(grossRentalUnit, rentCeilingNom);
     const nomSolar = ownsHome ? inflate(house.solarIncome ?? 0, market.inflationRate, ye) : 0;
 
     // ─── Or Akiva apartment (when held) ───
-    // Net monthly: rent (CPI-adjusted) - mortgage (nominal-fixed, until end year) - expenses (CPI)
+    // Net monthly: rent (CPI) - rent tax (above exemption ceiling) - mortgage
+    // (nominal-fixed, until end year) - expenses (CPI)
     let mOrAkivaNet = 0;
     if (assets.orAkivaKeep) {
       const oRent = inflate(assets.orAkivaMonthlyRent ?? 0, market.inflationRate, ye);
+      const oRentTax = calcMonthlyRentTax(oRent, rentCeilingNom);
       const oExp = inflate(assets.orAkivaMonthlyExpenses ?? 0, market.inflationRate, ye);
       const mortgageActive = calendarYear < (assets.orAkivaMortgageEndYear ?? 0);
       const oMort = mortgageActive ? (assets.orAkivaMonthlyMortgage ?? 0) : 0;
-      mOrAkivaNet = oRent - oMort - oExp;
+      mOrAkivaNet = oRent - oRentTax - oMort - oExp;
     }
     const mHomePassive = nomRentalUnit + nomSolar + mOrAkivaNet;
 
@@ -458,9 +512,11 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
     // This year's pension contribution amounts (per person) and how much
     // comes out of net (vs. already-deducted-on-paycheck).
+    // Once a person's annuity is active, contributions stop (previously they were
+    // deducted from net but credited to a balance that no longer pays out — a leak).
     let yotamContribThisYear = 0;
     let yotamDeductFromNet = 0;
-    if (yotamIncome > 0) {
+    if (yotamIncome > 0 && !yotamPensionActive) {
       if (phase === 'zinuk') {
         yotamContribThisYear = nomYPC;
         yotamDeductFromNet = 0; // already in תלוש math
@@ -472,7 +528,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
     }
     let hadasContribThisYear = 0;
     let hadasDeductFromNet = 0;
-    if (hadasIncome > 0) {
+    if (hadasIncome > 0 && !hadasPensionActive) {
       if (phase === 'zinuk') {
         hadasContribThisYear = nomHPC;
         hadasDeductFromNet = nomHPC; // עוסק מורשה pays out of net even in zinuk
@@ -492,22 +548,26 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // ─── Monthly balance shown in chart ───
     const mBalance = mSustainable - mExp;
 
-    // ─── Pension contributions (added to pension balance) ───
-    if (yotamContribThisYear > 0) yotamPension += yotamContribThisYear * 12;
-    if (hadasContribThisYear > 0) hadasPension += hadasContribThisYear * 12;
-
     // ─── Actual cashflow to/from liquid ───
     // Includes spendable earned income + pension annuity + home passive - expenses.
     // For Hadas the pension contribution is already subtracted via `hadasSpendable`.
-    // The 4% is REFERENCE only, not added (avoids double-counting with compound growth).
+    // The withdrawal-rate line is REFERENCE only, not added (avoids double-counting
+    // with compound growth).
     const actualCashflow = (totalSpendable + totalPensionPayout + mHomePassive - mExp) * 12;
-    liquid += actualCashflow;
     const cf = actualCashflow;
 
-    // Growth
-    if (liquid > 0) liquid *= (1 + nomRet);
-    if (!yotamPensionActive) yotamPension *= (1 + nomRet);
-    if (!hadasPensionActive) hadasPension *= (1 + nomRet);
+    // ─── Growth (mid-year flow convention) ───
+    // Opening balances earn a full year; this year's flows arrive spread across the
+    // year and earn ~half a year on average. (The old code gave flows a full year,
+    // systematically overstating compounding.)
+    const halfYearGrowth = 1 + nomRet / 2;
+    liquid = Math.max(0, liquid) * (1 + nomRet) + actualCashflow * halfYearGrowth;
+    if (!yotamPensionActive) {
+      yotamPension = yotamPension * (1 + nomRet) + yotamContribThisYear * 12 * halfYearGrowth;
+    }
+    if (!hadasPensionActive) {
+      hadasPension = hadasPension * (1 + nomRet) + hadasContribThisYear * 12 * halfYearGrowth;
+    }
     if (!yotamKerenMerged) yotamKeren *= (1 + nomRet);
     if (!hadasKerenMerged) hadasKeren *= (1 + nomRet);
 
@@ -642,7 +702,13 @@ function runCore(config: ScenarioConfig): YearResult[] {
  */
 export function findEarliestRetirementAge(config: ScenarioConfig): number | null {
   for (let quitAge = config.startAge; quitAge <= config.endAge; quitAge++) {
-    const testConfig: ScenarioConfig = { ...config, zinukEndAge: quitAge };
+    // Keep the invariant fullRetirementAge >= zinukEndAge (the UI enforces it too);
+    // otherwise zinuk income would continue past the intended full-retirement age.
+    const testConfig: ScenarioConfig = {
+      ...config,
+      zinukEndAge: quitAge,
+      fullRetirementAge: Math.max(config.fullRetirementAge, quitAge),
+    };
     const years = runCore(testConfig);
     // Post-zinuk years must have non-negative balance (matches chart)
     const postZinukYears = years.filter(y => y.phase !== 'zinuk');
