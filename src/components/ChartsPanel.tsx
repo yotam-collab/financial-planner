@@ -62,12 +62,12 @@ const METRICS: Record<MetricType, MetricConfig> = {
   },
   netWorth: {
     label: 'שווי נקי',
-    nominalKey: 'netWorth',
-    realKey: 'realNetWorth',
+    nominalKey: 'worthOrDebt',
+    realKey: 'realWorthOrDebt',
     color: '#e88d2a',
     gradientId: 'grad-worth',
     isBiColor: false,
-    description: 'תיק + פנסיה + נדל״ן',
+    description: 'תיק + פנסיה + נדל״ן. בשנים של חוב מוצג החוב לבדו, באדום',
     emoji: '🏆',
   },
   happiness: {
@@ -148,9 +148,10 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
     const heroSecondary = showReal ? heroNominal : heroReal;
     const isHeroSigned = metricCfg.isBiColor;
     const heroPositive = heroPrimary >= 0;
-    const heroColor = isHeroSigned
-      ? (heroPositive ? '#10b981' : '#f43f5e')
-      : metricCfg.color;
+    const heroColor = !heroPositive ? '#f43f5e' : isHeroSigned ? '#10b981' : metricCfg.color;
+    // Debt is not netted against the house and the pension: it is shown on its own
+    const inDebt = d.liquidPortfolio < 0;
+    const assets = pick(d.homeEquity + d.pension, (d.real?.homeEquity ?? 0) + (d.real?.pension ?? 0));
 
     return (
       <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[360px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
@@ -187,7 +188,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
           <div className="flex items-center gap-2 mb-1">
             <span className="text-base">{metricCfg.emoji}</span>
             <span className="text-xs font-bold text-slate-600">
-              {metricCfg.label}
+              {metric === 'netWorth' && inDebt ? 'חוב · החסכונות הנזילים נגמרו' : metricCfg.label}
             </span>
           </div>
           {metricCfg.isScore ? (
@@ -289,7 +290,9 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         {/* Portfolio breakdown */}
         <div className="mt-4 pt-3 border-t border-slate-200">
           <p className="text-xs font-bold text-slate-500 mb-2">
-            {metric === 'netWorth' ? (
+            {inDebt ? (
+              <span className="text-rose-600">חוב · <span className="num">{pick(d.liquidPortfolio, d.real?.liquidPortfolio).toLocaleString('he-IL')} ₪</span>, לא מקוזז מהנדל״ן ומהפנסיה</span>
+            ) : metric === 'netWorth' ? (
               <>פירוט שווי נקי</>
             ) : (
               <>שווי נקי · <span className="num text-slate-900">{pick(d.netWorth, d.real?.netWorth).toLocaleString('he-IL')} ₪</span></>
@@ -297,9 +300,9 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
             <span className="text-xs text-slate-400 font-normal mr-1">({primaryLabel})</span>
           </p>
           <div className="space-y-2">
-            <PortfolioBar label={d.liquidPortfolio < 0 ? 'חוב' : 'השקעות'} value={pick(d.liquidPortfolio, d.real?.liquidPortfolio)} color="indigo" total={pick(d.netWorth, d.real?.netWorth)} />
-            {d.homeEquity > 0 && <PortfolioBar label="נדל״ן" value={pick(d.homeEquity, d.real?.homeEquity)} color="emerald" total={pick(d.netWorth, d.real?.netWorth)} />}
-            {d.pension > 0 && <PortfolioBar label="פנסיה" value={pick(d.pension, d.real?.pension)} color="amber" total={pick(d.netWorth, d.real?.netWorth)} />}
+            {!inDebt && <PortfolioBar label="השקעות" value={pick(d.liquidPortfolio, d.real?.liquidPortfolio)} color="indigo" total={pick(d.netWorth, d.real?.netWorth)} />}
+            {d.homeEquity > 0 && <PortfolioBar label="נדל״ן" value={pick(d.homeEquity, d.real?.homeEquity)} color="emerald" total={inDebt ? assets : pick(d.netWorth, d.real?.netWorth)} />}
+            {d.pension > 0 && <PortfolioBar label="פנסיה" value={pick(d.pension, d.real?.pension)} color="amber" total={inDebt ? assets : pick(d.netWorth, d.real?.netWorth)} />}
           </div>
         </div>
       </div>
@@ -404,7 +407,9 @@ export function ChartsPanel({ result, config }: Props) {
     // What actually leaves the savings: the monthly gap when expenses exceed income
     monthlyDraw: Math.round(Math.max(0, -y.annualCashflow) / 12),
     realMonthlyDraw: Math.round(Math.max(0, -y.real.annualCashflow) / 12),
-    realNetWorth: y.real.netWorth,
+    // A year in debt plots the debt alone (negative, red) instead of a net worth that hides it
+    worthOrDebt: y.liquidPortfolio < 0 ? y.liquidPortfolio : y.netWorth,
+    realWorthOrDebt: y.liquidPortfolio < 0 ? y.real.liquidPortfolio : y.real.netWorth,
   }));
   const retAge = result.earliestRetirementAge;
   const fullRetirementYear = result.earliestFullRetirementYear;
@@ -585,9 +590,7 @@ export function ChartsPanel({ result, config }: Props) {
             >
               {data.map((entry, i) => {
                 const value = (entry as any)[dataKey] ?? 0;
-                const fill = metricCfg.isBiColor
-                  ? (value >= 0 ? metricCfg.color : metricCfg.colorSecondary || '#f43f5e')
-                  : metricCfg.color;
+                const fill = value >= 0 ? metricCfg.color : metricCfg.colorSecondary || '#f43f5e';
                 return <Cell key={i} fill={fill} fillOpacity={0.85} style={{ cursor: 'pointer' }} />;
               })}
               <LabelList

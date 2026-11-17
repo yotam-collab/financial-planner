@@ -96,7 +96,9 @@ export function DataTable({ result, onExportJSON }: Props) {
                   </Td>
                   <Td mono align="left" className="text-slate-600">{fmtNum(y.pension)}</Td>
                   <Td mono align="left" className="text-slate-600">{y.homeEquity > 0 ? fmtNum(y.homeEquity) : '—'}</Td>
-                  <Td mono align="left" className="text-slate-900 font-bold">{fmtNum(y.netWorth)}</Td>
+                  <Td mono align="left" className={y.liquidPortfolio < 0 ? 'text-rose-500 font-bold' : 'text-slate-900 font-bold'}>
+                    {y.liquidPortfolio < 0 ? `חוב ${fmtNum(y.liquidPortfolio)}` : fmtNum(y.netWorth)}
+                  </Td>
                   <Td mono align="left" className={`font-bold ${y.monthlyBalance >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                     {y.monthlyBalance >= 0 ? '+' : ''}{fmtNum(y.monthlyBalance)}
                   </Td>

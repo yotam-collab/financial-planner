@@ -244,14 +244,21 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
           <section>
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-violet-500 rounded-full" />
-              שווי נקי · <span className="num">{fmt(y.netWorth)} ₪</span>
+              {y.liquidPortfolio < 0
+                ? <span className="text-rose-600">חוב · <span className="num">{fmt(y.liquidPortfolio)} ₪</span></span>
+                : <>שווי נקי · <span className="num">{fmt(y.netWorth)} ₪</span></>}
               <HelpTooltip placement="bottom" text="סה״כ ההון המשפחתי: תיק נזיל + הון עצמי בנדל״ן (ערך בית פחות יתרת משכנתא) + יתרת פנסיה נעולה. המטרה לטווח ארוך: לגדל את זה כדי להבטיח פרישה בת-קיימא. הפנסיה נעולה אבל נחשבת כנכס כי היא תהפוך לקצבה. אחרי תחילת הקצבה נרשם השווי של הקצבה שנותרה, והוא יורד בהדרגה עד סוף התוכנית." />
             </h3>
+            {y.liquidPortfolio < 0 && (
+              <p className="text-sm text-rose-700 mb-3">
+                החסכונות הנזילים נגמרו וההוצאות ממומנות בחוב. הנדל״ן והפנסיה אינם כסף זמין, ולכן החוב לא מקוזז מהם ולא מוצג שווי נקי.
+              </p>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <PortCard label={y.liquidPortfolio < 0 ? 'חוב (החסכונות נגמרו)' : 'תיק נזיל'} value={y.liquidPortfolio} color="indigo" total={y.netWorth} />
-              {y.homeEquity > 0 && <PortCard label="נדל״ן (הון)" value={y.homeEquity} color="emerald" total={y.netWorth} />}
-              {y.pension > 0 && <PortCard label="פנסיה (נעולה)" value={y.pension} color="amber" total={y.netWorth} />}
-              <PortCard label="סה״כ" value={y.netWorth} color="violet" bold total={y.netWorth} hideBar />
+              {y.liquidPortfolio >= 0 && <PortCard label="תיק נזיל" value={y.liquidPortfolio} color="indigo" total={y.netWorth} />}
+              {y.homeEquity > 0 && <PortCard label="נדל״ן (הון)" value={y.homeEquity} color="emerald" total={y.liquidPortfolio < 0 ? y.homeEquity + y.pension : y.netWorth} />}
+              {y.pension > 0 && <PortCard label="פנסיה (נעולה)" value={y.pension} color="amber" total={y.liquidPortfolio < 0 ? y.homeEquity + y.pension : y.netWorth} />}
+              {y.liquidPortfolio >= 0 && <PortCard label="סה״כ" value={y.netWorth} color="violet" bold total={y.netWorth} hideBar />}
             </div>
           </section>
 
@@ -266,7 +273,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               <RealStat label={y.liquidPortfolio < 0 ? 'חוב' : 'תיק נזיל'} value={y.real.liquidPortfolio} />
               {y.real.homeEquity > 0 && <RealStat label="נדל״ן" value={y.real.homeEquity} />}
               {y.real.pension > 0 && <RealStat label="פנסיה" value={y.real.pension} />}
-              <RealStat label="שווי נקי" value={y.real.netWorth} bold />
+              {y.liquidPortfolio >= 0 && <RealStat label="שווי נקי" value={y.real.netWorth} bold />}
               <RealStat label="יתרה חודשית" value={y.real.monthlyBalance} sign />
               <RealStat label="פוטנציאל משיכה" value={y.real.monthly4pctWithdrawal} />
             </div>

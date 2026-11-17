@@ -1,4 +1,4 @@
-import type { SimulationResult } from '../lib/types';
+import type { SimulationResult, YearResult } from '../lib/types';
 import { formatCompact } from '../lib/format';
 
 interface Props {
@@ -106,12 +106,12 @@ export function SummaryCard({ result }: Props) {
           <Stat
             label={`תיק נזיל ביום שעוזבים את זינוק, גיל ${exit.age}`}
             value={formatCompact(atExit.real.liquidPortfolio)}
-            sub={`שווי נקי ${formatCompact(atExit.real.netWorth)} ₪`}
+            sub={worthSub(atExit)}
           />
           <Stat
             label={`תיק נזיל ביום שיותם פורש, גיל ${yotamOut.age}`}
             value={formatCompact(atYotamOut.real.liquidPortfolio)}
-            sub={`שווי נקי ${formatCompact(atYotamOut.real.netWorth)} ₪`}
+            sub={worthSub(atYotamOut)}
           />
           <Stat
             label={`מאזן חודשי כששניכם בפרישה, יותם ${retired.age} והדס ${retired.hadasAge}`}
@@ -129,9 +129,9 @@ export function SummaryCard({ result }: Props) {
             }
           />
           <Stat
-            label={`שווי נקי בגיל ${last.age}`}
-            value={formatCompact(last.real.netWorth)}
-            sub="כולל פנסיה ונדל״ן"
+            label={`${last.liquidPortfolio < 0 ? 'חוב' : 'שווי נקי'} בגיל ${last.age}`}
+            value={formatCompact(last.liquidPortfolio < 0 ? last.real.liquidPortfolio : last.real.netWorth)}
+            sub={last.liquidPortfolio < 0 ? worthSub(last) : 'כולל פנסיה ונדל״ן'}
             className="col-span-2 md:col-span-2 xl:col-span-1"
           />
         </div>
@@ -142,6 +142,13 @@ export function SummaryCard({ result }: Props) {
       </div>
     </div>
   );
+}
+
+// Debt is never netted against the house and the pension, so a year in debt gets no net worth
+function worthSub(y: YearResult) {
+  return y.liquidPortfolio < 0
+    ? `חוב. לא מקוזז מנדל״ן ופנסיה בשווי ${formatCompact(y.real.homeEquity + y.real.pension)} ₪`
+    : `שווי נקי ${formatCompact(y.real.netWorth)} ₪`;
 }
 
 function Stat({
