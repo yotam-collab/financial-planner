@@ -280,7 +280,11 @@ export function InputPanel({ config, setConfig }: Props) {
 
       <Section title="שלבי חיים" icon="🔄" color="indigo" defaultOpen={true}>
         <SliderInput label="הפסקת הכנסה מזינוק" value={config.zinukEndAge}
-          onChange={v => setConfig(prev => ({ ...prev, zinukEndAge: v, fullRetirementAge: Math.max(prev.fullRetirementAge, v) }))}
+          onChange={v => setConfig(prev => ({
+            ...prev, zinukEndAge: v,
+            fullRetirementAge: Math.max(prev.fullRetirementAge, v),
+            hadasFullRetirementAge: Math.max(prev.hadasFullRetirementAge, prev.hadasAge + v - prev.startAge),
+          }))}
           min={config.startAge} max={65}
           displayValue={`גיל ${config.zinukEndAge} · ${(config.simulationStartYear ?? 2026) + config.zinukEndAge - config.startAge}`}
           note="מעבר מהכנסת זינוק להכנסה חלופית"
@@ -305,10 +309,10 @@ export function InputPanel({ config, setConfig }: Props) {
           help="הגיל שבו יותם מפסיק לחלוטין להרוויח הכנסה מעבודה. מגיל זה ההכנסה היא רק מקצבת פנסיה + 4% מהתיק הנזיל. חוק: גיל פרישה חובה 67 לגברים." />
         <SliderInput label="פרישה מלאה — הדס" value={config.hadasFullRetirementAge}
           onChange={v => setConfig(prev => ({ ...prev, hadasFullRetirementAge: v }))}
-          min={config.hadasPensionStartAge} max={85}
+          min={config.hadasAge + config.zinukEndAge - config.startAge} max={85}
           displayValue={`גיל ${config.hadasFullRetirementAge} · ${(config.simulationStartYear ?? 2026) + config.hadasFullRetirementAge - config.hadasAge}`}
           note="הדס מפסיקה להרוויח"
-          help="הגיל שבו הדס מפסיקה לחלוטין לעבוד. חוק: גיל פרישה חובה לנשים עולה מ-62 ל-65 בהדרגה עד 2032." />
+          help="הגיל שבו הדס מפסיקה לחלוטין לעבוד, לכל המוקדם כשיותם עוזב את זינוק. חוק: גיל פרישה חובה לנשים עולה מ-62 ל-65 בהדרגה עד 2032." />
       </Section>
 
       <Section title="קניית בית" icon="🏠" color="violet" defaultOpen={true}>

@@ -27,10 +27,12 @@ export function SummaryCard({ result }: Props) {
   const last = years[years.length - 1];
   const exit = years.find(y => y.phase !== 'zinuk') ?? last;
   const retired = years.find(y => y.isFullyRetired) ?? last;
+  // Yotam's own slider. "Fully retired" above also waits for Hadas, which can be years later
+  const yotamOut = years.find(y => y.phase !== 'zinuk' && y.yotamMonthlyIncome === 0) ?? last;
   // A row holds end-of-year values, so the balance on the day of the move is the previous row's
   const atStartOf = (row: typeof last) => years[years.indexOf(row) - 1] ?? row;
   const atExit = atStartOf(exit);
-  const atRetired = atStartOf(retired);
+  const atYotamOut = atStartOf(yotamOut);
 
   const shortYears = years.filter(y => y.phase !== 'zinuk' && y.monthlyBalance < 0).length;
   const tone: Tone = depletionAge !== null ? 'bad' : shortYears > 0 ? 'warn' : 'good';
@@ -107,12 +109,12 @@ export function SummaryCard({ result }: Props) {
             sub={`שווי נקי ${formatCompact(atExit.real.netWorth)} ₪`}
           />
           <Stat
-            label={`תיק נזיל בפרישה המלאה, גיל ${retired.age}`}
-            value={formatCompact(atRetired.real.liquidPortfolio)}
-            sub={`שווי נקי ${formatCompact(atRetired.real.netWorth)} ₪`}
+            label={`תיק נזיל ביום שיותם פורש, גיל ${yotamOut.age}`}
+            value={formatCompact(atYotamOut.real.liquidPortfolio)}
+            sub={`שווי נקי ${formatCompact(atYotamOut.real.netWorth)} ₪`}
           />
           <Stat
-            label="מאזן חודשי בפרישה המלאה"
+            label={`מאזן חודשי כששניכם בפרישה, יותם ${retired.age} והדס ${retired.hadasAge}`}
             value={Math.round(retired.real.monthlyBalance).toLocaleString('he-IL')}
             good={retired.real.monthlyBalance >= 0}
             sub={`הכנסה ${formatCompact(retired.real.monthlySustainableIncome)} מול הוצאות ${formatCompact(retired.real.annualExpenses / 12)}`}

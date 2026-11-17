@@ -347,6 +347,8 @@ describe('what the screen shows adds up', () => {
     base,
     { ...base, zinukEndAge: 44, assets: { ...base.assets, orAkivaKeep: true } },
     { ...base, zinukEndAge: 60, pensionStartAge: 60, hadasPensionStartAge: 60, housePurchaseYear: null },
+    // Hadas stops working years before her annuity starts
+    { ...base, zinukEndAge: 49, fullRetirementAge: 57, hadasFullRetirementAge: 41 },
   ];
   it('income rows sum to the total, and income minus expenses is the cashflow', () => {
     for (const c of configs) for (const y of simulate(c).years) {
