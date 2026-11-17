@@ -72,6 +72,8 @@ export const DEFAULT_HOUSE: HouseConfig = {
   mortgageTerm: 25,
   rentalIncomeFromUnit: 3_400,
   solarIncome: 500,
+  // ~0.4%/yr of value: repairs, roof/AC/solar upkeep, building insurance
+  monthlyMaintenance: 1_500,
 };
 
 export const DEFAULT_MARKET: MarketConfig = {
@@ -119,7 +121,7 @@ export function createDefaultConfig(): ScenarioConfig {
     housePurchaseYear: 1,
     zinukEndAge: 52,
     pensionStartAge: 60,
-    hadasAge: 35,
+    hadasAge: 36, // born 02/1990 → 36 for 11 months of 2026
     hadasPensionStartAge: 65,
     fullRetirementAge: 67,
     hadasFullRetirementAge: 67,

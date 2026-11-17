@@ -77,6 +77,8 @@ export interface HouseConfig {
   rentalIncomeFromUnit: number;
   /** Monthly income from solar panels (נטו, today's values) */
   solarIncome: number;
+  /** Monthly owner upkeep: repairs + building insurance (today's values) */
+  monthlyMaintenance: number;
 }
 
 export interface MarketConfig {
@@ -165,15 +167,17 @@ export interface YearResult {
 
   monthlyZinukIncome: number;
   monthly4pctWithdrawal: number;
+  /** Net pension annuities (after tax) + old-age allowance */
   monthlyPensionIncome: number;
+  monthlyOldAgeAllowance: number;
   monthlyAltIncome: number;
   monthlyRentalIncomeFromUnit: number;
   monthlySolarIncome: number;
   // Per-person income breakdown for detail view
   yotamMonthlyIncome: number;   // Yotam's current earned income this year
   hadasMonthlyIncome: number;   // Hadas's current earned income this year
-  yotamPensionPayoutMonthly: number;  // Yotam's portion of pension annuity
-  hadasPensionPayoutMonthly: number;  // Hadas's portion of pension annuity
+  yotamPensionPayoutMonthly: number;  // Yotam's pension annuity, net of tax
+  hadasPensionPayoutMonthly: number;  // Hadas's pension annuity, net of tax
   // Housing detail
   monthlyNonHousingExpense: number;
   monthlyHousingExpense: number;

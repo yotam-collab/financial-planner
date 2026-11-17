@@ -30,17 +30,20 @@ const PURCHASE_TAX_BRACKETS_SINGLE_HOME: Array<{ upTo: number; rate: number }> =
   { upTo: Infinity, rate: 0.10 },
 ];
 
-/** Compute total purchase tax in NIS using progressive single-home brackets. */
-export function calcPurchaseTax(price: number): number {
+function bracketTax(amount: number, brackets: Array<{ upTo: number; rate: number }>): number {
   let tax = 0;
   let prevCap = 0;
-  for (const br of PURCHASE_TAX_BRACKETS_SINGLE_HOME) {
-    if (price <= prevCap) break;
-    const inBracket = Math.min(price, br.upTo) - prevCap;
-    tax += inBracket * br.rate;
+  for (const br of brackets) {
+    if (amount <= prevCap) break;
+    tax += (Math.min(amount, br.upTo) - prevCap) * br.rate;
     prevCap = br.upTo;
   }
   return tax;
+}
+
+/** Compute total purchase tax in NIS using progressive single-home brackets. */
+export function calcPurchaseTax(price: number): number {
+  return bracketTax(price, PURCHASE_TAX_BRACKETS_SINGLE_HOME);
 }
 
 /** Effective purchase tax rate (tax / price). */
@@ -87,6 +90,58 @@ export function calcMonthlyRentTax(monthlyRent: number, ceilingNow: number, marg
   return Math.min(exemptRouteTax, flatRouteTax);
 }
 
+// ─── Tax on the pension annuity + old-age allowance (all in 2026 ₪/month; the sim
+// deflates → computes → re-inflates, i.e. assumes the tables keep tracking CPI) ───
+// 2026 income-tax brackets (20%/31% steps widened by the 2026 budget).
+const INCOME_TAX_BRACKETS_2026 = [
+  { upTo: 7_010, rate: 0.10 }, { upTo: 10_060, rate: 0.14 }, { upTo: 19_000, rate: 0.20 },
+  { upTo: 25_100, rate: 0.31 }, { upTo: 46_690, rate: 0.35 }, { upTo: 60_130, rate: 0.47 },
+  { upTo: Infinity, rate: 0.50 },
+];
+const CREDIT_POINT_2026 = 242;
+// Bituach Leumi + health on a pension drawn BEFORE statutory retirement age.
+// shortcut: reduced-band rate (4.3%) is an estimate, the full 11.96% is sourced; refine if early pension below ~7.7K matters.
+const EARLY_PENSION_NI_2026 = [
+  { upTo: 7_703, rate: 0.043 }, { upTo: 51_910, rate: 0.1196 }, { upTo: Infinity, rate: 0 },
+];
+// "קצבה מזכה" exemption from statutory retirement age: 67% × 9,430 (the 2028+ rate —
+// nobody in this plan reaches retirement age before then).
+const PENSION_EXEMPTION_2026 = 6_318;
+/** Statutory retirement ages (men 67; women born 1970+ 65). */
+export const STATUTORY_RETIREMENT_AGE = { yotam: 67, hadas: 65 };
+/** Old-age allowance per person: 1,838 basic + 50% seniority supplement − ~123 health. */
+export const OLD_AGE_ALLOWANCE_2026 = 2_634;
+
+/** Rough net→gross for earned income (also shown as a hint in the input panel). */
+export function estimateGross(monthlyNet: number): number {
+  const a = monthlyNet * 12;
+  let g: number;
+  if (a <= 120_000) g = a / 0.82;
+  else if (a <= 300_000) g = a / 0.72;
+  else if (a <= 500_000) g = a / 0.65;
+  else if (a <= 800_000) g = a / 0.58;
+  else g = a / 0.52;
+  return Math.round(g / 12);
+}
+
+/**
+ * Monthly income tax + Bituach Leumi on a pension annuity, stacked ON TOP of the
+ * person's earned gross (so it pays their marginal rate). 2026 ₪.
+ * shortcut: ignores child credit points and severance-offset of the exemption, add if either applies.
+ */
+export function calcMonthlyPensionTax(
+  pension: number, earnedGross: number, pastRetirementAge: boolean, creditPoints: number,
+): number {
+  if (pension <= 0) return 0;
+  const incomeTax = (x: number) =>
+    Math.max(0, bracketTax(x, INCOME_TAX_BRACKETS_2026) - creditPoints * CREDIT_POINT_2026);
+  const taxable = pastRetirementAge ? Math.max(0, pension - PENSION_EXEMPTION_2026) : pension;
+  const it = incomeTax(earnedGross + taxable) - incomeTax(earnedGross);
+  const ni = pastRetirementAge ? 0
+    : bracketTax(earnedGross + pension, EARLY_PENSION_NI_2026) - bracketTax(earnedGross, EARLY_PENSION_NI_2026);
+  return it + ni;
+}
+
 /** Residential-rent tax exemption ceiling, ₪/month (2026, CPI-indexed in the sim). */
 export const RENT_TAX_EXEMPTION_CEILING_2026 = 5_654;
 
@@ -99,7 +154,7 @@ export function deflate(nominal: number, rate: number, years: number): number {
 }
 
 /**
- * Happiness index — 7 components scored 0–100, weighted by user preferences.
+ * Happiness index — 8 components scored 0–100, weighted by user preferences.
  *
  * Modeling philosophy: each component captures a life-satisfaction dimension that
  * emerges from the financial-plan state. Not a measurement of happiness itself —
@@ -370,6 +425,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
     const hadasCurrentAge = hadasAge + yi;
     const calendarYear = (simulationStartYear ?? 2026) + yi;
     const ye = yi;
+    const cpi = Math.pow(1 + market.inflationRate, ye);
 
     // Phase label follows Yotam (primary). But each person's income
     // stops at their own respective full retirement age.
@@ -412,9 +468,10 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
     // House purchase
     if (housePurchaseYear !== null && year === housePurchaseYear && !ownsHome) {
-      const p = inflate(house.priceToday, market.inflationRate, ye);
-      // Auto-compute purchase tax from progressive brackets
-      const purchaseTax = calcPurchaseTax(p);
+      // A later purchase pays the appreciated price (same growth an owned home gets).
+      const p = house.priceToday * Math.pow(1 + nomHA, ye);
+      // Progressive brackets, CPI-indexed from their 2026 level
+      const purchaseTax = cpi * calcPurchaseTax(p / cpi);
       const nomReno = inflate(house.renovationCost, market.inflationRate, ye);
       // Transaction fees — scale with price (price already inflates)
       const lawyerFee = p * (house.lawyerFeeRate ?? 0) * (1 + VAT_RATE);
@@ -446,16 +503,32 @@ function runCore(config: ScenarioConfig): YearResult[] {
     }
 
     // Annuities are CPI-indexed after activation (real value preserved)
-    const yotamPensionPayout = yotamPensionActive
+    const yotamPensionGross = yotamPensionActive
       ? yotamPensionPayoutBase * Math.pow(1 + market.inflationRate, ye - yotamPensionStartYe)
       : 0;
-    const hadasPensionPayout = hadasPensionActive
+    const hadasPensionGross = hadasPensionActive
       ? hadasPensionPayoutBase * Math.pow(1 + market.inflationRate, ye - hadasPensionStartYe)
       : 0;
-    const totalPensionPayout = yotamPensionPayout + hadasPensionPayout;
+    // Net of income tax + Bituach Leumi: a pension drawn while still working stacks on
+    // the earned income; from statutory retirement age most of it is exempt.
+    const yotamPastRet = age >= STATUTORY_RETIREMENT_AGE.yotam;
+    const hadasPastRet = hadasCurrentAge >= STATUTORY_RETIREMENT_AGE.hadas;
+    const yotamPensionPayout = yotamPensionGross - cpi * calcMonthlyPensionTax(
+      yotamPensionGross / cpi, estimateGross(yotamIncome / cpi), yotamPastRet, 2.25);
+    const hadasPensionPayout = hadasPensionGross - cpi * calcMonthlyPensionTax(
+      hadasPensionGross / cpi, estimateGross(hadasIncome / cpi), hadasPastRet, 2.75);
+    // Old-age allowance (CPI-linked, tax-exempt): from retirement age once work income
+    // stops (income test), unconditionally from 70.
+    const oldAgeEligible = (a: number, pastRet: boolean, earned: number) =>
+      a >= 70 || (pastRet && earned === 0);
+    const mOldAge = cpi * OLD_AGE_ALLOWANCE_2026 * (
+      (oldAgeEligible(age, yotamPastRet, yotamIncome) ? 1 : 0) +
+      (oldAgeEligible(hadasCurrentAge, hadasPastRet, hadasIncome) ? 1 : 0));
+    const totalPensionPayout = yotamPensionPayout + hadasPensionPayout + mOldAge;
 
     // Monthly calcs
-    const mHousing = ownsHome ? mortPayment : nomRent;
+    // Owners also pay upkeep a renter doesn't (repairs, building insurance), CPI-linked.
+    const mHousing = ownsHome ? mortPayment + cpi * (house.monthlyMaintenance ?? 0) : nomRent;
     const mExp = nomNH + mHousing;
     // Sustainable-withdrawal reference (configurable; Morningstar 2025: ~3.0-3.3%
     // for a 40-year horizon, classic Bengen 4% for 30 years)
@@ -561,7 +634,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // year and earn ~half a year on average. (The old code gave flows a full year,
     // systematically overstating compounding.)
     const halfYearGrowth = 1 + nomRet / 2;
-    liquid = Math.max(0, liquid) * (1 + nomRet) + actualCashflow * halfYearGrowth;
+    // No clamp at 0 here: a purchase the portfolio can't fund must show up as depletion.
+    liquid = liquid * (1 + nomRet) + actualCashflow * halfYearGrowth;
     if (!yotamPensionActive) {
       yotamPension = yotamPension * (1 + nomRet) + yotamContribThisYear * 12 * halfYearGrowth;
     }
@@ -572,8 +646,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
     if (!hadasKerenMerged) hadasKeren *= (1 + nomRet);
 
     if (ownsHome) {
-      if (year > mortStartYear) homeVal *= (1 + nomHA);
-      const ysp = year - mortStartYear;
+      homeVal *= (1 + nomHA);
+      const ysp = year - mortStartYear + 1; // years of payments made by this year's end
       mortBal = ysp < house.mortgageTerm ? remainingMortgageBalance(mortPrincipal, house.mortgageRate, house.mortgageTerm, ysp) : 0;
       if (ysp >= house.mortgageTerm) mortPayment = 0;
     }
@@ -621,6 +695,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       monthlyZinukIncome: Math.round(mZinuk),
       monthly4pctWithdrawal: Math.round(m4pct),
       monthlyPensionIncome: Math.round(totalPensionPayout),
+      monthlyOldAgeAllowance: Math.round(mOldAge),
       monthlyAltIncome: Math.round(mAlt),
       monthlyRentalIncomeFromUnit: Math.round(nomRentalUnit),
       monthlySolarIncome: Math.round(nomSolar),
@@ -715,8 +790,7 @@ export function findEarliestRetirementAge(config: ScenarioConfig): number | null
     if (postZinukYears.length === 0) continue;
     if (postZinukYears.some(y => y.monthlyBalance < 0)) continue;
     // Also check portfolio doesn't deplete
-    const depleted = years.some(y => y.isDepleted && y.phase !== 'zinuk');
-    if (depleted) continue;
+    if (years.some(y => y.isDepleted)) continue;
     return quitAge;
   }
   return null;
@@ -758,7 +832,7 @@ export function simulate(config: ScenarioConfig): SimulationResult {
   const earliestRetirementAge = findEarliestRetirementAge(config);
   const earliestFullRetirementYear = findEarliestFullRetirementYear(config);
   const years = runCore(config);
-  const dep = years.find(y => y.isDepleted && y.phase !== 'zinuk');
+  const dep = years.find(y => y.isDepleted);
   const { housePurchaseYear: hpy, startAge } = config;
   const label = hpy === null
     ? 'ללא קניית בית'

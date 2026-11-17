@@ -116,9 +116,10 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               {totalPension > 0 && (
                 <>
                   <SectionRow label="קצבת פנסיה" value={totalPension} dotColor="bg-amber-500"
-                    help="קצבה חודשית = יתרת פנסיה ÷ 216 (מקדם המרה סטטוטורי). מתחילה מגיל 60 ליותם, מגיל פרישה לנשים (עד 65) להדס. הקצבה ריאלית — מוצמדת למדד לאורך חיי המקבל." />
-                  {y.yotamPensionPayoutMonthly > 0 && <SubRow label="יותם · קצבה" value={y.yotamPensionPayoutMonthly} />}
-                  {y.hadasPensionPayoutMonthly > 0 && <SubRow label="הדס · קצבה" value={y.hadasPensionPayoutMonthly} />}
+                    help="קצבה חודשית נטו = יתרת פנסיה ÷ מקדם המרה, בניכוי מס. קצבה שנמשכת לפני גיל פרישה (67 יותם / 65 הדס) חייבת במס הכנסה מלא בנוסף להכנסה מעבודה + ביטוח לאומי; מגיל פרישה ~6,300 ₪ לחודש פטורים. מגיל פרישה (ללא הכנסה מעבודה) או מגיל 70 מתווספת קצבת אזרח ותיק מביטוח לאומי. הכול מוצמד למדד." />
+                  {y.yotamPensionPayoutMonthly > 0 && <SubRow label="יותם · קצבה נטו" value={y.yotamPensionPayoutMonthly} />}
+                  {y.hadasPensionPayoutMonthly > 0 && <SubRow label="הדס · קצבה נטו" value={y.hadasPensionPayoutMonthly} />}
+                  {y.monthlyOldAgeAllowance > 0 && <SubRow label="קצבת אזרח ותיק · ביטוח לאומי" value={y.monthlyOldAgeAllowance} />}
                 </>
               )}
 

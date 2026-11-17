@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ScenarioConfig } from '../lib/types';
-import { calcMonthlyMortgagePayment, calcPurchaseTax } from '../lib/simulator';
+import { calcMonthlyMortgagePayment, calcPurchaseTax, estimateGross } from '../lib/simulator';
 import { HelpTooltip } from './HelpTooltip';
 import { ExpenseSimulatorModal } from './ExpenseSimulatorModal';
 
@@ -10,17 +10,6 @@ function fmtK(v: number): string {
   if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}M`;
   if (Math.abs(v) >= 1_000) return `${Math.round(v / 1_000)}K`;
   return String(Math.round(v));
-}
-
-function estimateGross(monthlyNet: number): number {
-  const a = monthlyNet * 12;
-  let g: number;
-  if (a <= 120_000) g = a / 0.82;
-  else if (a <= 300_000) g = a / 0.72;
-  else if (a <= 500_000) g = a / 0.65;
-  else if (a <= 800_000) g = a / 0.58;
-  else g = a / 0.52;
-  return Math.round(g / 12);
 }
 
 interface Props {
@@ -344,7 +333,7 @@ export function InputPanel({ config, setConfig }: Props) {
             <NumInput label="מחיר (ערכי היום)" value={config.house.priceToday}
               onChange={v => update('house.priceToday', v)} step={100000}
               rec="4,800,000 ₪ — בית בפרדס חנה"
-              help="מחיר הבית בערכי היום (לפני אינפלציה). המערכת מצמידה למדד לשנת הקנייה. בית 5 חד׳ בפרדס חנה ~4.5-5.5M₪ (2026). ת״א/מרכז: +50-100%. עלויות נלוות (מס רכישה, עו״ד, מתווך, שמאי) מחושבות אוטומטית למטה." />
+              help="מחיר הבית בערכי היום. בקנייה עתידית המחיר עולה בקצב עליית מחירי הדיור (מדד + עליית ערך ריאלית), לא רק במדד. בית 5 חד׳ בפרדס חנה ~4.5-5.5M₪ (2026). ת״א/מרכז: +50-100%. עלויות נלוות (מס רכישה, עו״ד, מתווך, שמאי) מחושבות אוטומטית למטה." />
             <NumInput label="שיפוץ" value={config.house.renovationCost}
               onChange={v => update('house.renovationCost', v)} step={10000}
               help="עלות שיפוץ נטו — אחרי מה שעובר דרך העסק. שיפוץ עמוק: 150-300K₪. שיפוץ בינוני: 80-150K₪. מוצמד למדד לשנת הקנייה. משולם מהתיק הנזיל (מקטין אותו)." />
@@ -377,6 +366,11 @@ export function InputPanel({ config, setConfig }: Props) {
               rec="3,000-5,000 ₪ — יחידת דיור בפרדס חנה"
               note="0 = אין יחידה · מוצמד למדד · מס שכ״ד מחושב אוטומטית"
               help="הכנסה מהשכרת יחידה נפרדת בבית (מרתף, קומה, וכו׳), ברוטו. פטור ממס עד 5,654 ₪/חודש (2026, צמוד). מעל התקרה — המודל מחשב אוטומטית את המס לפי המסלול הזול (10% קבוע או פטור חלקי) ומקזז. מוצמד למדד כל שנה." />
+            <NumInput label="תחזוקת בית (חודשי)"
+              value={config.house.monthlyMaintenance ?? 0}
+              onChange={v => update('house.monthlyMaintenance', v)} step={100}
+              rec="1,500 ₪ — כ-0.4% משווי הבית בשנה"
+              help="הוצאות שיש רק לבעל בית ואין לשוכר: תיקונים, איטום/גג, מזגנים, דוד, ביטוח מבנה. כלל אצבע: 0.3-1% משווי הבית בשנה. מוצמד למדד ומתווסף להוצאות הדיור כל עוד הבית בבעלותכם." />
             <NumInput label="הכנסה מסולארי (חודשי, נטו)"
               value={config.house.solarIncome}
               onChange={v => update('house.solarIncome', v)} step={100}

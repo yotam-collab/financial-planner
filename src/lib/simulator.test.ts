@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   simulate, calcMonthlyMortgagePayment, remainingMortgageBalance, findEarliestRetirementAge,
-  calcPurchaseTax, calcMonthlyRentTax, mekaddemForStartAge,
+  calcPurchaseTax, calcMonthlyRentTax, mekaddemForStartAge, calcMonthlyPensionTax,
 } from './simulator';
 import { createDefaultConfig } from './defaults';
 
@@ -109,12 +109,10 @@ describe('Dual Pension', () => {
     expect(r.years.find(y => y.age === 60)!.monthlyPensionPayout).toBeGreaterThan(0);
   });
   it('Hadas pension activates when Hadas reaches 65', () => {
-    // Hadas is 35 when Yotam is 44. Hadas turns 65 when Yotam is 74.
+    // Hadas is 36 when Yotam is 44 → she turns 65 when Yotam is 73.
     const r = simulate(createDefaultConfig());
-    const yotamAge73 = r.years.find(y => y.age === 73)!;
-    const yotamAge74 = r.years.find(y => y.age === 74)!;
-    // At Yotam 74, Hadas is 65 → her pension activates, total should jump
-    expect(yotamAge74.monthlyPensionPayout).toBeGreaterThan(yotamAge73.monthlyPensionPayout);
+    expect(r.years.find(y => y.age === 72)!.hadasPensionPayoutMonthly).toBe(0);
+    expect(r.years.find(y => y.age === 73)!.hadasPensionPayoutMonthly).toBeGreaterThan(0);
   });
 });
 
@@ -152,9 +150,10 @@ describe('2026 accuracy audit', () => {
 
   it('pension annuity is CPI-indexed after activation (~28% over 10y at 2.5%)', () => {
     const r = simulate(createDefaultConfig());
-    const at60 = r.years.find(y => y.age === 60)!.yotamPensionPayoutMonthly;
-    const at70 = r.years.find(y => y.age === 70)!.yotamPensionPayoutMonthly;
-    const ratio = at70 / at60;
+    // 68→78: both after retirement age, so the tax treatment is the same in both years
+    const at68 = r.years.find(y => y.age === 68)!.yotamPensionPayoutMonthly;
+    const at78 = r.years.find(y => y.age === 78)!.yotamPensionPayoutMonthly;
+    const ratio = at78 / at68;
     expect(ratio).toBeGreaterThan(1.26);
     expect(ratio).toBeLessThan(1.30);
   });
@@ -230,6 +229,57 @@ describe('2026 accuracy audit', () => {
     // Gross diff is 1,200; net diff must be ~1,200 - 382 ≈ 818
     expect(sAbove - sBelow).toBeGreaterThan(750);
     expect(sAbove - sBelow).toBeLessThan(900);
+  });
+});
+
+describe('Deep audit: taxes, allowances, mortgage timing', () => {
+  it('early pension stacks on earned income: marginal income tax + Bituach Leumi', () => {
+    // 10K pension over 20K gross: 5,100×31% + 4,900×35% + 10,000×11.96%
+    expect(calcMonthlyPensionTax(10_000, 20_000, false, 2.25)).toBeCloseTo(4_492, 0);
+  });
+  it('pension within the exemption after retirement age is tax-free', () => {
+    expect(calcMonthlyPensionTax(6_000, 0, true, 2.25)).toBe(0);
+  });
+  it('drawing pension at 60 while working nets less than the same pension at 67', () => {
+    const r = simulate(createDefaultConfig());
+    const real = (age: number) => {
+      const y = r.years.find(x => x.age === age)!;
+      return y.yotamPensionPayoutMonthly / Math.pow(1.025, age - 44);
+    };
+    expect(real(60)).toBeLessThan(real(67) * 0.8);
+  });
+  it('old-age allowance: none before retirement age, both spouses once eligible', () => {
+    const r = simulate(createDefaultConfig());
+    expect(r.years.find(y => y.age === 66)!.monthlyOldAgeAllowance).toBe(0);
+    const y67 = r.years.find(y => y.age === 67)!;
+    const y80 = r.years.find(y => y.age === 80)!;
+    expect(y67.monthlyOldAgeAllowance).toBeGreaterThan(0);
+    // Hadas joins later → more than double Yotam's (CPI-adjusted) share
+    expect(y80.monthlyOldAgeAllowance / Math.pow(1.025, 13)).toBeGreaterThan(y67.monthlyOldAgeAllowance * 1.9);
+  });
+  it('25-year mortgage is paid for exactly 25 years', () => {
+    const r = simulate(createDefaultConfig()); // buys in year 1
+    expect(r.years[23].mortgageBalance).toBeGreaterThan(0);
+    expect(r.years[24].mortgageBalance).toBe(0);
+    expect(r.years[25].monthlyHousingExpense).toBeLessThan(r.years[24].monthlyHousingExpense / 3);
+  });
+  it('a later purchase pays the appreciated price, not just CPI', () => {
+    const c = createDefaultConfig();
+    c.housePurchaseYear = 9;
+    const y = simulate(c).years[8];
+    expect(y.homeValue).toBeGreaterThan(c.house.priceToday * Math.pow(1.025, 8) * 1.15);
+  });
+  it('a purchase the portfolio cannot fund shows up as depletion, even during zinuk', () => {
+    const c = createDefaultConfig();
+    c.assets.liquidPortfolio = 0;
+    c.assets.apartmentNetProceeds = 0;
+    expect(simulate(c).depletionAge).toBe(44);
+  });
+  it('owner maintenance raises housing cost', () => {
+    const c = createDefaultConfig();
+    const base = simulate(c).years[0].monthlyHousingExpense;
+    c.house.monthlyMaintenance = 0;
+    expect(base - simulate(c).years[0].monthlyHousingExpense).toBe(1_500);
   });
 });
 
