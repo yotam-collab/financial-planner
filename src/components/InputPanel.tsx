@@ -297,7 +297,7 @@ export function InputPanel({ config, setConfig }: Props) {
           onChange={v => setConfig(prev => ({ ...prev, pensionStartAge: v }))}
           min={60} max={67}
           displayValue={`גיל ${config.pensionStartAge} · ${(config.simulationStartYear ?? 2026) + config.pensionStartAge - config.startAge}`}
-          rec="גיל 60 — מינימום חוקי לגברים"
+          rec="גיל 67 — גיל פרישה: הקצבה כמעט פטורה ממס (מגיל 60 מותר, אך ממוסה בשולי)"
           help="גיל תחילת קצבה חודשית. בישראל מגיל 60 מותר (גברים). דחייה עד 67 מגדילה את הקצבה כי ממשיכים לצבור + מקדם ההמרה יורד עם הגיל. המודל מתאים את המקדם אוטומטית לגיל: 60→221, 64→202, 67→188 (מכויל לטבלאות מנורה 2025/26, נשוי + 60% שארים). הקצבה צמודה למדד לכל החיים. משיכה לפני 60 = קנס 35% מס." />
         <SliderInput label="תחילת קצבת הדס" value={config.hadasPensionStartAge}
           onChange={v => setConfig(prev => ({ ...prev, hadasPensionStartAge: v }))}

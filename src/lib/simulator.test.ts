@@ -65,7 +65,7 @@ describe('monthlyBalance', () => {
 describe('Default scenario: Buy Now', () => {
   it('runs without errors', () => {
     const r = simulate(createDefaultConfig());
-    expect(r.years).toHaveLength(42);
+    expect(r.years).toHaveLength(52);
     expect(r.scenarioLabel).toBe('קנייה מיידית');
   });
   it('owns from year 1', () => {
@@ -103,10 +103,10 @@ describe('Dual Pension', () => {
     const y = simulate(createDefaultConfig()).years[0];
     expect(y.pension).toBeGreaterThan(0); // combined pension NW
   });
-  it('Yotam pension activates at 60 (based on age)', () => {
+  it('Yotam pension activates at the chosen start age (default 67)', () => {
     const r = simulate(createDefaultConfig());
-    expect(r.years.find(y => y.age === 59)!.monthlyPensionPayout).toBe(0);
-    expect(r.years.find(y => y.age === 60)!.monthlyPensionPayout).toBeGreaterThan(0);
+    expect(r.years.find(y => y.age === 66)!.yotamPensionPayoutMonthly).toBe(0);
+    expect(r.years.find(y => y.age === 67)!.yotamPensionPayoutMonthly).toBeGreaterThan(0);
   });
   it('Hadas pension activates when Hadas reaches 65', () => {
     // Hadas is 36 when Yotam is 44 → she turns 65 when Yotam is 73.
@@ -123,7 +123,7 @@ describe('Edge cases', () => {
     c.income.yotamNetIncomePostZinuk = 0;
     c.income.hadasNetIncomePostZinuk = 0;
     const r = simulate(c);
-    expect(r.years).toHaveLength(42);
+    expect(r.years).toHaveLength(52);
     r.years.filter(y => y.isDepleted).forEach(y => expect(y.liquidPortfolio).toBe(0));
   });
 
@@ -193,6 +193,7 @@ describe('2026 accuracy audit', () => {
     c.income.hadasNetIncomeZinuk = 0;
     c.income.hadasNetIncomePostZinuk = 0;
     c.income.hadasMonthlyPensionContribution = 0;
+    c.pensionStartAge = 60;
     const r = simulate(c);
     // Age 62: pension active (60+), still earning alt income → NO deduction from net
     const y62 = r.years.find(y => y.age === 62)!;
@@ -241,7 +242,8 @@ describe('Deep audit: taxes, allowances, mortgage timing', () => {
     expect(calcMonthlyPensionTax(6_000, 0, true, 2.25)).toBe(0);
   });
   it('drawing pension at 60 while working nets less than the same pension at 67', () => {
-    const r = simulate(createDefaultConfig());
+    const c = createDefaultConfig(); c.pensionStartAge = 60;
+    const r = simulate(c);
     const real = (age: number) => {
       const y = r.years.find(x => x.age === age)!;
       return y.yotamPensionPayoutMonthly / Math.pow(1.025, age - 44);

@@ -64,9 +64,16 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
     };
   }
 
+  // One-time migration: states saved before the 95 horizon still carry the old
+  // pension default (60) → move them to the new default 67.
+  const pensionStartAge = saved.endAge !== defaults.endAge && saved.pensionStartAge === 60
+    ? defaults.pensionStartAge : saved.pensionStartAge ?? defaults.pensionStartAge;
+
   return {
     ...defaults,
     ...saved,
+    pensionStartAge,
+    endAge: defaults.endAge, // not user-editable
     // New fields — fall back to defaults if missing in saved state
     simulationStartYear: saved.simulationStartYear ?? defaults.simulationStartYear,
     yotamBirthYear: saved.yotamBirthYear ?? defaults.yotamBirthYear,

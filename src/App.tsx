@@ -60,7 +60,7 @@ function App() {
 
           {/* ─── Desktop: title + buttons at bottom ─── */}
           <div className="hidden md:block absolute inset-x-0 bottom-0 px-10 pb-10">
-            <div className="mx-auto w-full flex flex-row items-end justify-between gap-4" style={{ maxWidth: '1920px' }}>
+            <div className="mx-auto w-full flex flex-row items-end justify-between gap-4">
               <div className="fade-up">
                 <p className="text-white/70 text-xs font-bold uppercase tracking-[0.28em] mb-3">
                   יותם והדס · תכנון פיננסי
@@ -79,7 +79,7 @@ function App() {
         </header>
 
         {/* ─── Main content ─── */}
-        <main className="mx-auto w-full px-4 md:px-8 lg:px-12 py-6 md:py-10" style={{ maxWidth: '1920px' }}>
+        <main className="mx-auto w-full px-4 md:px-8 lg:px-12 py-6 md:py-10">
           <div className="space-y-5 md:space-y-6">
             {/* Summary */}
             <div className="fade-up" style={{ animationDelay: '0.15s' }}>

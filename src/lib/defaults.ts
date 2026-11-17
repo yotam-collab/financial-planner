@@ -117,10 +117,11 @@ export function createDefaultConfig(): ScenarioConfig {
     hadasBirthMonth: 2,
 
     startAge: 44,
-    endAge: 85,
+    endAge: 95, // covers Hadas to 87 (Yotam 95)
     housePurchaseYear: 1,
     zinukEndAge: 52,
-    pensionStartAge: 60,
+    // 67 = statutory age: the annuity is ~tax-free then; drawn at 60 on top of work income ~45% goes to tax+BL
+    pensionStartAge: 67,
     hadasAge: 36, // born 02/1990 → 36 for 11 months of 2026
     hadasPensionStartAge: 65,
     fullRetirementAge: 67,
