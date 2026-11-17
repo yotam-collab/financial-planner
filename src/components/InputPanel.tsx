@@ -244,26 +244,18 @@ export function InputPanel({ config, setConfig }: Props) {
   const mortAmt = Math.round(config.house.priceToday * config.house.mortgageLTV);
   const mortPay = Math.round(calcMonthlyMortgagePayment(mortAmt, config.house.mortgageRate, config.house.mortgageTerm));
 
-  // Single slider drives BOTH "should we keep Or Akiva?" and "when to buy a house?"
-  //   -1 = keep Or Akiva, no new house
-  //    0 = sell Or Akiva, don't buy a new house (stay renting)
-  //    1 = buy immediately (Or Akiva sold)
-  //    2..N = buy at age (config.startAge + N - 1), Or Akiva sold
-  const housePurchaseSliderValue = config.assets.orAkivaKeep
-    ? -1
-    : (config.housePurchaseYear ?? 0);
+  //  0 = don't buy (stay renting) · 1 = buy immediately · 2..N = buy at age (startAge + N - 1)
+  const housePurchaseSliderValue = config.housePurchaseYear ?? 0;
   const setHousePurchaseYear = (v: number) => {
-    setConfig(prev => ({
-      ...prev,
-      housePurchaseYear: v <= 0 ? null : v,
-      assets: { ...prev.assets, orAkivaKeep: v === -1 },
-    }));
+    setConfig(prev => ({ ...prev, housePurchaseYear: v <= 0 ? null : v }));
   };
   const housePurchaseDisplayValue =
-    housePurchaseSliderValue === -1 ? '🏘 השארת דירה באור עקיבא'
-    : housePurchaseSliderValue === 0 ? 'לא לקנות'
+    housePurchaseSliderValue === 0 ? 'לא לקנות'
     : housePurchaseSliderValue === 1 ? 'מיידית'
     : `גיל ${config.startAge + housePurchaseSliderValue - 1}`;
+
+  const motherAmt = config.house.motherContribution ?? 0;
+  const motherYield = motherAmt > 0 ? (config.house.rentalIncomeFromUnit * 12) / motherAmt : 0;
 
   const [expenseSimOpen, setExpenseSimOpen] = useState(false);
 
@@ -323,10 +315,10 @@ export function InputPanel({ config, setConfig }: Props) {
         <SliderInput label="שנת קנייה"
           value={housePurchaseSliderValue}
           onChange={setHousePurchaseYear}
-          min={-1} max={30}
+          min={0} max={30}
           displayValue={housePurchaseDisplayValue}
-          note="‑1 = החזקת אור עקיבא · 0 = מכירה ולא קונים · 1 = מיידית · 2+ = בעתיד"
-          help="באיזו שנה לקנות בית, ומה לעשות עם דירת אור עקיבא. ‑1 = להשאיר את אור עקיבא ולא לקנות בית חדש (הכנסה משכ״ד נטו). 0 = למכור את אור עקיבא ולהמשיך לשכור. 1+ = למכור את אור עקיבא והתמורה הופכת למקדמה לבית חדש. המחיר של הבית החדש צמוד למדד." />
+          note="0 = לא קונים · 1 = מיידית · 2+ = בעתיד"
+          help="באיזו שנה לקנות בית. 0 = לא קונים וממשיכים לשכור. 1 = קנייה מיידית. 2+ = קנייה בעתיד — מחיר הבית עולה עד אז בקצב מחירי הדיור (מדד + עליית ערך ריאלית). תמורת מכירת הדירה באור עקיבא כבר בתיק הנזיל ומשמשת להון העצמי." />
 
         {config.housePurchaseYear !== null && (
           <>
@@ -353,6 +345,29 @@ export function InputPanel({ config, setConfig }: Props) {
 
             {/* Closing costs — auto-computed */}
             <ClosingCostsPanel config={config} update={update} />
+
+            {/* Mother's contribution in exchange for the unit's rent */}
+            <div className="pt-3 mt-2 border-t border-white/70">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600 mb-2">
+                👵 השתתפות של אמא
+              </p>
+            </div>
+            <NumInput label="סכום שאמא מכניסה (ערכי היום)"
+              value={motherAmt}
+              onChange={v => update('house.motherContribution', v)} step={50000}
+              note={motherAmt > 0
+                ? `${(motherAmt / config.house.priceToday * 100).toFixed(1)}% ממחיר הבית · תשואה לאמא: ${(motherYield * 100).toFixed(1)}% בשנה (${(config.house.rentalIncomeFromUnit * 12).toLocaleString('he-IL')} ₪)`
+                : '0 = ללא השתתפות'}
+              help="סכום שאמא מכניסה לרכישת הבית. הוא מקטין את ההון העצמי שיוצא מהתיק הנזיל שלכם ביום הקנייה; בתמורה שכר הדירה של יחידת הדיור עובר אליה ולא נספר בהכנסות המשפחה. מס רכישה, עו״ד, מתווך ושיפוץ נשארים עליכם במלואם. הנחת המודל: הכסף לא מוחזר ואין לאמא חלק בבעלות על הבית." />
+            {motherAmt > 0 && (
+              <SliderInput label="שנים שהשכירות עוברת לאמא"
+                value={config.house.motherRentYears ?? 20}
+                onChange={v => update('house.motherRentYears', v)}
+                min={1} max={50}
+                displayValue={`${config.house.motherRentYears ?? 20} שנים`}
+                note="אחרי התקופה השכירות חוזרת להכנסות המשפחה"
+                help="מספר השנים מיום הקנייה שבהן שכר הדירה של יחידת הדיור משולם לאמא (צמוד למדד). בתום התקופה ההכנסה חוזרת אליכם." />
+            )}
 
             {/* Passive income from home */}
             <div className="pt-3 mt-2 border-t border-white/70">
@@ -453,51 +468,11 @@ export function InputPanel({ config, setConfig }: Props) {
         </p>
       </Section>
 
-      <Section title="דירה באור עקיבא" icon="🏘" color="emerald">
-        <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 px-3 py-2.5 text-[11px] md:text-xs text-emerald-800 leading-snug">
-          <strong>המסלול נקבע בסליידר ״שנת קנייה״</strong> בקטע ״קניית בית״:<br/>
-          <span className="text-emerald-700">‑1</span> = החזקה והשכרה ·{' '}
-          <span className="text-emerald-700">0</span> = מכירה ולא קונים ·{' '}
-          <span className="text-emerald-700">1+</span> = מכירה והקנייה הופכת לבית חדש.
-        </div>
-
-        {!config.assets.orAkivaKeep && (
-          <NumInput label="תמורת מכירה (נטו)" value={config.assets.apartmentNetProceeds}
-            onChange={v => update('assets.apartmentNetProceeds', v)} step={50000}
-            rec="פטור ממס שבח (סעיף 49(ב))"
-            help="נטו ממכירת הדירה — אחרי מס שבח/פטור ועלויות מכירה. נכנס לתיק הנזיל בשנה 1 של הסימולציה." />
-        )}
-
-        {!!config.assets.orAkivaKeep && (
-          <>
-            <NumInput label="שווי שוק נוכחי" value={config.assets.orAkivaCurrentValue}
-              onChange={v => update('assets.orAkivaCurrentValue', v)} step={50000}
-              note="גדל בהתאם לעליית מחירי דיור"
-              help="שווי שוק של הדירה היום (ערכי 2026). הדירה תצמח בשיעור 'עליית מחירי דיור' (ברירת מחדל 2% ריאלי + אינפלציה ≈ 4.5% נומינלי)." />
-            <NumInput label="שכ״ד חודשי (ברוטו)" value={config.assets.orAkivaMonthlyRent}
-              onChange={v => update('assets.orAkivaMonthlyRent', v)} step={100}
-              rec="6,200 ₪ — מחיר השכרה נוכחי"
-              note="מוצמד למדד · מס שכ״ד מעל תקרת הפטור מחושב אוטומטית"
-              help="שכר דירה חודשי ברוטו מהשוכרים, מוצמד למדד. מעל תקרת הפטור (5,654 ₪/חודש, 2026) המודל מקזז אוטומטית מס לפי המסלול הזול — ב-6,200 ₪ זה מסלול הפטור החלקי (~380 ₪/חודש), זול מ-10% קבוע (620 ₪). אחרי סוף המשכנתא הדירה הופכת להכנסה פאסיבית כמעט נטו." />
-            <NumInput label="יתרת משכנתא" value={config.assets.orAkivaMortgageBalance}
-              onChange={v => update('assets.orAkivaMortgageBalance', v)} step={10000}
-              note="המקורית + הממוחזרת · ~1.04M ₪ (מזרחי טפחות, 04/2026)"
-              help="סך יתרת שתי המשכנתאות על הדירה: המקורית (תיק 437264203 ~472K) + הממוחזרת (תיק 442338257 ~570K). יורדת בקירוב באופן ליניארי עד תאריך סיום." />
-            <NumInput label="תשלום חודשי משכנתא" value={config.assets.orAkivaMonthlyMortgage}
-              onChange={v => update('assets.orAkivaMonthlyMortgage', v)} step={100}
-              note="סה״כ שני התיקים · קל״צ נומינלי — יורד ריאלית עם האינפלציה"
-              help="סך התשלום החודשי של שתי המשכנתאות (~4,479 + ~3,288 ≈ 7,800). נומינלי קבוע — לא צמוד למדד, הערך הריאלי שלו יורד כל שנה." />
-            <NumInput label="שנת סיום משכנתא" value={config.assets.orAkivaMortgageEndYear}
-              onChange={v => update('assets.orAkivaMortgageEndYear', v)} step={1} suffix="" noCommas
-              note="2053 — סיום החלק הארוך מבין הארבעה"
-              help="השנה שבה התשלום החודשי מסתיים והדירה הופכת להכנסה פאסיבית כמעט נטו. ארבעה חלקים מסתיימים: 2030, 2041, 2048, 2053. נשתמש בארוך ביותר כקירוב." />
-            <NumInput label="הוצאות חודשיות" value={config.assets.orAkivaMonthlyExpenses}
-              onChange={v => update('assets.orAkivaMonthlyExpenses', v)} step={50}
-              rec="ארנונה משלמי משכ״ד + תחזוקה + רזרבה לזמן ללא שוכר"
-              note="מוצמד למדד"
-              help="הוצאות חודשיות של בעל הדירה: תחזוקה (תיקונים), ועד בית, רזרבה לזמן ללא שוכר (vacancy), ארנונה כשאין שוכר. מוצמד למדד." />
-          </>
-        )}
+      <Section title="דירה באור עקיבא (נמכרה)" icon="🏘" color="emerald">
+        <NumInput label="תמורת מכירה (נטו)" value={config.assets.apartmentNetProceeds}
+          onChange={v => update('assets.apartmentNetProceeds', v)} step={50000}
+          note="מתווסף לתיק הנזיל · אם הכסף כבר נספר ב״תיק נזיל״ — לשים כאן 0"
+          help="נטו ממכירת הדירה — אחרי מס שבח/פטור, סילוק המשכנתאות ועלויות מכירה. מתווסף לתיק הנזיל בתחילת הסימולציה. חשוב לא לספור פעמיים: אם התמורה כבר בחשבון הבנק ונכללת ב״תיק נזיל״, יש לאפס את השדה הזה." />
       </Section>
 
       <Section title="הוצאות" icon="📊" color="rose">

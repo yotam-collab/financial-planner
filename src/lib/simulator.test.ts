@@ -306,3 +306,20 @@ describe('Equilibrium detection', () => {
     expect(findEarliestRetirementAge(c2)!).toBeLessThanOrEqual(findEarliestRetirementAge(c1)!);
   });
 });
+
+describe("Mother's contribution for the unit's rent", () => {
+  it('adds her money at purchase and redirects the unit rent for the agreed years', () => {
+    const base = simulate(createDefaultConfig());
+    const c = createDefaultConfig();
+    c.house.motherContribution = 800_000;
+    c.house.motherRentYears = 10;
+    const r = simulate(c);
+    // purchase is in year 1: liquid is higher by her sum (plus part of a year's growth, minus the lost rent)
+    const diff = r.years[0].liquidPortfolio - base.years[0].liquidPortfolio;
+    expect(diff).toBeGreaterThan(750_000);
+    expect(diff).toBeLessThan(850_000);
+    expect(r.years[9].monthlyRentalIncomeFromUnit).toBe(0);
+    expect(r.years[10].monthlyRentalIncomeFromUnit).toBe(base.years[10].monthlyRentalIncomeFromUnit);
+    expect(base.years[0].monthlyRentalIncomeFromUnit).toBeGreaterThan(0);
+  });
+});

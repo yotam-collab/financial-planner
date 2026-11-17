@@ -13,7 +13,7 @@ export const DEFAULT_ASSETS: AssetConfig = {
   kerenHishtalmut: 0,
   kerenHishtalmutLiquidAge: 47,
   apartmentNetProceeds: 1_180_000,
-  // Or Akiva apartment — defaults reflect: SELL (current behavior). When keep=true,
+  // Or Akiva apartment — SOLD (11/2026); the keep path is dormant (UI removed). When keep=true,
   // values combine BOTH Mizrahi-Tefahot mortgages on the property (04/2026 docs):
   //   Original (tik 437264203): balance 472,187, monthly 4,479 (parts 6+7)
   //   Refinance (tik 442338257): balance 766,438, monthly 3,288 (part 1) + ~1,200 (part 2)
@@ -74,6 +74,8 @@ export const DEFAULT_HOUSE: HouseConfig = {
   solarIncome: 500,
   // ~0.4%/yr of value: repairs, roof/AC/solar upkeep, building insurance
   monthlyMaintenance: 1_500,
+  motherContribution: 0,
+  motherRentYears: 20,
 };
 
 export const DEFAULT_MARKET: MarketConfig = {

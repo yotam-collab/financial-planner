@@ -82,7 +82,7 @@ function mergeConfig(saved: Partial<ScenarioConfig> | undefined, defaults: Scena
     hadasBirthMonth: saved.hadasBirthMonth ?? defaults.hadasBirthMonth,
     hadasFullRetirementAge: saved.hadasFullRetirementAge ?? defaults.hadasFullRetirementAge,
     hadasAge: defaults.hadasAge, // not user-editable; saved states carried a stale 35
-    assets: mergedAssets,
+    assets: { ...mergedAssets, orAkivaKeep: false }, // Or Akiva was sold
     income: { ...defaults.income, ...saved.income },
     expenses: { ...defaults.expenses, ...saved.expenses },
     house: mergedHouse,

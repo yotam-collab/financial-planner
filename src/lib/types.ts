@@ -79,6 +79,10 @@ export interface HouseConfig {
   solarIncome: number;
   /** Monthly owner upkeep: repairs + building insurance (today's values) */
   monthlyMaintenance: number;
+  /** Sum Yotam's mother puts toward the purchase (today's values); 0 = none */
+  motherContribution: number;
+  /** Years from purchase during which the unit's rent is paid to her instead */
+  motherRentYears: number;
 }
 
 export interface MarketConfig {

@@ -482,7 +482,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
       const totalClosingAndFees = purchaseTax + lawyerFee + brokerFee + nomOtherClosing + nomLegacyClosing;
       const tot = p + nomReno + totalClosingAndFees;
       const m = p * house.mortgageLTV;
-      liquid -= (tot - m);
+      // Mother's contribution covers part of the price; fees and renovation stay ours.
+      liquid -= (tot - m - inflate(house.motherContribution ?? 0, market.inflationRate, ye));
       ownsHome = true; homeVal = p; mortPrincipal = m; mortBal = m;
       mortPayment = calcMonthlyMortgagePayment(m, house.mortgageRate, house.mortgageTerm);
       mortStartYear = year;
@@ -544,7 +545,10 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // ─── Passive income from owned home (sub-unit rental + solar) ───
     // Both are inflation-adjusted from today's values, only applicable when owning.
     // Sub-unit rent above the exemption ceiling is taxed (best legal route).
-    const grossRentalUnit = ownsHome ? inflate(house.rentalIncomeFromUnit ?? 0, market.inflationRate, ye) : 0;
+    // While the unit's rent is paid to Yotam's mother (in return for her contribution) it isn't family income.
+    // shortcut: no repayment/ownership share for her and her tax on the rent is ignored, upgrade if the deal gets those terms
+    const rentToMother = (house.motherContribution ?? 0) > 0 && year - mortStartYear < (house.motherRentYears ?? 0);
+    const grossRentalUnit = ownsHome && !rentToMother ? inflate(house.rentalIncomeFromUnit ?? 0, market.inflationRate, ye) : 0;
     const nomRentalUnit = grossRentalUnit - calcMonthlyRentTax(grossRentalUnit, rentCeilingNom);
     const nomSolar = ownsHome ? inflate(house.solarIncome ?? 0, market.inflationRate, ye) : 0;
 
