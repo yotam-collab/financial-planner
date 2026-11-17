@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Area, ComposedChart,
+  ResponsiveContainer, ReferenceLine, ReferenceArea, Area, ComposedChart,
   Cell, Bar, LabelList,
 } from 'recharts';
 import type { SimulationResult, ScenarioConfig, YearResult } from '../lib/types';
@@ -67,7 +67,7 @@ const METRICS: Record<MetricType, MetricConfig> = {
     color: '#e88d2a',
     gradientId: 'grad-worth',
     isBiColor: false,
-    description: 'תיק + פנסיה + נדל״ן. בשנים של חוב מוצג החוב לבדו, באדום',
+    description: 'תיק נזיל, נדל״ן ופנסיה, כל אחד בצבע שלו. חוב מוצג מתחת לקו האפס ולא מקוזז מהם',
     emoji: '🏆',
   },
   happiness: {
@@ -410,7 +410,19 @@ export function ChartsPanel({ result, config }: Props) {
     // A year in debt plots the debt alone (negative, red) instead of a net worth that hides it
     worthOrDebt: y.liquidPortfolio < 0 ? y.liquidPortfolio : y.netWorth,
     realWorthOrDebt: y.liquidPortfolio < 0 ? y.real.liquidPortfolio : y.real.netWorth,
+    // Net-worth chart: assets stack above zero, debt hangs below it, nothing is netted
+    wLiquid: Math.max(0, (showReal ? y.real : y).liquidPortfolio),
+    wDebt: Math.min(0, (showReal ? y.real : y).liquidPortfolio),
+    wHome: (showReal ? y.real : y).homeEquity,
+    wPension: (showReal ? y.real : y).pension,
   }));
+  // Runs of consecutive years in debt, shaded on the net-worth chart
+  const debtRuns: [number, number][] = [];
+  data.forEach((d, i) => {
+    if (d.liquidPortfolio >= 0) return;
+    if (i > 0 && data[i - 1].liquidPortfolio < 0) debtRuns[debtRuns.length - 1][1] = d.calendarYear;
+    else debtRuns.push([d.calendarYear, d.calendarYear]);
+  });
   const retAge = result.earliestRetirementAge;
   const fullRetirementYear = result.earliestFullRetirementYear;
   const metricCfg = METRICS[metric];
@@ -476,6 +488,7 @@ export function ChartsPanel({ result, config }: Props) {
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
+            stackOffset="sign"
             margin={{ top: 42, right: 0, left: 0, bottom: 8 }}
             onClick={(e: any) => {
               // Recharts 3 reports the clicked column by index; activePayload no longer exists
@@ -578,8 +591,42 @@ export function ChartsPanel({ result, config }: Props) {
               );
             })()}
 
-            <Area type="monotone" dataKey={dataKey} fill={`url(#${metricCfg.gradientId})`} stroke="none" />
-            <Bar
+            {metric === 'netWorth' && debtRuns.map(([x1, x2]) => (
+              <ReferenceArea
+                key={x1}
+                x1={x1}
+                x2={x2}
+                fill="#f43f5e"
+                fillOpacity={0.1}
+                label={{ value: 'חוב', position: 'insideTop', fontSize: 14, fill: '#be123c', fontWeight: 800 }}
+              />
+            ))}
+            {metric === 'netWorth' && (
+              <>
+                <Bar dataKey="wDebt" stackId="w" fill="#f43f5e" />
+                <Bar dataKey="wLiquid" stackId="w" fill="#4f46e5" fillOpacity={0.85} />
+                <Bar dataKey="wHome" stackId="w" fill="#10b981" fillOpacity={0.85} />
+                <Bar dataKey="wPension" stackId="w" fill="#f59e0b" fillOpacity={0.85} radius={[6, 6, 0, 0]}>
+                  <LabelList
+                    dataKey="wPension"
+                    content={(props: any) => {
+                      const { x, y, width, index } = props;
+                      const d = index != null ? data[index] : null;
+                      // No total over a year in debt: the debt is not netted against these assets
+                      if (!d || d.liquidPortfolio < 0) return null;
+                      if (index % Math.max(1, Math.ceil(36 / ((width || 1) * 1.25))) !== 0) return null;
+                      return (
+                        <text x={(x || 0) + (width || 0) / 2} y={(y || 0) - 6} textAnchor="middle" fill="#544b6b" fontSize={12} fontWeight={700} style={{ pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' }}>
+                          {fmtK((d as any)[dataKey])}
+                        </text>
+                      );
+                    }}
+                  />
+                </Bar>
+              </>
+            )}
+            {metric !== 'netWorth' && <Area type="monotone" dataKey={dataKey} fill={`url(#${metricCfg.gradientId})`} stroke="none" />}
+            {metric !== 'netWorth' && <Bar
               dataKey={dataKey}
               radius={[6, 6, 0, 0]}
               onClick={(payload: any) => {
@@ -625,7 +672,7 @@ export function ChartsPanel({ result, config }: Props) {
                   );
                 }}
               />
-            </Bar>
+            </Bar>}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -635,6 +682,11 @@ export function ChartsPanel({ result, config }: Props) {
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           <LegendItem color="#4a3294">הפסקת הכנסה מזינוק</LegendItem>
           <LegendItem color="#e88d2a">פרישה מלאה</LegendItem>
+          {metric === 'netWorth' && [['#4f46e5', 'תיק נזיל'], ['#10b981', 'נדל״ן'], ['#f59e0b', 'פנסיה'], ['#f43f5e', 'חוב, לא מקוזז']].map(([c, t]) => (
+            <span key={t} className="flex items-center gap-2 font-semibold">
+              <span className="w-3 h-3 rounded-sm" style={{ background: c }} />{t}
+            </span>
+          ))}
           {metric === 'monthlyBalance' && <LegendItem color="#10b981">איזון מזינוק</LegendItem>}
           {metric === 'monthlyBalance' && fullRetirementYear != null && <LegendItem color="#8457d9">איזון לפרישה מלאה</LegendItem>}
         </div>
