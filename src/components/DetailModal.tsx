@@ -36,9 +36,9 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
   }, [onClose]);
 
   const phaseLabel = y.phase === 'zinuk' ? 'זינוק' : y.phase === 'altIncome' ? 'הכנסה חלופית' : 'פרישה מלאה';
-  const phaseColor = y.phase === 'zinuk' ? 'from-indigo-500 to-violet-500'
+  const phaseColor = y.phase === 'zinuk' ? 'from-indigo-600 to-violet-500'
     : y.phase === 'altIncome' ? 'from-emerald-500 to-teal-500'
-    : 'from-amber-500 to-orange-500';
+    : 'from-amber-500 to-pink-500';
 
   // Totals
   const totalEarnedIncome = (y.yotamMonthlyIncome ?? 0) + (y.hadasMonthlyIncome ?? 0);
@@ -59,12 +59,12 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
       dir="rtl"
     >
       <div
-        className="w-full max-w-4xl my-4 md:my-auto rounded-[2rem] border border-white/80 shadow-2xl"
+        className="w-full max-w-4xl my-4 md:my-auto rounded-[1.25rem] shadow-2xl"
         onClick={e => e.stopPropagation()}
         style={{ background: '#ffffff', boxShadow: '0 30px 80px -20px rgba(15, 23, 42, 0.5)' }}
       >
         {/* Header */}
-        <div className={`relative bg-gradient-to-l ${phaseColor} px-5 md:px-8 py-5 md:py-7 rounded-t-[2rem] overflow-hidden`}>
+        <div className={`relative bg-gradient-to-l ${phaseColor} px-5 md:px-8 py-5 md:py-7 rounded-t-[1.25rem] overflow-hidden`}>
           <div className="absolute top-0 left-10 w-32 h-32 bg-white/15 rounded-full blur-3xl float-anim" />
           <button
             onClick={onClose}
@@ -72,11 +72,11 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             aria-label="סגור"
           >✕</button>
           <div className="relative z-10">
-            <p className="text-white/80 text-[11px] font-bold uppercase tracking-[0.25em] mb-2">פירוט שנתי מלא</p>
+            <p className="text-white/80 text-[11px] font-bold mb-2">פירוט שנתי מלא</p>
             <div className="flex items-baseline gap-4 flex-wrap">
               <span className="font-display num text-5xl md:text-6xl font-extrabold text-white leading-none">{y.calendarYear ?? y.age}</span>
               <div className="flex flex-col gap-0.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/25 text-white w-fit">
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/25 text-white w-fit">
                   {phaseLabel}
                 </span>
                 <div className="flex gap-3 text-white/90 text-sm font-semibold mt-1">
@@ -281,7 +281,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
           {/* ─── Scenario info ─── */}
           <section className="grid grid-cols-2 gap-3 text-sm">
             <div className="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">תרחיש</p>
+              <p className="text-xs font-bold text-slate-500 mb-1">תרחיש</p>
               <p className="font-semibold text-slate-900">
                 {config.housePurchaseYear === null ? 'ללא קניית בית' :
                  config.housePurchaseYear === 1 ? 'קנייה מיידית' :
@@ -289,14 +289,14 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               </p>
             </div>
             <div className="bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">שנה בסימולציה</p>
+              <p className="text-xs font-bold text-slate-500 mb-1">שנה בסימולציה</p>
               <p className="font-semibold text-slate-900 num">{y.year} / {config.endAge - config.startAge + 1}</p>
             </div>
           </section>
         </div>
 
         {/* Footer */}
-        <div className="px-5 md:px-8 py-4 border-t border-slate-200 flex justify-end bg-slate-50 rounded-b-[2rem]">
+        <div className="px-5 md:px-8 py-4 border-t border-slate-200 flex justify-end bg-slate-50 rounded-b-[1.25rem]">
           <button
             onClick={onClose}
             className="btn-primary px-5 py-2 text-sm md:text-base"
@@ -317,14 +317,14 @@ function SectionRow({ label, value, dotColor, help }: { label: string; value: nu
     >
       <span className="flex items-center gap-2.5">
         <span className={`w-2 h-2 rounded-full ${dotColor}`} />
-        <span className="font-bold text-sm md:text-base flex items-center gap-1.5" style={{ color: '#0f172a' }}>
+        <span className="font-bold text-sm md:text-base flex items-center gap-1.5" style={{ color: '#221935' }}>
           {label}
           {help && <HelpTooltip text={help} />}
         </span>
       </span>
       <span
         className="num font-bold text-sm md:text-base"
-        style={{ fontVariantNumeric: 'tabular-nums', color: '#0f172a' }}
+        style={{ fontVariantNumeric: 'tabular-nums', color: '#221935' }}
       >
         {Math.round(value).toLocaleString('he-IL')} ₪
       </span>
@@ -336,12 +336,12 @@ function SubRow({ label, value }: { label: string; value: number }) {
   return (
     <div
       className="px-4 md:px-5 py-2 flex items-center justify-between border-b border-slate-100 last:border-b-0"
-      style={{ background: '#f8fafc' }}
+      style={{ background: '#f8f6fb' }}
     >
-      <span className="text-xs md:text-sm pr-4" style={{ color: '#475569' }}>└ {label}</span>
+      <span className="text-xs md:text-sm pr-4" style={{ color: '#544b6b' }}>└ {label}</span>
       <span
         className="num text-xs md:text-sm font-semibold"
-        style={{ fontVariantNumeric: 'tabular-nums', color: '#1e293b' }}
+        style={{ fontVariantNumeric: 'tabular-nums', color: '#2e2544' }}
       >
         {Math.round(value).toLocaleString('he-IL')} ₪
       </span>
@@ -364,7 +364,7 @@ function PortCard({ label, value, color, bold, total, hideBar }: {
     : 'bg-violet-500';
   return (
     <div className={`rounded-2xl border px-4 py-3 ${bg}`}>
-      <p className="text-xs font-bold uppercase tracking-wider mb-1 opacity-80">{label}</p>
+      <p className="text-xs font-bold mb-1 opacity-80">{label}</p>
       <p className={`num font-display ${bold ? 'text-xl md:text-2xl font-extrabold' : 'text-lg md:text-xl font-bold'} mb-2`} style={{ fontVariantNumeric: 'tabular-nums' }}>
         {fmtK(value)} ₪
       </p>
@@ -385,7 +385,7 @@ function PortCard({ label, value, color, bold, total, hideBar }: {
 function RealStat({ label, value, bold, sign }: { label: string; value: number; bold?: boolean; sign?: boolean }) {
   return (
     <div>
-      <p className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">{label}</p>
+      <p className="text-[10px] md:text-xs font-bold text-slate-500 mb-1">{label}</p>
       <p className={`num ${bold ? 'text-base md:text-lg font-bold text-slate-900' : 'text-sm md:text-base font-semibold text-slate-700'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
         {sign && value >= 0 ? '+' : ''}{fmt(value)} ₪
       </p>
@@ -396,7 +396,7 @@ function RealStat({ label, value, bold, sign }: { label: string; value: number; 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-200">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p>
+      <p className="text-[10px] font-bold text-slate-500">{label}</p>
       <p className="num text-sm md:text-base font-bold text-slate-900 mt-1" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</p>
     </div>
   );

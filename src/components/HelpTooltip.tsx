@@ -46,8 +46,8 @@ export function HelpTooltip({ text, placement = 'top' }: Props) {
           ref={tipRef}
           className={`absolute ${placementClass} z-[2000] w-64 md:w-72 px-3.5 py-2.5 rounded-xl text-[12px] md:text-[13px] leading-relaxed text-right pointer-events-none shadow-xl`}
           style={{
-            background: '#1e293b',
-            color: '#f8fafc',
+            background: '#2e2544',
+            color: '#f8f6fb',
             direction: 'rtl',
           }}
         >

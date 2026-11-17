@@ -31,10 +31,10 @@ function App() {
           {/* ─── Mobile: compact title at top-right ─── */}
           <div className="md:hidden absolute top-3 right-4 left-4 flex items-start justify-between gap-2 fade-up">
             <div>
-              <p className="text-white/80 text-[9px] font-bold uppercase tracking-[0.22em] mb-0.5 drop-shadow">
+              <p className="text-white/85 text-[11px] font-medium mb-0.5 drop-shadow">
                 יותם והדס
               </p>
-              <h1 className="font-display text-lg font-extrabold text-white leading-tight drop-shadow">
+              <h1 className="font-display text-xl font-black text-white leading-tight drop-shadow">
                 תוכנית אושר משפחתית
               </h1>
             </div>
@@ -62,10 +62,10 @@ function App() {
           <div className="hidden md:block absolute inset-x-0 bottom-0 px-10 pb-10">
             <div className="mx-auto w-full flex flex-row items-end justify-between gap-4">
               <div className="fade-up">
-                <p className="text-white/70 text-xs font-bold uppercase tracking-[0.28em] mb-3">
-                  יותם והדס · תכנון פיננסי
+                <p className="text-white/85 text-base font-medium mb-2 drop-shadow">
+                  התכנון הפיננסי של יותם והדס
                 </p>
-                <h1 className="font-display text-5xl lg:text-6xl font-extrabold text-white leading-[0.95]">
+                <h1 className="font-display text-5xl lg:text-7xl font-black text-white leading-[0.95] drop-shadow-[0_2px_18px_rgba(20,10,45,0.55)]">
                   תוכנית אושר משפחתית
                 </h1>
               </div>
@@ -89,10 +89,10 @@ function App() {
             {/* Grid: chart (LEFT in RTL) + inputs (RIGHT in RTL) */}
             {/* In RTL: order-1 renders on RIGHT, order-2 on LEFT */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
-              <div className="lg:col-span-4 xl:col-span-3 order-2 lg:order-1 fade-up min-w-0" style={{ animationDelay: '0.25s' }}>
+              <div className="lg:col-span-5 xl:col-span-4 2xl:col-span-3 order-2 lg:order-1 fade-up min-w-0" style={{ animationDelay: '0.25s' }}>
                 <InputPanel config={config} setConfig={setConfig} />
               </div>
-              <div className="lg:col-span-8 xl:col-span-9 order-1 lg:order-2 fade-up min-w-0" style={{ animationDelay: '0.2s' }}>
+              <div className="lg:col-span-7 xl:col-span-8 2xl:col-span-9 order-1 lg:order-2 fade-up min-w-0" style={{ animationDelay: '0.2s' }}>
                 <ChartsPanel result={result} config={config} />
               </div>
             </div>
@@ -123,7 +123,7 @@ function HeroButton({ children, onClick, danger = false }: {
       onClick={onClick}
       className={`
         min-h-[36px] md:min-h-[40px] px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold
-        rounded-2xl backdrop-blur-md border transition-all duration-300
+        rounded-xl backdrop-blur-md border transition-colors duration-200
         ${danger
           ? 'bg-rose-500/30 text-white hover:bg-rose-500/50 border-rose-300/40'
           : 'bg-white/15 text-white hover:bg-white/30 border-white/25 hover:border-white/40'}

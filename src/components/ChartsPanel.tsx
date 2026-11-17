@@ -44,7 +44,7 @@ const METRICS: Record<MetricType, MetricConfig> = {
     label: 'הכנסה ברת-קיימא',
     nominalKey: 'monthlySustainableIncome',
     realKey: 'realMonthlySustainableIncome',
-    color: '#7c3aed',
+    color: '#8457d9',
     gradientId: 'grad-sustain',
     isBiColor: false,
     description: 'הכנסה + משיכה בת-קיימא + פנסיה',
@@ -54,7 +54,7 @@ const METRICS: Record<MetricType, MetricConfig> = {
     label: 'משיכה מהתיק',
     nominalKey: 'monthly4pctWithdrawal',
     realKey: 'realMonthly4pctWithdrawal',
-    color: '#4f46e5',
+    color: '#4a3294',
     gradientId: 'grad-4pct',
     isBiColor: false,
     description: 'משיכה חודשית בת-קיימא',
@@ -64,7 +64,7 @@ const METRICS: Record<MetricType, MetricConfig> = {
     label: 'שווי נקי',
     nominalKey: 'netWorth',
     realKey: 'realNetWorth',
-    color: '#f59e0b',
+    color: '#e88d2a',
     gradientId: 'grad-worth',
     isBiColor: false,
     description: 'תיק + פנסיה + נדל״ן',
@@ -74,7 +74,7 @@ const METRICS: Record<MetricType, MetricConfig> = {
     label: 'מדד אושר',
     nominalKey: 'happinessTotal',
     realKey: 'happinessTotal',
-    color: '#ec4899',
+    color: '#d9487f',
     gradientId: 'grad-happy',
     isBiColor: false,
     isScore: true,
@@ -153,7 +153,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
     return (
       <div className="widget-card-static p-4 md:p-5 shadow-2xl max-w-[92vw] md:min-w-[360px]" dir="rtl" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
         {/* Header */}
-        <div className="flex items-start justify-between mb-3 pb-3 border-b border-white/60">
+        <div className="flex items-start justify-between mb-3 pb-3 border-b border-slate-200">
           <div>
             <div className="flex items-baseline gap-2">
               <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.calendarYear ?? d.age}</span>
@@ -169,7 +169,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
               </span>
             </div>
           </div>
-          <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${phaseColor}`}>
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${phaseColor}`}>
             {phaseLabel}
           </span>
         </div>
@@ -184,7 +184,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         >
           <div className="flex items-center gap-2 mb-1">
             <span className="text-base">{metricCfg.emoji}</span>
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-600">
+            <span className="text-[11px] font-bold text-slate-600">
               {metricCfg.label}
             </span>
           </div>
@@ -197,7 +197,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
                 {Math.round(heroPrimary)}
               </span>
               <span className="text-sm font-bold text-slate-400">/ 100</span>
-              <span className="mr-auto text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="mr-auto text-[10px] font-bold text-slate-400">
                 {scoreLabel(heroPrimary)}
               </span>
             </div>
@@ -210,13 +210,13 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
                 >
                   {isHeroSigned && heroPositive ? '+' : ''}{heroPrimary.toLocaleString('he-IL')} ₪
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex-shrink-0">{primaryLabel}</span>
+                <span className="text-[10px] font-bold text-slate-400 flex-shrink-0">{primaryLabel}</span>
               </div>
               <div className="flex items-baseline justify-between mt-1 gap-2">
                 <span className="num text-xs font-semibold text-slate-500" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {isHeroSigned && heroSecondary >= 0 ? '+' : ''}{heroSecondary.toLocaleString('he-IL')} ₪
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex-shrink-0">{secondaryLabel}</span>
+                <span className="text-[10px] text-slate-400 font-bold flex-shrink-0">{secondaryLabel}</span>
               </div>
             </>
           )}
@@ -224,18 +224,18 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
 
         {/* Happiness breakdown — only on happiness metric */}
         {metric === 'happiness' && (
-          <div className="mb-3 pb-3 border-b border-white/60 space-y-1.5">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">
+          <div className="mb-3 pb-3 border-b border-slate-200 space-y-1.5">
+            <p className="text-[11px] font-bold text-slate-500 mb-2">
               פירוט רכיבי האושר
             </p>
             <HappinessRow label="זמן עם הילדים" emoji="👨‍👩‍👧‍👦" value={d.happinessTimeWithKids} color="#f43f5e" />
             <HappinessRow label="הרחבת המשפחה" emoji="🍼" value={d.happinessFamilyExpansion} color="#d946ef" />
             <HappinessRow label="חופשות משפחתיות" emoji="✈️" value={d.happinessFamilyVacations} color="#0ea5e9" />
             <HappinessRow label="רוגע כלכלי" emoji="💎" value={d.happinessFinancialCalm} color="#10b981" />
-            <HappinessRow label="בית משלנו" emoji="🏠" value={d.happinessOwnHome} color="#8b5cf6" />
-            <HappinessRow label="התפתחות אישית" emoji="📚" value={d.happinessPersonalDevelopment} color="#f59e0b" />
+            <HappinessRow label="בית משלנו" emoji="🏠" value={d.happinessOwnHome} color="#8457d9" />
+            <HappinessRow label="התפתחות אישית" emoji="📚" value={d.happinessPersonalDevelopment} color="#e88d2a" />
             <HappinessRow label="קהילה והשפעה" emoji="🤝" value={d.happinessCommunityImpact} color="#14b8a6" />
-            <HappinessRow label="לימוד תורה" emoji="📖" value={d.happinessTorahStudy} color="#6366f1" />
+            <HappinessRow label="לימוד תורה" emoji="📖" value={d.happinessTorahStudy} color="#6a51b3" />
           </div>
         )}
 
@@ -260,14 +260,14 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         </div>
 
         {/* Sustainable + expenses */}
-        <div className="mt-3 pt-3 border-t border-white/60 space-y-1.5 text-sm">
+        <div className="mt-3 pt-3 border-t border-slate-200 space-y-1.5 text-sm">
           <RowDual label="סה״כ ברת-קיימא" nominal={d.monthlySustainableIncome} real={d.real?.monthlySustainableIncome} showReal={showReal} highlight dotColor="bg-violet-500" />
           <RowDual label="הוצאות" nominal={d.monthlyExpenses} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} highlight dotColor="bg-rose-500" />
         </div>
 
         {/* Monthly balance — compact line when not the hero */}
         {metric !== 'monthlyBalance' && (
-          <div className="mt-2 pt-2 border-t border-white/60 flex items-baseline justify-between">
+          <div className="mt-2 pt-2 border-t border-slate-200 flex items-baseline justify-between">
             <span className="text-xs text-slate-600 font-semibold">יתרה חודשית</span>
             <span className={`num text-sm font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
               {balance >= 0 ? '+' : ''}{balance.toLocaleString('he-IL')} ₪
@@ -276,8 +276,8 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         )}
 
         {/* Portfolio breakdown */}
-        <div className="mt-4 pt-3 border-t border-white/60">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+        <div className="mt-4 pt-3 border-t border-slate-200">
+          <p className="text-xs font-bold text-slate-500 mb-2">
             {metric === 'netWorth' ? (
               <>פירוט שווי נקי</>
             ) : (
@@ -362,9 +362,9 @@ function AvatarCursor(props: any) {
           <circle cx={cx} cy={avatarY} r={r} />
         </clipPath>
         <linearGradient id={`brd-${Math.round(cx)}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#4f46e5" />
-          <stop offset="50%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#ec4899" />
+          <stop offset="0%" stopColor="#4a3294" />
+          <stop offset="50%" stopColor="#8457d9" />
+          <stop offset="100%" stopColor="#d9487f" />
         </linearGradient>
       </defs>
       <line x1={cx} y1={12} x2={cx} y2={avatarY - r - 4} stroke="url(#avatar-line-grad)" strokeWidth={1.5} strokeDasharray="4 4" opacity="0.6" />
@@ -404,8 +404,8 @@ export function ChartsPanel({ result, config }: Props) {
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id="avatar-line-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#4f46e5" />
-            <stop offset="100%" stopColor="#ec4899" />
+            <stop offset="0%" stopColor="#4a3294" />
+            <stop offset="100%" stopColor="#d9487f" />
           </linearGradient>
         </defs>
       </svg>
@@ -428,7 +428,7 @@ export function ChartsPanel({ result, config }: Props) {
           onClick={() => setShowReal(!showReal)}
           className="flex items-center gap-2 btn-glass px-3 md:px-4 py-2 text-xs md:text-sm"
         >
-          <span className={`relative w-9 h-5 rounded-full transition-colors ${showReal ? 'bg-gradient-to-r from-indigo-500 to-violet-500' : 'bg-slate-300'}`}>
+          <span className={`relative w-9 h-5 rounded-full transition-colors ${showReal ? 'bg-indigo-600' : 'bg-slate-300'}`}>
             <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${showReal ? 'right-0.5' : 'right-[18px]'}`} />
           </span>
           <span className="font-semibold text-slate-700">{showReal ? 'ריאלי' : 'נומינלי'}</span>
@@ -436,15 +436,15 @@ export function ChartsPanel({ result, config }: Props) {
       </div>
 
       {/* Metric tabs */}
-      <div className="flex flex-wrap gap-2 mb-6 p-1 bg-white/40 rounded-2xl">
+      <div className="flex flex-wrap gap-2 mb-6 p-1 bg-slate-100 rounded-2xl">
         {(Object.keys(METRICS) as MetricType[]).map(m => (
           <button
             key={m}
             onClick={() => setMetric(m)}
             className={`flex-1 min-w-[90px] md:min-w-[120px] inline-flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-sm md:text-[15px] font-bold transition-all duration-200 cursor-pointer ${
               metric === m
-                ? 'bg-white text-slate-900 shadow-lg shadow-indigo-500/10'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
+                ? 'bg-white text-indigo-700 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
             <span aria-hidden="true">{METRICS[m].emoji}</span>
@@ -476,12 +476,12 @@ export function ChartsPanel({ result, config }: Props) {
             <CartesianGrid strokeDasharray="2 4" stroke="rgba(79, 70, 229, 0.08)" vertical={false} />
             <XAxis
               dataKey="calendarYear"
-              tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }}
+              tick={{ fontSize: 12, fill: '#665d7d', fontWeight: 600 }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }}
+              tick={{ fontSize: 12, fill: '#665d7d', fontWeight: 600 }}
               tickLine={false}
               axisLine={false}
               tickFormatter={(v: number) => metricCfg.isScore ? String(Math.round(v)) : fmtK(v)}
@@ -496,7 +496,7 @@ export function ChartsPanel({ result, config }: Props) {
             />
             <Tooltip content={makeChartTooltip(showReal, metric) as any} cursor={<AvatarCursor />} />
 
-            <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1.5} opacity={0.5} />
+            <ReferenceLine y={0} stroke="#9d94b0" strokeWidth={1.5} opacity={0.5} />
 
             {(() => {
               const startY = config.simulationStartYear ?? 2026;
@@ -507,18 +507,18 @@ export function ChartsPanel({ result, config }: Props) {
                 <>
                   <ReferenceLine
                     x={zinukYear}
-                    stroke="#4f46e5"
+                    stroke="#4a3294"
                     strokeWidth={2}
                     strokeDasharray="6 4"
-                    label={{ value: `הפסקת הכנסה מזינוק (${zinukYear})`, position: 'top', fontSize: 12, fill: '#4f46e5', fontWeight: 700 }}
+                    label={{ value: `${zinukYear}`, position: 'top', fontSize: 12, fill: '#4a3294', fontWeight: 700 }}
                   />
                   {config.fullRetirementAge <= config.endAge && (
                     <ReferenceLine
                       x={fullRetYear}
-                      stroke="#f59e0b"
+                      stroke="#e88d2a"
                       strokeWidth={2}
                       strokeDasharray="6 4"
-                      label={{ value: `פרישה מלאה (${fullRetYear})`, position: 'top', fontSize: 12, fill: '#f59e0b', fontWeight: 700 }}
+                      label={{ value: `${fullRetYear}`, position: 'top', fontSize: 12, fill: '#e88d2a', fontWeight: 700 }}
                     />
                   )}
                   {retYear != null && metric === 'monthlyBalance' && retYear !== zinukYear && (
@@ -527,7 +527,7 @@ export function ChartsPanel({ result, config }: Props) {
                       stroke="#10b981"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `נקודת איזון (${retYear})`, position: 'insideTopLeft', fontSize: 12, fill: '#10b981', fontWeight: 800 }}
+                      label={{ value: `${retYear}`, position: 'insideTopLeft', fontSize: 12, fill: '#10b981', fontWeight: 800 }}
                     />
                   )}
                   {retYear != null && metric === 'monthlyBalance' && retYear === zinukYear && (
@@ -542,19 +542,19 @@ export function ChartsPanel({ result, config }: Props) {
                   {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear !== fullRetYear && (
                     <ReferenceLine
                       x={fullRetirementYear}
-                      stroke="#7c3aed"
+                      stroke="#8457d9"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `איזון לפרישה מלאה (${fullRetirementYear})`, position: 'insideBottom', fontSize: 12, fill: '#7c3aed', fontWeight: 800 }}
+                      label={{ value: `${fullRetirementYear}`, position: 'insideBottom', fontSize: 12, fill: '#8457d9', fontWeight: 800 }}
                     />
                   )}
                   {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear === fullRetYear && (
                     <ReferenceLine
                       x={fullRetirementYear}
-                      stroke="#7c3aed"
+                      stroke="#8457d9"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `+ איזון לפרישה`, position: 'insideBottom', fontSize: 11, fill: '#7c3aed', fontWeight: 800 }}
+                      label={{ value: `+ איזון לפרישה`, position: 'insideBottom', fontSize: 11, fill: '#8457d9', fontWeight: 800 }}
                     />
                   )}
                 </>
@@ -590,8 +590,8 @@ export function ChartsPanel({ result, config }: Props) {
                     ...data.map(d => Math.abs((d as any)[dataKey] ?? 0))
                   );
                   if (Math.abs(v) < maxAbs * 0.015) return null;
-                  // For dense charts (>28 bars) show every other label to prevent overlap
-                  if (data.length > 28 && index % 2 !== 0) return null;
+                  // A label needs ~30px; bars are ~80% of their band, so skip labels to fit.
+                  if (index % Math.max(1, Math.ceil(30 / ((width || 1) * 1.25))) !== 0) return null;
                   const cx = (x || 0) + (width || 0) / 2;
                   const isPositive = v >= 0;
                   const cy = isPositive ? (y || 0) - 6 : (y || 0) + (height || 0) + 12;
@@ -600,7 +600,7 @@ export function ChartsPanel({ result, config }: Props) {
                       x={cx}
                       y={cy}
                       textAnchor="middle"
-                      fill={isPositive ? '#475569' : '#9f1239'}
+                      fill={isPositive ? '#544b6b' : '#9f1239'}
                       fontSize={10}
                       fontWeight={700}
                       style={{ pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' }}
@@ -616,14 +616,14 @@ export function ChartsPanel({ result, config }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 pt-4 border-t border-white/60 flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm text-slate-600 font-medium">
+      <div className="mt-4 pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm text-slate-600 font-medium">
         <div className="flex flex-wrap gap-x-5 gap-y-2">
-          <LegendItem color="#4f46e5">הפסקת הכנסה מזינוק</LegendItem>
-          <LegendItem color="#f59e0b">פרישה מלאה</LegendItem>
+          <LegendItem color="#4a3294">הפסקת הכנסה מזינוק</LegendItem>
+          <LegendItem color="#e88d2a">פרישה מלאה</LegendItem>
           {metric === 'monthlyBalance' && <LegendItem color="#10b981">איזון מזינוק</LegendItem>}
-          {metric === 'monthlyBalance' && fullRetirementYear != null && <LegendItem color="#7c3aed">איזון לפרישה מלאה</LegendItem>}
+          {metric === 'monthlyBalance' && fullRetirementYear != null && <LegendItem color="#8457d9">איזון לפרישה מלאה</LegendItem>}
         </div>
-        <span className="text-[11px] md:text-xs text-slate-400 italic">💡 לחץ על נקודה בגרף לפירוט מלא</span>
+        <span className="text-[11px] md:text-xs text-slate-400">💡 לחץ על נקודה בגרף לפירוט מלא</span>
       </div>
 
       {/* Detail modal */}

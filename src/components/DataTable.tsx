@@ -31,7 +31,7 @@ export function DataTable({ result, onExportJSON }: Props) {
     <div className="widget-card-static overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 md:px-8 py-5 md:py-6 flex items-center justify-between text-right cursor-pointer hover:bg-white/40 transition-colors"
+        className="w-full px-5 md:px-8 py-5 md:py-6 flex items-center justify-between text-right cursor-pointer hover:bg-slate-50 transition-colors"
       >
         <div className="flex items-center gap-3">
           <span aria-hidden="true" className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-xl">
@@ -72,7 +72,7 @@ export function DataTable({ result, onExportJSON }: Props) {
         <div className="px-5 md:px-8 pb-6 md:pb-8 overflow-x-auto">
           <table className="w-full text-sm md:text-[15px]">
             <thead>
-              <tr className="border-b-2 border-white/70">
+              <tr className="border-b-2 border-slate-200">
                 <Th>שנה</Th>
                 <Th>גיל</Th>
                 <Th>שלב</Th>
@@ -85,7 +85,7 @@ export function DataTable({ result, onExportJSON }: Props) {
             </thead>
             <tbody>
               {result.years.map((y, i) => (
-                <tr key={y.year} className={`border-b border-white/40 hover:bg-white/50 transition-colors ${i % 2 === 0 ? 'bg-white/20' : ''}`}>
+                <tr key={y.year} className={`border-b border-slate-200 hover:bg-indigo-50 transition-colors ${i % 2 === 0 ? 'bg-slate-50' : ''}`}>
                   <Td className="text-slate-600">{2026 + y.year - 1}</Td>
                   <Td mono className="text-slate-900 font-bold">{y.age}</Td>
                   <Td>
@@ -112,7 +112,7 @@ export function DataTable({ result, onExportJSON }: Props) {
 
 function Th({ children, align = 'right' }: { children: React.ReactNode; align?: 'right' | 'left' }) {
   return (
-    <th className={`py-3 px-3 text-${align} text-[10px] md:text-xs font-bold uppercase tracking-[0.12em] text-slate-500`}>
+    <th className={`py-3 px-3 text-${align} text-[10px] md:text-xs font-bold text-slate-500`}>
       {children}
     </th>
   );

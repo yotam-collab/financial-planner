@@ -146,12 +146,12 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
       dir="rtl"
     >
       <div
-        className="w-full max-w-3xl my-4 md:my-auto rounded-[2rem] border border-white/80 shadow-2xl"
+        className="w-full max-w-3xl my-4 md:my-auto rounded-[1.25rem] shadow-2xl"
         onClick={e => e.stopPropagation()}
         style={{ background: '#ffffff', boxShadow: '0 30px 80px -20px rgba(15, 23, 42, 0.5)' }}
       >
         {/* Header */}
-        <div className="relative bg-gradient-to-l from-rose-500 to-pink-500 px-5 md:px-8 py-5 md:py-7 rounded-t-[2rem] overflow-hidden">
+        <div className="relative bg-gradient-to-l from-rose-500 to-pink-500 px-5 md:px-8 py-5 md:py-7 rounded-t-[1.25rem] overflow-hidden">
           <div className="absolute top-0 left-10 w-32 h-32 bg-white/15 rounded-full blur-3xl float-anim" />
           <button
             onClick={onClose}
@@ -159,7 +159,7 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
             aria-label="סגור"
           >✕</button>
           <div className="relative z-10">
-            <p className="text-white/80 text-[11px] font-bold uppercase tracking-[0.25em] mb-2">סימולטור עזר</p>
+            <p className="text-white/80 text-[11px] font-bold mb-2">סימולטור עזר</p>
             <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white leading-tight">
               חישוב הוצאות אישי
             </h2>
@@ -184,7 +184,7 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
 
           {/* Presets */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-rose-600 mb-2">🎚 בחירה מהירה</p>
+            <p className="text-xs font-bold text-rose-600 mb-2">🎚 בחירה מהירה</p>
             <div className="grid grid-cols-3 gap-2">
               <PresetButton
                 active={activePreset === 'saver'}
@@ -212,7 +212,7 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
 
           {/* Category sliders */}
           <div className="space-y-4">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-rose-600">📋 כוונון אישי</p>
+            <p className="text-xs font-bold text-rose-600">📋 כוונון אישי</p>
             {CATEGORIES.map(cat => (
               <CategorySlider
                 key={cat.key}
@@ -224,10 +224,10 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
           </div>
 
           {/* Total */}
-          <div className="sticky bottom-0 -mx-4 md:-mx-8 -mb-5 md:-mb-7 px-4 md:px-8 py-4 border-t-2 border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50 rounded-b-[2rem]">
+          <div className="sticky -bottom-3 md:-bottom-8 -mx-4 md:-mx-8 -mb-5 md:-mb-7 px-4 md:px-8 py-4 border-t-2 border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50 rounded-b-[1.25rem]">
             <div className="flex items-baseline justify-between mb-2">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-rose-700">סה״כ חודשי משוער</p>
+                <p className="text-xs font-bold text-rose-700">סה״כ חודשי משוער</p>
                 <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
                   ללא דיור, חסכונות ומסים
                 </p>
@@ -261,7 +261,7 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 md:px-8 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50 rounded-b-[2rem] gap-3">
+        <div className="px-5 md:px-8 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50 rounded-b-[1.25rem] gap-3">
           <p className="text-[11px] md:text-xs text-slate-500 leading-snug">
             💡 אחרי בחירה — העבירו את המספר ידנית לשדה "הוצאות (ללא דיור)"
           </p>

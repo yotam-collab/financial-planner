@@ -32,9 +32,9 @@ function Section({ title, icon, color = 'indigo', defaultOpen = false, children 
   const [open, setOpen] = useState(defaultOpen);
   const c = SECTION_COLORS[color];
   return (
-    <div className={`rounded-2xl transition-all duration-300 ${open ? 'bg-white/40 ring-1 ring-white/60' : 'bg-transparent'}`}>
+    <div className={`rounded-2xl transition-all duration-300 ${open ? 'bg-slate-50 ring-1 ring-slate-200' : 'bg-transparent'}`}>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-3 px-4 py-3.5 text-right cursor-pointer group">
-        <span aria-hidden="true" className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110`}>
+        <span aria-hidden="true" className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center text-xl flex-shrink-0`}>
           {icon}
         </span>
         <span className="font-display text-base md:text-lg font-bold text-slate-900 flex-1">
@@ -78,12 +78,12 @@ function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, r
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-1">
-        <label className="text-sm md:text-[15px] text-slate-800 font-semibold flex-shrink-0 flex items-center gap-1.5">
+        <label className="text-sm md:text-[15px] text-slate-800 font-semibold min-w-0 flex items-center gap-1.5">
           {label}
           {help && <HelpTooltip text={help} />}
         </label>
         <div
-          className="flex items-center gap-1 rounded-xl px-3 py-1.5 border border-indigo-200/60 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-400/25 transition-all"
+          className="flex shrink-0 items-center gap-1 rounded-xl px-3 py-1.5 border border-indigo-200/60 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-400/25 transition-all"
           style={{ background: '#ffffff' }}
         >
           <input
@@ -118,14 +118,14 @@ function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, r
               }
             }}
             className="num w-24 md:w-28 text-sm md:text-base font-bold outline-none text-left"
-            style={{ background: 'transparent', color: '#0f172a' }}
+            style={{ background: 'transparent', color: '#221935' }}
             aria-label={label}
           />
-          <span className="text-xs font-medium" style={{ color: '#64748b' }}>{suffix}</span>
+          <span className="text-xs font-medium" style={{ color: '#665d7d' }}>{suffix}</span>
         </div>
       </div>
       {rec && <p className="text-[11px] md:text-xs text-indigo-600 mt-0.5 mr-1 font-medium">💡 {rec}</p>}
-      {note && <p className="text-[11px] md:text-xs text-slate-500 mt-0.5 mr-1 italic">{note}</p>}
+      {note && <p className="text-[11px] md:text-xs text-slate-500 mt-0.5 mr-1">{note}</p>}
     </div>
   );
 }
@@ -147,9 +147,9 @@ function ClosingCostsPanel({ config, update }: {
   const totalPct = price > 0 ? (totalClosing / price) * 100 : 0;
 
   return (
-    <div className="pt-3 mt-2 border-t border-white/70">
+    <div className="pt-3 mt-2 border-t border-slate-200">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600 flex items-center gap-1.5">
+        <p className="text-xs font-bold text-violet-600 flex items-center gap-1.5">
           💰 הוצאות נלוות לקנייה
           <HelpTooltip text="כל העלויות מעבר למחיר הבית: מס רכישה (מדרגתי לפי חוק), עו״ד (~0.5% + מע״מ), מתווך (עד 2% + מע״מ), והוצאות נוספות (טאבו, שמאי, הובלה). סה״כ: 4-6% מהמחיר בדירה יחידה." />
         </p>
@@ -224,7 +224,7 @@ function SliderInput({ label, value, onChange, min, max, step = 1, displayValue,
       <input type="range" value={value} onChange={e => onChange(Number(e.target.value))}
         min={min} max={max} step={step} />
       {rec && <p className="text-[11px] md:text-xs text-indigo-500 mt-1.5 mr-1 font-medium">💡 {rec}</p>}
-      {note && <p className="text-[11px] md:text-xs text-slate-400 mt-0.5 mr-1 italic">{note}</p>}
+      {note && <p className="text-[11px] md:text-xs text-slate-400 mt-0.5 mr-1">{note}</p>}
     </div>
   );
 }
@@ -262,9 +262,9 @@ export function InputPanel({ config, setConfig }: Props) {
   return (
     <div className="widget-card-static p-5 md:p-6 space-y-1 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto w-full">
       {/* Header */}
-      <div className="flex items-center gap-3 pb-4 mb-2 border-b border-white/60">
+      <div className="flex items-center gap-3 pb-4 mb-2 border-b border-slate-200">
         <div className="relative">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 p-0.5 float-anim">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-pink-500 to-indigo-600 p-0.5">
             <img
               src={`${import.meta.env.BASE_URL}profile.jpeg`}
               alt=""
@@ -347,8 +347,8 @@ export function InputPanel({ config, setConfig }: Props) {
             <ClosingCostsPanel config={config} update={update} />
 
             {/* Mother's contribution in exchange for the unit's rent */}
-            <div className="pt-3 mt-2 border-t border-white/70">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600 mb-2">
+            <div className="pt-3 mt-2 border-t border-slate-200">
+              <p className="text-xs font-bold text-violet-600 mb-2">
                 👵 השתתפות של אמא
               </p>
             </div>
@@ -370,8 +370,8 @@ export function InputPanel({ config, setConfig }: Props) {
             )}
 
             {/* Passive income from home */}
-            <div className="pt-3 mt-2 border-t border-white/70">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-600 mb-2">
+            <div className="pt-3 mt-2 border-t border-slate-200">
+              <p className="text-xs font-bold text-violet-600 mb-2">
                 💡 הכנסות נוספות מהבית
               </p>
             </div>
@@ -463,7 +463,7 @@ export function InputPanel({ config, setConfig }: Props) {
           onChange={v => update('assets.liquidPortfolio', v)} step={50000}
           rec="USD + קרנות + money market"
           help="סך הכסף הזמין לשימוש מיידי ללא קנסות: מניות, ETF, קרנות, מט״ח, מזומן, money market. זה התיק שעליו חל שיעור המשיכה בת-קיימא (מוגדר בהנחות שוק). גדל כל שנה בתשואה הריאלית (ברירת מחדל: 4.5% אחרי מס)." />
-        <p className="text-[11px] text-slate-500 italic mt-1 mr-1">
+        <p className="text-[11px] text-slate-500 mt-1 mr-1">
           קה״ש מופיעה כעת בנפרד תחת ״יותם״ ו״הדס״ — לכל אחד יתרה וגיל נזילות נפרדים.
         </p>
       </Section>
@@ -485,13 +485,13 @@ export function InputPanel({ config, setConfig }: Props) {
         {/* Simulator button */}
         <button
           onClick={() => setExpenseSimOpen(true)}
-          className="w-full mt-1 px-4 py-3 rounded-xl bg-gradient-to-l from-rose-500 to-pink-500 text-white text-sm md:text-base font-semibold shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+          className="w-full mt-1 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm md:text-base font-semibold transition-colors flex items-center justify-center gap-2"
         >
           <span>🧮</span>
           <span>סימולטור הוצאות אישי</span>
           <span className="text-[11px] font-normal opacity-80">— חישוב מפורט לפי קטגוריות</span>
         </button>
-        <p className="text-[11px] text-slate-500 mt-1 mr-1 italic">
+        <p className="text-[11px] text-slate-500 mt-1 mr-1">
           כלי עזר — לא מעדכן את המכוון למעלה אוטומטית
         </p>
 
@@ -593,7 +593,7 @@ function HappinessSection({ config, update, setConfig }: {
     <Section title="מדד אושר — העדפות" icon="😊" color="pink">
       {/* Presets */}
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-pink-600 mb-2">
+        <p className="text-[11px] font-bold text-pink-600 mb-2">
           🎯 מה הכי חשוב לנו
         </p>
         <div className="grid grid-cols-2 gap-1.5">
@@ -605,8 +605,8 @@ function HappinessSection({ config, update, setConfig }: {
       </div>
 
       {/* Kids birth years */}
-      <div className="pt-3 mt-2 border-t border-white/70">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-pink-600 mb-2">
+      <div className="pt-3 mt-2 border-t border-slate-200">
+        <p className="text-[11px] font-bold text-pink-600 mb-2">
           👶 שנות לידה
         </p>
       </div>
@@ -620,9 +620,9 @@ function HappinessSection({ config, update, setConfig }: {
         help="שנת הלידה של הילד/ה הצעיר/ה. כשהילד הצעיר מגיע ל-18 'בית משפחתי' מתחיל להידלדל (יעזבו ללימודים/צבא)." />
 
       {/* Weights */}
-      <div className="pt-3 mt-2 border-t border-white/70">
+      <div className="pt-3 mt-2 border-t border-slate-200">
         <div className="flex items-baseline justify-between mb-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-pink-600">
+          <p className="text-[11px] font-bold text-pink-600">
             ⚖️ משקולות (נורמלי לאחוזים)
           </p>
           <span className="text-[10px] text-slate-500 font-semibold">סה״כ: <span className="num">{sum}</span></span>

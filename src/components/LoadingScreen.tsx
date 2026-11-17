@@ -29,7 +29,7 @@ export function LoadingScreen({ onComplete, minDuration = 2400 }: Props) {
         exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
-        backgroundColor: '#f1f5f9',
+        backgroundColor: '#f1eef6',
         backgroundImage:
           'radial-gradient(ellipse 900px 700px at 15% 10%, rgba(79, 70, 229, 0.18), transparent 55%),' +
           'radial-gradient(ellipse 800px 600px at 85% 5%, rgba(124, 58, 237, 0.16), transparent 55%),' +
@@ -87,7 +87,7 @@ export function LoadingScreen({ onComplete, minDuration = 2400 }: Props) {
 
         {/* Text block */}
         <div className="text-center max-w-xl relative z-10" dir="rtl">
-          <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-[0.28em] mb-3 loader-fade-in-1">
+          <p className="text-slate-500 text-[10px] md:text-xs font-bold mb-3 loader-fade-in-1">
             יותם והדס <span className="text-slate-400 mx-1">·</span> תכנון פיננסי
           </p>
           <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold leading-[1.05] loader-fade-in-2">
@@ -115,12 +115,12 @@ export function LoadingScreen({ onComplete, minDuration = 2400 }: Props) {
           <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 loader-ping" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
         </span>
-        <span className="uppercase tracking-[0.22em]">המערכת פעילה</span>
+        <span className="uppercase">המערכת פעילה</span>
       </div>
 
       {/* Corner: meta (top-left) */}
       <div
-        className="hidden md:block absolute top-8 left-8 text-[10px] font-bold text-slate-400 uppercase tracking-[0.22em] text-left"
+        className="hidden md:block absolute top-8 left-8 text-[10px] font-bold text-slate-400 text-left"
         dir="ltr"
       >
         <span className="num">v2.0</span>
@@ -130,7 +130,7 @@ export function LoadingScreen({ onComplete, minDuration = 2400 }: Props) {
 
       {/* Corner: footer brand (bottom) */}
       <div
-        className="absolute bottom-6 md:bottom-8 right-0 left-0 flex items-center justify-center gap-2 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]"
+        className="absolute bottom-6 md:bottom-8 right-0 left-0 flex items-center justify-center gap-2 text-[10px] md:text-[11px] font-bold text-slate-400"
         dir="rtl"
       >
         <span>מודל פיננסי אישי</span>
