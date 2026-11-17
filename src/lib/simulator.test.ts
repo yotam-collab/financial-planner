@@ -126,6 +126,13 @@ describe('Edge cases', () => {
     expect(r.years).toHaveLength(52);
     r.years.filter(y => y.isDepleted).forEach(y => expect(y.liquidPortfolio).toBeLessThanOrEqual(0));
   });
+  it('starting an annuity does not drop the pension out of net worth in one year', () => {
+    const { years } = simulate(createDefaultConfig());
+    const i = years.findIndex(y => y.yotamPensionPayoutMonthly > 0);
+    expect(years[i].pension).toBeGreaterThan(years[i - 1].pension * 0.8);
+    expect(years[years.length - 1].pension).toBe(0);
+  });
+
   it('a deficit after the portfolio runs out is carried as debt, not forgiven', () => {
     const c = createDefaultConfig();
     c.expenses.monthlyNonHousingExpenses = 100_000;

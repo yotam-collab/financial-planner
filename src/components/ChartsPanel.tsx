@@ -52,12 +52,12 @@ const METRICS: Record<MetricType, MetricConfig> = {
   },
   fourPercent: {
     label: 'משיכה מהתיק',
-    nominalKey: 'monthly4pctWithdrawal',
-    realKey: 'realMonthly4pctWithdrawal',
+    nominalKey: 'monthlyDraw',
+    realKey: 'realMonthlyDraw',
     color: '#4a3294',
     gradientId: 'grad-4pct',
     isBiColor: false,
-    description: 'משיכה חודשית בת-קיימא',
+    description: 'כמה נמשך בפועל מהחסכונות הנזילים בכל חודש, כשההוצאות גבוהות מההכנסות',
     emoji: '💰',
   },
   netWorth: {
@@ -247,7 +247,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
           {d.phase === 'altIncome' && d.monthlyAltIncome > 0 && (
             <RowDual label="הכנסה חלופית" nominal={d.monthlyAltIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-emerald-500" />
           )}
-          <RowDual label="משיכה מהתיק" nominal={d.monthly4pctWithdrawal} real={d.real?.monthly4pctWithdrawal} showReal={showReal} dotColor="bg-indigo-600" />
+          <RowDual label="פוטנציאל משיכה" nominal={d.monthly4pctWithdrawal} real={d.real?.monthly4pctWithdrawal} showReal={showReal} dotColor="bg-indigo-600" />
           {d.monthlyPensionIncome > 0 && (
             <RowDual label="קצבת פנסיה" nominal={d.monthlyPensionIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-amber-500" />
           )}
@@ -263,6 +263,9 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         <div className="mt-3 pt-3 border-t border-slate-200 space-y-1.5 text-sm">
           <RowDual label="סה״כ ברת-קיימא" nominal={d.monthlySustainableIncome} real={d.real?.monthlySustainableIncome} showReal={showReal} highlight dotColor="bg-violet-500" />
           <RowDual label="הוצאות" nominal={d.monthlyExpenses} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} highlight dotColor="bg-rose-500" />
+          {d.monthlyDraw > 0 && (
+            <RowDual label={d.liquidPortfolio < 0 ? 'נוסף לחוב' : 'נמשך מהחסכונות'} nominal={d.monthlyDraw} real={d.realMonthlyDraw} showReal={showReal} dotColor="bg-rose-400" />
+          )}
         </div>
 
         {/* Monthly balance — compact line when not the hero */}
@@ -286,7 +289,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
             <span className="text-xs text-slate-400 font-normal mr-1">({primaryLabel})</span>
           </p>
           <div className="space-y-2">
-            <PortfolioBar label="השקעות" value={pick(d.liquidPortfolio, d.real?.liquidPortfolio)} color="indigo" total={pick(d.netWorth, d.real?.netWorth)} />
+            <PortfolioBar label={d.liquidPortfolio < 0 ? 'חוב' : 'השקעות'} value={pick(d.liquidPortfolio, d.real?.liquidPortfolio)} color="indigo" total={pick(d.netWorth, d.real?.netWorth)} />
             {d.homeEquity > 0 && <PortfolioBar label="נדל״ן" value={pick(d.homeEquity, d.real?.homeEquity)} color="emerald" total={pick(d.netWorth, d.real?.netWorth)} />}
             {d.pension > 0 && <PortfolioBar label="פנסיה" value={pick(d.pension, d.real?.pension)} color="amber" total={pick(d.netWorth, d.real?.netWorth)} />}
           </div>
@@ -390,7 +393,9 @@ export function ChartsPanel({ result, config }: Props) {
     ...y,
     realMonthlyBalance: y.real.monthlyBalance,
     realMonthlySustainableIncome: y.real.monthlySustainableIncome,
-    realMonthly4pctWithdrawal: y.real.monthly4pctWithdrawal,
+    // What actually leaves the savings: the monthly gap when expenses exceed income
+    monthlyDraw: Math.round(Math.max(0, -y.annualCashflow) / 12),
+    realMonthlyDraw: Math.round(Math.max(0, -y.real.annualCashflow) / 12),
     realNetWorth: y.real.netWorth,
   }));
   const retAge = result.earliestRetirementAge;

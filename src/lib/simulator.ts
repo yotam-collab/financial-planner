@@ -676,8 +676,13 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // so later surpluses repay it first instead of wealth rebuilding from a clean slate.
     // shortcut: debt compounds at the portfolio's return rate, upgrade to a loan rate if depleted scenarios need precision
     const dep = liquid <= 0;
-    const yPenNW = yotamPensionActive ? 0 : yotamPension;
-    const hPenNW = hadasPensionActive ? 0 : hadasPension;
+    // An annuity in payment keeps a value instead of vanishing from net worth the year it
+    // starts: the pot at activation, CPI-linked, written down to zero at the end of the plan.
+    // shortcut: straight-line write-down, not an actuarial present value; upgrade if net worth after pension start needs precision
+    const annuityValue = (pot: number, startYe: number) =>
+      pot * Math.pow(1 + market.inflationRate, ye - startYe) * (totalYears - 1 - ye) / (totalYears - startYe);
+    const yPenNW = yotamPensionActive ? annuityValue(yotamPension, yotamPensionStartYe) : yotamPension;
+    const hPenNW = hadasPensionActive ? annuityValue(hadasPension, hadasPensionStartYe) : hadasPension;
     const totalPensionNW = yPenNW + hPenNW;
     const kNW = (yotamKerenMerged ? 0 : yotamKeren) + (hadasKerenMerged ? 0 : hadasKeren);
     const nw = liquid + totalPensionNW + kNW + hEq + orAkivaEq;

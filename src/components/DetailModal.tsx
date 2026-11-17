@@ -234,10 +234,10 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             <h3 className="font-display text-lg md:text-xl font-extrabold text-slate-900 mb-3 flex items-center gap-2">
               <span className="w-1 h-5 bg-violet-500 rounded-full" />
               שווי נקי · <span className="num">{fmt(y.netWorth)} ₪</span>
-              <HelpTooltip placement="bottom" text="סה״כ ההון המשפחתי: תיק נזיל + הון עצמי בנדל״ן (ערך בית פחות יתרת משכנתא) + יתרת פנסיה נעולה. המטרה לטווח ארוך: לגדל את זה כדי להבטיח פרישה בת-קיימא. הפנסיה נעולה אבל נחשבת כנכס כי היא תהפוך לקצבה." />
+              <HelpTooltip placement="bottom" text="סה״כ ההון המשפחתי: תיק נזיל + הון עצמי בנדל״ן (ערך בית פחות יתרת משכנתא) + יתרת פנסיה נעולה. המטרה לטווח ארוך: לגדל את זה כדי להבטיח פרישה בת-קיימא. הפנסיה נעולה אבל נחשבת כנכס כי היא תהפוך לקצבה. אחרי תחילת הקצבה נרשם השווי של הקצבה שנותרה, והוא יורד בהדרגה עד סוף התוכנית." />
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <PortCard label="תיק נזיל" value={y.liquidPortfolio} color="indigo" total={y.netWorth} />
+              <PortCard label={y.liquidPortfolio < 0 ? 'חוב (החסכונות נגמרו)' : 'תיק נזיל'} value={y.liquidPortfolio} color="indigo" total={y.netWorth} />
               {y.homeEquity > 0 && <PortCard label="נדל״ן (הון)" value={y.homeEquity} color="emerald" total={y.netWorth} />}
               {y.pension > 0 && <PortCard label="פנסיה (נעולה)" value={y.pension} color="amber" total={y.netWorth} />}
               <PortCard label="סה״כ" value={y.netWorth} color="violet" bold total={y.netWorth} hideBar />
@@ -252,12 +252,12 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               <HelpTooltip placement="bottom" text="המספרים מוחזרו לערכי היום (שנת הסימולציה) כדי לנטרל אינפלציה. דוגמה: 10M₪ ב-2050 שווים בערך של היום ל-~5.5M₪ (ב-2.5% אינפלציה). זו הדרך הנכונה להשוות כוח קנייה בין תקופות — הערכים הנומינליים מטעים." />
             </h3>
             <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 md:p-5 grid grid-cols-2 md:grid-cols-3 gap-4">
-              <RealStat label="תיק נזיל" value={y.real.liquidPortfolio} />
+              <RealStat label={y.liquidPortfolio < 0 ? 'חוב' : 'תיק נזיל'} value={y.real.liquidPortfolio} />
               {y.real.homeEquity > 0 && <RealStat label="נדל״ן" value={y.real.homeEquity} />}
               {y.real.pension > 0 && <RealStat label="פנסיה" value={y.real.pension} />}
               <RealStat label="שווי נקי" value={y.real.netWorth} bold />
               <RealStat label="יתרה חודשית" value={y.real.monthlyBalance} sign />
-              <RealStat label="משיכה חודשית" value={y.real.monthly4pctWithdrawal} />
+              <RealStat label="פוטנציאל משיכה" value={y.real.monthly4pctWithdrawal} />
             </div>
           </section>
 
