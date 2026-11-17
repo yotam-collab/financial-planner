@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 src/assets/
 .gstack/
+splash/.hyperframes/
+splash/renders/
+splash/node_modules/

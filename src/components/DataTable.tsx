@@ -70,7 +70,7 @@ export function DataTable({ result, onExportJSON }: Props) {
 
       {isOpen && (
         <div className="px-5 md:px-8 pb-6 md:pb-8 overflow-x-auto">
-          <table className="w-full text-sm md:text-[15px]">
+          <table className="w-full text-sm md:text-base">
             <thead>
               <tr className="border-b-2 border-slate-200">
                 <Th>שנה</Th>
@@ -112,7 +112,7 @@ export function DataTable({ result, onExportJSON }: Props) {
 
 function Th({ children, align = 'right' }: { children: React.ReactNode; align?: 'right' | 'left' }) {
   return (
-    <th className={`py-3 px-3 text-${align} text-[10px] md:text-xs font-bold text-slate-500`}>
+    <th className={`py-3 px-3 text-${align} text-xs md:text-xs font-bold text-slate-500`}>
       {children}
     </th>
   );
@@ -137,7 +137,7 @@ function PhaseBadge({ phase, hasPension }: { phase: string; hasPension: boolean 
     : phase === 'altIncome' ? 'חלופית'
     : hasPension ? 'פרישה + פנסיה' : 'פרישה';
   return (
-    <span className={`inline-flex items-center gap-1.5 text-[11px] md:text-xs font-bold px-2.5 py-1 rounded-full ${style}`}>
+    <span className={`inline-flex items-center gap-1.5 text-xs md:text-xs font-bold px-2.5 py-1 rounded-full ${style}`}>
       <span className="w-1 h-1 rounded-full bg-current" />
       {label}
     </span>

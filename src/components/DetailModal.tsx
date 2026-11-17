@@ -72,11 +72,11 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
             aria-label="סגור"
           >✕</button>
           <div className="relative z-10">
-            <p className="text-white/80 text-[11px] font-bold mb-2">פירוט שנתי מלא</p>
+            <p className="text-white/80 text-xs font-bold mb-2">פירוט שנתי מלא</p>
             <div className="flex items-baseline gap-4 flex-wrap">
               <span className="font-display num text-5xl md:text-6xl font-extrabold text-white leading-none">{y.calendarYear ?? y.age}</span>
               <div className="flex flex-col gap-0.5">
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/25 text-white w-fit">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white/25 text-white w-fit">
                   {phaseLabel}
                 </span>
                 <div className="flex gap-3 text-white/90 text-sm font-semibold mt-1">
@@ -373,7 +373,7 @@ function PortCard({ label, value, color, bold, total, hideBar }: {
           <div className="h-1.5 bg-white/60 rounded-full overflow-hidden">
             <div className={`h-full ${barBg} rounded-full transition-all`} style={{ width: `${pct}%` }} />
           </div>
-          <p className="text-[10px] font-bold opacity-60 mt-1 num" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          <p className="text-xs font-bold opacity-60 mt-1 num" style={{ fontVariantNumeric: 'tabular-nums' }}>
             {pct.toFixed(0)}%
           </p>
         </>
@@ -385,7 +385,7 @@ function PortCard({ label, value, color, bold, total, hideBar }: {
 function RealStat({ label, value, bold, sign }: { label: string; value: number; bold?: boolean; sign?: boolean }) {
   return (
     <div>
-      <p className="text-[10px] md:text-xs font-bold text-slate-500 mb-1">{label}</p>
+      <p className="text-xs md:text-xs font-bold text-slate-500 mb-1">{label}</p>
       <p className={`num ${bold ? 'text-base md:text-lg font-bold text-slate-900' : 'text-sm md:text-base font-semibold text-slate-700'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
         {sign && value >= 0 ? '+' : ''}{fmt(value)} ₪
       </p>
@@ -396,7 +396,7 @@ function RealStat({ label, value, bold, sign }: { label: string; value: number; 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-200">
-      <p className="text-[10px] font-bold text-slate-500">{label}</p>
+      <p className="text-xs font-bold text-slate-500">{label}</p>
       <p className="num text-sm md:text-base font-bold text-slate-900 mt-1" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</p>
     </div>
   );

@@ -23,7 +23,7 @@ function App() {
           <img
             src={`${import.meta.env.BASE_URL}hero.png`}
             alt=""
-            className="w-full h-40 md:h-60 lg:h-80 xl:h-[22rem] 2xl:h-[26rem] object-cover object-top"
+            className="w-full h-36 md:h-44 lg:h-52 xl:h-56 object-cover object-top"
           />
           {/* Dark gradient: stronger at bottom (where desktop title sits), subtle at top (mobile title) */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-slate-900/30 md:to-transparent" />
@@ -31,7 +31,7 @@ function App() {
           {/* ─── Mobile: compact title at top-right ─── */}
           <div className="md:hidden absolute top-3 right-4 left-4 flex items-start justify-between gap-2 fade-up">
             <div>
-              <p className="text-white/85 text-[11px] font-medium mb-0.5 drop-shadow">
+              <p className="text-white/85 text-xs font-medium mb-0.5 drop-shadow">
                 יותם והדס
               </p>
               <h1 className="font-display text-xl font-black text-white leading-tight drop-shadow">
@@ -59,13 +59,13 @@ function App() {
           </div>
 
           {/* ─── Desktop: title + buttons at bottom ─── */}
-          <div className="hidden md:block absolute inset-x-0 bottom-0 px-10 pb-10">
+          <div className="hidden md:block absolute inset-x-0 bottom-0 px-10 pb-6">
             <div className="mx-auto w-full flex flex-row items-end justify-between gap-4">
               <div className="fade-up">
-                <p className="text-white/85 text-base font-medium mb-2 drop-shadow">
+                <p className="text-white/85 text-base font-medium mb-1 drop-shadow">
                   התכנון הפיננסי של יותם והדס
                 </p>
-                <h1 className="font-display text-5xl lg:text-7xl font-black text-white leading-[0.95] drop-shadow-[0_2px_18px_rgba(20,10,45,0.55)]">
+                <h1 className="font-display text-4xl lg:text-6xl font-black text-white leading-[0.95] drop-shadow-[0_2px_18px_rgba(20,10,45,0.55)]">
                   תוכנית אושר משפחתית
                 </h1>
               </div>
@@ -89,10 +89,10 @@ function App() {
             {/* Grid: chart (LEFT in RTL) + inputs (RIGHT in RTL) */}
             {/* In RTL: order-1 renders on RIGHT, order-2 on LEFT */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6">
-              <div className="lg:col-span-5 xl:col-span-4 2xl:col-span-3 order-2 lg:order-1 fade-up min-w-0" style={{ animationDelay: '0.25s' }}>
+              <div className="lg:col-span-5 xl:col-span-4 order-2 lg:order-1 fade-up min-w-0" style={{ animationDelay: '0.25s' }}>
                 <InputPanel config={config} setConfig={setConfig} />
               </div>
-              <div className="lg:col-span-7 xl:col-span-8 2xl:col-span-9 order-1 lg:order-2 fade-up min-w-0" style={{ animationDelay: '0.2s' }}>
+              <div className="lg:col-span-7 xl:col-span-8 order-1 lg:order-2 fade-up min-w-0" style={{ animationDelay: '0.2s' }}>
                 <ChartsPanel result={result} config={config} />
               </div>
             </div>

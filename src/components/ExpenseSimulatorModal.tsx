@@ -159,7 +159,7 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
             aria-label="סגור"
           >✕</button>
           <div className="relative z-10">
-            <p className="text-white/80 text-[11px] font-bold mb-2">סימולטור עזר</p>
+            <p className="text-white/80 text-xs font-bold mb-2">סימולטור עזר</p>
             <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white leading-tight">
               חישוב הוצאות אישי
             </h2>
@@ -228,7 +228,7 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
             <div className="flex items-baseline justify-between mb-2">
               <div>
                 <p className="text-xs font-bold text-rose-700">סה״כ חודשי משוער</p>
-                <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
+                <p className="text-xs text-slate-500 leading-tight mt-0.5">
                   ללא דיור, חסכונות ומסים
                 </p>
               </div>
@@ -262,7 +262,7 @@ function ExpenseSimulatorContent({ onClose, currentValue }: Props) {
 
         {/* Footer */}
         <div className="px-5 md:px-8 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50 rounded-b-[1.25rem] gap-3">
-          <p className="text-[11px] md:text-xs text-slate-500 leading-snug">
+          <p className="text-xs md:text-xs text-slate-500 leading-snug">
             💡 אחרי בחירה — העבירו את המספר ידנית לשדה "הוצאות (ללא דיור)"
           </p>
           <button
@@ -291,11 +291,11 @@ function PresetButton({ active, label, sublabel, desc, onClick }: {
     >
       <div className="flex items-baseline justify-between gap-1">
         <span className="font-display text-base md:text-lg font-extrabold">{label}</span>
-        <span className={`num text-[11px] md:text-xs font-bold ${active ? 'text-white/90' : 'text-rose-600'}`}>
+        <span className={`num text-xs md:text-xs font-bold ${active ? 'text-white/90' : 'text-rose-600'}`}>
           {sublabel}
         </span>
       </div>
-      <p className={`text-[10px] md:text-[11px] leading-tight mt-0.5 ${active ? 'text-white/80' : 'text-slate-500'}`}>
+      <p className={`text-xs md:text-xs leading-tight mt-0.5 ${active ? 'text-white/80' : 'text-slate-500'}`}>
         {desc}
       </p>
     </button>
@@ -324,7 +324,7 @@ function CategorySlider({ category, value, onChange }: {
         max={category.max}
         step={category.step}
       />
-      <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1 num" style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <div className="flex items-center justify-between text-xs text-slate-400 mt-1 num" style={{ fontVariantNumeric: 'tabular-nums' }}>
         <span>{category.min.toLocaleString('he-IL')}</span>
         <span className="text-slate-500">
           חסכן: {category.saver.toLocaleString('he-IL')} · מאוזן: {category.balanced.toLocaleString('he-IL')} · נדיב: {category.generous.toLocaleString('he-IL')}

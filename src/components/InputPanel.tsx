@@ -78,7 +78,7 @@ function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, r
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-1">
-        <label className="text-sm md:text-[15px] text-slate-800 font-semibold min-w-0 flex items-center gap-1.5">
+        <label className="text-sm md:text-base text-slate-800 font-semibold min-w-0 flex items-center gap-1.5">
           {label}
           {help && <HelpTooltip text={help} />}
         </label>
@@ -117,15 +117,15 @@ function NumInput({ label, value, onChange, step = 1000, suffix = '₪', note, r
                 if (focused) setDraft(String(next));
               }
             }}
-            className="num w-24 md:w-28 text-sm md:text-base font-bold outline-none text-left"
+            className="num w-20 md:w-28 text-sm md:text-base font-bold outline-none text-left"
             style={{ background: 'transparent', color: '#221935' }}
             aria-label={label}
           />
           <span className="text-xs font-medium" style={{ color: '#665d7d' }}>{suffix}</span>
         </div>
       </div>
-      {rec && <p className="text-[11px] md:text-xs text-indigo-600 mt-0.5 mr-1 font-medium">💡 {rec}</p>}
-      {note && <p className="text-[11px] md:text-xs text-slate-500 mt-0.5 mr-1">{note}</p>}
+      {rec && <p className="text-xs md:text-xs text-indigo-600 mt-0.5 mr-1 font-medium">💡 {rec}</p>}
+      {note && <p className="text-xs md:text-xs text-slate-500 mt-0.5 mr-1">{note}</p>}
     </div>
   );
 }
@@ -153,7 +153,7 @@ function ClosingCostsPanel({ config, update }: {
           💰 הוצאות נלוות לקנייה
           <HelpTooltip text="כל העלויות מעבר למחיר הבית: מס רכישה (מדרגתי לפי חוק), עו״ד (~0.5% + מע״מ), מתווך (עד 2% + מע״מ), והוצאות נוספות (טאבו, שמאי, הובלה). סה״כ: 4-6% מהמחיר בדירה יחידה." />
         </p>
-        <span className="text-[11px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
+        <span className="text-xs font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
           סה״כ <span className="num">{fmtK(totalClosing)} ₪</span> · {totalPct.toFixed(1)}%
         </span>
       </div>
@@ -161,12 +161,12 @@ function ClosingCostsPanel({ config, update }: {
       {/* Purchase tax — auto, display only */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
-          <label className="text-sm md:text-[15px] text-slate-800 font-semibold flex items-center gap-1.5">
-            מס רכישה <span className="text-[11px] font-normal text-violet-600">(חישוב אוטומטי)</span>
+          <label className="text-sm md:text-base text-slate-800 font-semibold flex items-center gap-1.5">
+            מס רכישה <span className="text-xs font-normal text-violet-600">(חישוב אוטומטי)</span>
             <HelpTooltip text="מס רכישה בישראל לדירה יחידה (2026) — מדרגתי: 0% עד 1.98M, 3.5% עד 2.35M, 5% עד 6.05M, 8% עד 20.18M, 10% מעל. חישוב אוטומטי מהמחיר. לדירה שנייה/משקיעים: 8% על כל הסכום." />
           </label>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-500">({purchaseTaxEffectiveRate.toFixed(2)}%)</span>
+          <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+            <span className="text-xs text-slate-500">({purchaseTaxEffectiveRate.toFixed(2)}%)</span>
             <span className="num text-sm md:text-base font-bold text-violet-700" style={{ fontVariantNumeric: 'tabular-nums' }}>
               {Math.round(purchaseTax).toLocaleString('he-IL')} ₪
             </span>
@@ -214,17 +214,17 @@ function SliderInput({ label, value, onChange, min, max, step = 1, displayValue,
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-sm md:text-[15px] text-slate-700 font-semibold flex items-center gap-1.5">
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <label className="text-sm md:text-base text-slate-700 font-semibold flex items-center gap-1.5">
           {label}
           {help && <HelpTooltip text={help} />}
         </label>
-        <span className="num font-display text-sm md:text-base font-bold gradient-text">{displayValue}</span>
+        <span className="num font-display text-sm md:text-base font-bold gradient-text shrink-0 whitespace-nowrap">{displayValue}</span>
       </div>
       <input type="range" value={value} onChange={e => onChange(Number(e.target.value))}
         min={min} max={max} step={step} />
-      {rec && <p className="text-[11px] md:text-xs text-indigo-500 mt-1.5 mr-1 font-medium">💡 {rec}</p>}
-      {note && <p className="text-[11px] md:text-xs text-slate-400 mt-0.5 mr-1">{note}</p>}
+      {rec && <p className="text-xs md:text-xs text-indigo-500 mt-1.5 mr-1 font-medium">💡 {rec}</p>}
+      {note && <p className="text-xs md:text-xs text-slate-400 mt-0.5 mr-1">{note}</p>}
     </div>
   );
 }
@@ -260,7 +260,7 @@ export function InputPanel({ config, setConfig }: Props) {
   const [expenseSimOpen, setExpenseSimOpen] = useState(false);
 
   return (
-    <div className="widget-card-static p-5 md:p-6 space-y-1 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto w-full">
+    <div className="widget-card-static p-4 md:p-6 space-y-1 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto w-full">
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 mb-2 border-b border-slate-200">
         <div className="relative">
@@ -463,7 +463,7 @@ export function InputPanel({ config, setConfig }: Props) {
           onChange={v => update('assets.liquidPortfolio', v)} step={50000}
           rec="USD + קרנות + money market"
           help="סך הכסף הזמין לשימוש מיידי ללא קנסות: מניות, ETF, קרנות, מט״ח, מזומן, money market. זה התיק שעליו חל שיעור המשיכה בת-קיימא (מוגדר בהנחות שוק). גדל כל שנה בתשואה הריאלית (ברירת מחדל: 4.5% אחרי מס)." />
-        <p className="text-[11px] text-slate-500 mt-1 mr-1">
+        <p className="text-xs text-slate-500 mt-1 mr-1">
           קה״ש מופיעה כעת בנפרד תחת ״יותם״ ו״הדס״ — לכל אחד יתרה וגיל נזילות נפרדים.
         </p>
       </Section>
@@ -489,9 +489,9 @@ export function InputPanel({ config, setConfig }: Props) {
         >
           <span>🧮</span>
           <span>סימולטור הוצאות אישי</span>
-          <span className="text-[11px] font-normal opacity-80">— חישוב מפורט לפי קטגוריות</span>
+          <span className="text-xs font-normal opacity-80">— חישוב מפורט לפי קטגוריות</span>
         </button>
-        <p className="text-[11px] text-slate-500 mt-1 mr-1">
+        <p className="text-xs text-slate-500 mt-1 mr-1">
           כלי עזר — לא מעדכן את המכוון למעלה אוטומטית
         </p>
 
@@ -593,7 +593,7 @@ function HappinessSection({ config, update, setConfig }: {
     <Section title="מדד אושר — העדפות" icon="😊" color="pink">
       {/* Presets */}
       <div>
-        <p className="text-[11px] font-bold text-pink-600 mb-2">
+        <p className="text-xs font-bold text-pink-600 mb-2">
           🎯 מה הכי חשוב לנו
         </p>
         <div className="grid grid-cols-2 gap-1.5">
@@ -606,7 +606,7 @@ function HappinessSection({ config, update, setConfig }: {
 
       {/* Kids birth years */}
       <div className="pt-3 mt-2 border-t border-slate-200">
-        <p className="text-[11px] font-bold text-pink-600 mb-2">
+        <p className="text-xs font-bold text-pink-600 mb-2">
           👶 שנות לידה
         </p>
       </div>
@@ -622,10 +622,10 @@ function HappinessSection({ config, update, setConfig }: {
       {/* Weights */}
       <div className="pt-3 mt-2 border-t border-slate-200">
         <div className="flex items-baseline justify-between mb-2">
-          <p className="text-[11px] font-bold text-pink-600">
+          <p className="text-xs font-bold text-pink-600">
             ⚖️ משקולות (נורמלי לאחוזים)
           </p>
-          <span className="text-[10px] text-slate-500 font-semibold">סה״כ: <span className="num">{sum}</span></span>
+          <span className="text-xs text-slate-500 font-semibold">סה״כ: <span className="num">{sum}</span></span>
         </div>
       </div>
 
@@ -671,15 +671,15 @@ function HappinessWeight({ label, emoji, value, percent, onChange, help }: {
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-sm md:text-[15px] text-slate-700 font-semibold flex items-center gap-1.5">
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <label className="text-sm md:text-base text-slate-700 font-semibold flex items-center gap-1.5">
           <span>{emoji}</span>
           <span>{label}</span>
           <HelpTooltip text={help} />
         </label>
         <span className="flex items-baseline gap-1.5">
           <span className="num font-display text-sm font-bold text-slate-900">{value}</span>
-          <span className="text-[10px] text-pink-600 font-bold num">· {percent}%</span>
+          <span className="text-xs text-pink-600 font-bold num">· {percent}%</span>
         </span>
       </div>
       <input

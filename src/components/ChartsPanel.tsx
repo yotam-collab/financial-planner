@@ -105,7 +105,7 @@ function HappinessRow({ label, emoji, value, color }: {
   return (
     <div className="flex items-center gap-2.5 text-sm">
       <span className="text-sm flex-shrink-0">{emoji}</span>
-      <span className="text-slate-700 flex-shrink-0 w-[9.5rem]" style={{ fontSize: '12px' }}>{label}</span>
+      <span className="text-slate-700 flex-shrink-0 w-[9.5rem]" style={{ fontSize: '0.8rem' }}>{label}</span>
       <div className="flex-1 h-1.5 bg-slate-200/60 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${v}%`, background: color }} />
       </div>
@@ -158,7 +158,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
             <div className="flex items-baseline gap-2">
               <span className="font-display num text-xl md:text-2xl font-extrabold text-slate-900">{d.calendarYear ?? d.age}</span>
             </div>
-            <div className="flex items-center gap-3 text-[11px] mt-1 text-slate-600">
+            <div className="flex items-center gap-3 text-xs mt-1 text-slate-600">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                 יותם · <span className="num font-semibold">{d.yotamAge ?? d.age}</span>
@@ -184,7 +184,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         >
           <div className="flex items-center gap-2 mb-1">
             <span className="text-base">{metricCfg.emoji}</span>
-            <span className="text-[11px] font-bold text-slate-600">
+            <span className="text-xs font-bold text-slate-600">
               {metricCfg.label}
             </span>
           </div>
@@ -197,7 +197,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
                 {Math.round(heroPrimary)}
               </span>
               <span className="text-sm font-bold text-slate-400">/ 100</span>
-              <span className="mr-auto text-[10px] font-bold text-slate-400">
+              <span className="mr-auto text-xs font-bold text-slate-400">
                 {scoreLabel(heroPrimary)}
               </span>
             </div>
@@ -210,13 +210,13 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
                 >
                   {isHeroSigned && heroPositive ? '+' : ''}{heroPrimary.toLocaleString('he-IL')} ₪
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 flex-shrink-0">{primaryLabel}</span>
+                <span className="text-xs font-bold text-slate-400 flex-shrink-0">{primaryLabel}</span>
               </div>
               <div className="flex items-baseline justify-between mt-1 gap-2">
                 <span className="num text-xs font-semibold text-slate-500" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {isHeroSigned && heroSecondary >= 0 ? '+' : ''}{heroSecondary.toLocaleString('he-IL')} ₪
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold flex-shrink-0">{secondaryLabel}</span>
+                <span className="text-xs text-slate-400 font-bold flex-shrink-0">{secondaryLabel}</span>
               </div>
             </>
           )}
@@ -225,7 +225,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         {/* Happiness breakdown — only on happiness metric */}
         {metric === 'happiness' && (
           <div className="mb-3 pb-3 border-b border-slate-200 space-y-1.5">
-            <p className="text-[11px] font-bold text-slate-500 mb-2">
+            <p className="text-xs font-bold text-slate-500 mb-2">
               פירוט רכיבי האושר
             </p>
             <HappinessRow label="זמן עם הילדים" emoji="👨‍👩‍👧‍👦" value={d.happinessTimeWithKids} color="#f43f5e" />
@@ -283,7 +283,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
             ) : (
               <>שווי נקי · <span className="num text-slate-900">{pick(d.netWorth, d.real?.netWorth).toLocaleString('he-IL')} ₪</span></>
             )}
-            <span className="text-[10px] text-slate-400 font-normal mr-1">({primaryLabel})</span>
+            <span className="text-xs text-slate-400 font-normal mr-1">({primaryLabel})</span>
           </p>
           <div className="space-y-2">
             <PortfolioBar label="השקעות" value={pick(d.liquidPortfolio, d.real?.liquidPortfolio)} color="indigo" total={pick(d.netWorth, d.real?.netWorth)} />
@@ -320,7 +320,7 @@ function RowDual({ label, nominal, real, showReal, infl, highlight, dotColor }: 
         <span className="num font-bold text-slate-900 block leading-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
           {primary.toLocaleString('he-IL')} ₪
         </span>
-        <span className="num text-[10px] text-slate-400 leading-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
+        <span className="num text-xs text-slate-400 leading-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
           {secondary.toLocaleString('he-IL')} ₪
         </span>
       </span>
@@ -415,12 +415,12 @@ export function ChartsPanel({ result, config }: Props) {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-2xl">{metricCfg.emoji}</span>
-            <h3 className="font-display text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-900 leading-tight">
+            <h3 className="font-display text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight">
               {metricCfg.label}
               {showReal && <span className="text-slate-400 font-bold text-base md:text-lg"> · ערכי היום</span>}
             </h3>
           </div>
-          <p className="text-sm text-slate-500 font-medium">{metricCfg.description}</p>
+          <p className="text-base text-slate-500 font-medium">{metricCfg.description}</p>
         </div>
 
         {/* Real/Nominal toggle */}
@@ -436,12 +436,12 @@ export function ChartsPanel({ result, config }: Props) {
       </div>
 
       {/* Metric tabs */}
-      <div className="flex flex-wrap gap-2 mb-6 p-1 bg-slate-100 rounded-2xl">
+      <div className="grid grid-cols-2 md:flex md:flex-wrap gap-1 md:gap-2 mb-6 p-1 bg-slate-100 rounded-2xl">
         {(Object.keys(METRICS) as MetricType[]).map(m => (
           <button
             key={m}
             onClick={() => setMetric(m)}
-            className={`flex-1 min-w-[90px] md:min-w-[120px] inline-flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-sm md:text-[15px] font-bold transition-all duration-200 cursor-pointer ${
+            className={`flex-1 last:col-span-2 inline-flex items-center justify-center gap-1.5 px-2 xl:px-4 py-2 md:py-2.5 rounded-xl whitespace-nowrap text-sm md:text-base font-bold transition-all duration-200 cursor-pointer ${
               metric === m
                 ? 'bg-white text-indigo-700 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
@@ -454,8 +454,8 @@ export function ChartsPanel({ result, config }: Props) {
       </div>
 
       {/* Chart */}
-      <div className="w-full">
-        <ResponsiveContainer width="100%" height={420}>
+      <div className="w-full h-[420px] lg:h-[560px]">
+        <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
             margin={{ top: 42, right: 0, left: 0, bottom: 8 }}
@@ -476,16 +476,16 @@ export function ChartsPanel({ result, config }: Props) {
             <CartesianGrid strokeDasharray="2 4" stroke="rgba(79, 70, 229, 0.08)" vertical={false} />
             <XAxis
               dataKey="calendarYear"
-              tick={{ fontSize: 12, fill: '#665d7d', fontWeight: 600 }}
+              tick={{ fontSize: 14, fill: '#665d7d', fontWeight: 600 }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              tick={{ fontSize: 12, fill: '#665d7d', fontWeight: 600 }}
+              tick={{ fontSize: 14, fill: '#665d7d', fontWeight: 600 }}
               tickLine={false}
               axisLine={false}
               tickFormatter={(v: number) => metricCfg.isScore ? String(Math.round(v)) : fmtK(v)}
-              width={46}
+              width={54}
               domain={metricCfg.isScore
                 ? [0, 100]
                 : [
@@ -510,7 +510,7 @@ export function ChartsPanel({ result, config }: Props) {
                     stroke="#4a3294"
                     strokeWidth={2}
                     strokeDasharray="6 4"
-                    label={{ value: `${zinukYear}`, position: 'top', fontSize: 12, fill: '#4a3294', fontWeight: 700 }}
+                    label={{ value: `${zinukYear}`, position: 'top', fontSize: 14, fill: '#4a3294', fontWeight: 700 }}
                   />
                   {config.fullRetirementAge <= config.endAge && (
                     <ReferenceLine
@@ -518,7 +518,7 @@ export function ChartsPanel({ result, config }: Props) {
                       stroke="#e88d2a"
                       strokeWidth={2}
                       strokeDasharray="6 4"
-                      label={{ value: `${fullRetYear}`, position: 'top', fontSize: 12, fill: '#e88d2a', fontWeight: 700 }}
+                      label={{ value: `${fullRetYear}`, position: 'top', fontSize: 14, fill: '#e88d2a', fontWeight: 700 }}
                     />
                   )}
                   {retYear != null && metric === 'monthlyBalance' && retYear !== zinukYear && (
@@ -527,7 +527,7 @@ export function ChartsPanel({ result, config }: Props) {
                       stroke="#10b981"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `${retYear}`, position: 'insideTopLeft', fontSize: 12, fill: '#10b981', fontWeight: 800 }}
+                      label={{ value: `${retYear}`, position: 'insideTopLeft', fontSize: 14, fill: '#10b981', fontWeight: 800 }}
                     />
                   )}
                   {retYear != null && metric === 'monthlyBalance' && retYear === zinukYear && (
@@ -536,7 +536,7 @@ export function ChartsPanel({ result, config }: Props) {
                       stroke="#10b981"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `+ איזון`, position: 'insideBottomLeft', fontSize: 11, fill: '#10b981', fontWeight: 800 }}
+                      label={{ value: `+ איזון`, position: 'insideBottomLeft', fontSize: 13, fill: '#10b981', fontWeight: 800 }}
                     />
                   )}
                   {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear !== fullRetYear && (
@@ -545,7 +545,7 @@ export function ChartsPanel({ result, config }: Props) {
                       stroke="#8457d9"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `${fullRetirementYear}`, position: 'insideBottom', fontSize: 12, fill: '#8457d9', fontWeight: 800 }}
+                      label={{ value: `${fullRetirementYear}`, position: 'insideBottom', fontSize: 14, fill: '#8457d9', fontWeight: 800 }}
                     />
                   )}
                   {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear === fullRetYear && (
@@ -554,7 +554,7 @@ export function ChartsPanel({ result, config }: Props) {
                       stroke="#8457d9"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `+ איזון לפרישה`, position: 'insideBottom', fontSize: 11, fill: '#8457d9', fontWeight: 800 }}
+                      label={{ value: `+ איזון לפרישה`, position: 'insideBottom', fontSize: 13, fill: '#8457d9', fontWeight: 800 }}
                     />
                   )}
                 </>
@@ -590,8 +590,8 @@ export function ChartsPanel({ result, config }: Props) {
                     ...data.map(d => Math.abs((d as any)[dataKey] ?? 0))
                   );
                   if (Math.abs(v) < maxAbs * 0.015) return null;
-                  // A label needs ~30px; bars are ~80% of their band, so skip labels to fit.
-                  if (index % Math.max(1, Math.ceil(30 / ((width || 1) * 1.25))) !== 0) return null;
+                  // A label needs ~36px; bars are ~80% of their band, so skip labels to fit.
+                  if (index % Math.max(1, Math.ceil(36 / ((width || 1) * 1.25))) !== 0) return null;
                   const cx = (x || 0) + (width || 0) / 2;
                   const isPositive = v >= 0;
                   const cy = isPositive ? (y || 0) - 6 : (y || 0) + (height || 0) + 12;
@@ -601,7 +601,7 @@ export function ChartsPanel({ result, config }: Props) {
                       y={cy}
                       textAnchor="middle"
                       fill={isPositive ? '#544b6b' : '#9f1239'}
-                      fontSize={10}
+                      fontSize={12}
                       fontWeight={700}
                       style={{ pointerEvents: 'none', fontVariantNumeric: 'tabular-nums' }}
                     >
@@ -623,7 +623,7 @@ export function ChartsPanel({ result, config }: Props) {
           {metric === 'monthlyBalance' && <LegendItem color="#10b981">איזון מזינוק</LegendItem>}
           {metric === 'monthlyBalance' && fullRetirementYear != null && <LegendItem color="#8457d9">איזון לפרישה מלאה</LegendItem>}
         </div>
-        <span className="text-[11px] md:text-xs text-slate-400">💡 לחץ על נקודה בגרף לפירוט מלא</span>
+        <span className="text-xs md:text-xs text-slate-400">💡 לחץ על נקודה בגרף לפירוט מלא</span>
       </div>
 
       {/* Detail modal */}

@@ -1,0 +1,247 @@
+<!doctype html>
+<html
+  lang="he"
+  dir="rtl"
+  data-composition-variables='[{"id":"title","type":"string","label":"Title","default":"תוכנית אושר משפחתית"},{"id":"eyebrow","type":"string","label":"Eyebrow","default":"התכנון הפיננסי של יותם והדס"},{"id":"photo","type":"string","label":"Photo","default":"assets/couple.jpg"}]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Frank Ruhl Libre";
+        src: url("assets/fonts/FrankRuhlLibre-hebrew.woff2") format("woff2");
+        font-weight: 500 900;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-hebrew.woff2") format("woff2");
+        font-weight: 300 900;
+      }
+      /* Layout is in % of the frame and --u (1% of the short side), so render.sh can
+         produce the portrait cut by swapping only the two frame dimensions. */
+      :root {
+        --u: 10.8px;
+        --ink: #221935;
+        --horizon: 68%;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--ink);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .layer {
+        position: absolute;
+        inset: 0;
+      }
+      #night-fill {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, #1b1330 0%, #2a1b52 60%, #3a2670 100%);
+      }
+      /* the site's .sunset-sky, re-centred on the horizon */
+      #dawn-fill {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(130% 100% at 50% 74%, #f6b04e 0%, #ea6f6a 22%, #b0437f 42%, #5b3391 66%, #2a1b52 94%);
+      }
+      #sun-body {
+        position: absolute;
+        left: 50%;
+        top: 40%;
+        width: 0;
+        height: 0;
+      }
+      #sun-halo,
+      #sun-rays,
+      #sun-ring {
+        position: absolute;
+        border-radius: 50%;
+      }
+      #sun-halo {
+        width: calc(var(--u) * 84);
+        height: calc(var(--u) * 84);
+        left: calc(var(--u) * -42);
+        top: calc(var(--u) * -42);
+        background: radial-gradient(circle, rgba(255, 226, 160, 0.85) 0%, rgba(246, 176, 78, 0.45) 26%, rgba(234, 111, 106, 0.16) 48%, rgba(234, 111, 106, 0) 68%);
+      }
+      #sun-rays {
+        width: calc(var(--u) * 150);
+        height: calc(var(--u) * 150);
+        left: calc(var(--u) * -75);
+        top: calc(var(--u) * -75);
+        background: repeating-conic-gradient(from 0deg, rgba(255, 232, 180, 0.2) 0deg 5deg, rgba(255, 232, 180, 0) 5deg 15deg);
+        -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 62%);
+        mask-image: radial-gradient(circle, #000 12%, transparent 62%);
+      }
+      #sun-ring {
+        width: calc(var(--u) * 30);
+        height: calc(var(--u) * 30);
+        left: calc(var(--u) * -15);
+        top: calc(var(--u) * -15);
+        padding: calc(var(--u) * 0.55);
+        background: linear-gradient(160deg, #ffe2a0, #f6b04e 45%, #d9487f);
+      }
+      #photo {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      #ground-fill {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: var(--horizon);
+        bottom: 0;
+        background: linear-gradient(180deg, var(--ink) 0%, #170f26 100%);
+      }
+      #bars-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(100% - var(--horizon));
+        display: flex;
+        direction: ltr; /* years run left to right, as in the site's chart */
+        align-items: flex-end;
+        gap: 0.5%;
+        padding: 0 1%;
+      }
+      #bars-row i {
+        flex: 1;
+        display: block;
+        background: var(--ink);
+        border-radius: calc(var(--u) * 0.35) calc(var(--u) * 0.35) 0 0;
+        /* rim light from the sun behind */
+        box-shadow: inset 0 calc(var(--u) * 0.28) 0 rgba(255, 214, 150, 0.6);
+      }
+      #words {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 74%;
+        text-align: center;
+        color: #fff;
+      }
+      #eyebrow {
+        font-family: "Heebo", sans-serif;
+        font-weight: 500;
+        font-size: calc(var(--u) * 2.7);
+        color: rgba(255, 255, 255, 0.72);
+      }
+      #title {
+        font-family: "Frank Ruhl Libre", serif;
+        font-weight: 900;
+        font-size: calc(var(--u) * 7);
+        line-height: 1.25;
+        white-space: nowrap;
+      }
+      #title span {
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="3.4" data-width="1920" data-height="1080">
+      <div id="night" class="clip layer" data-start="0" data-duration="3.4" data-track-index="0" style="z-index: 1">
+        <div id="night-fill"></div>
+      </div>
+      <div id="dawn" class="clip layer" data-start="0" data-duration="3.4" data-track-index="1" style="z-index: 2">
+        <div id="dawn-fill"></div>
+      </div>
+      <div id="sun" class="clip layer" data-start="0" data-duration="3.4" data-track-index="2" style="z-index: 3" data-layout-allow-overflow>
+        <div id="sun-body">
+          <div id="sun-rays"></div>
+          <div id="sun-halo"></div>
+          <div id="sun-ring"><img id="photo" src="assets/couple.jpg" data-var-src="photo" alt="" /></div>
+        </div>
+      </div>
+      <div id="ground" class="clip layer" data-start="0" data-duration="3.4" data-track-index="3" style="z-index: 4">
+        <div id="ground-fill"></div>
+      </div>
+      <div id="bars" class="clip layer" data-start="0" data-duration="3.4" data-track-index="4" style="z-index: 5">
+        <div id="bars-row">
+          <i style="height: calc(var(--u) * 3)"></i>
+          <i style="height: calc(var(--u) * 3.4)"></i>
+          <i style="height: calc(var(--u) * 3.8)"></i>
+          <i style="height: calc(var(--u) * 4.3)"></i>
+          <i style="height: calc(var(--u) * 4.8)"></i>
+          <i style="height: calc(var(--u) * 1.2)"></i>
+          <i style="height: calc(var(--u) * 1)"></i>
+          <i style="height: calc(var(--u) * 0.9)"></i>
+          <i style="height: calc(var(--u) * 0.9)"></i>
+          <i style="height: calc(var(--u) * 1)"></i>
+          <i style="height: calc(var(--u) * 1.1)"></i>
+          <i style="height: calc(var(--u) * 1.3)"></i>
+          <i style="height: calc(var(--u) * 4)"></i>
+          <i style="height: calc(var(--u) * 4.6)"></i>
+          <i style="height: calc(var(--u) * 7.5)"></i>
+          <i style="height: calc(var(--u) * 8.2)"></i>
+          <i style="height: calc(var(--u) * 9)"></i>
+          <i style="height: calc(var(--u) * 9.8)"></i>
+          <i style="height: calc(var(--u) * 10.8)"></i>
+          <i style="height: calc(var(--u) * 12)"></i>
+          <i style="height: calc(var(--u) * 13.2)"></i>
+          <i style="height: calc(var(--u) * 14.6)"></i>
+          <i style="height: calc(var(--u) * 16)"></i>
+          <i style="height: calc(var(--u) * 17.6)"></i>
+          <i style="height: calc(var(--u) * 19.2)"></i>
+          <i style="height: calc(var(--u) * 20.8)"></i>
+          <i style="height: calc(var(--u) * 22.4)"></i>
+          <i style="height: calc(var(--u) * 24)"></i>
+        </div>
+      </div>
+      <div id="text" class="clip layer" data-start="0" data-duration="3.4" data-track-index="5" style="z-index: 6">
+        <div id="words">
+          <p id="eyebrow" data-var-text="eyebrow">התכנון הפיננסי של יותם והדס</p>
+          <h1 id="title" data-var-text="title">תוכנית אושר משפחתית</h1>
+        </div>
+      </div>
+    </div>
+    <script>
+      const root = document.getElementById("root");
+      const H = root.offsetHeight;
+      const u = Math.min(root.offsetWidth, H) / 100;
+
+      // one span per word so the title can land word by word
+      const title = document.getElementById("title");
+      title.innerHTML = title.textContent.trim().split(/\s+/).map((w) => "<span>" + w + "</span>").join(" ");
+
+      const tl = gsap.timeline({ paused: true });
+      // night floods into sunset while the sun (the family) rises from behind the plan
+      tl.fromTo("#dawn-fill", { opacity: 0 }, { opacity: 1, duration: 1.4, ease: "power2.inOut" }, 0.1);
+      tl.fromTo("#sun-body", { y: 0.28 * H + 18 * u }, { y: 0, duration: 2.2, ease: "expo.out" }, 0.15);
+      tl.fromTo("#sun-rays", { rotation: 0, opacity: 0 }, { rotation: 15, opacity: 1, duration: 3.4, ease: "none" }, 0);
+      tl.fromTo(
+        "#bars-row i",
+        { scaleY: 0, transformOrigin: "50% 100%" },
+        { scaleY: 1, duration: 0.7, ease: "power4.out", stagger: 0.035 },
+        0.35,
+      );
+      tl.fromTo("#eyebrow", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 0.95);
+      tl.fromTo(
+        "#title span",
+        { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.34, ease: "power2.out", stagger: 0.1 },
+        1.1,
+      );
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
