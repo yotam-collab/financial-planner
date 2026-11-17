@@ -672,8 +672,10 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
     const hEq = ownsHome ? Math.max(0, homeVal - mortBal) : 0;
     const orAkivaEq = assets.orAkivaKeep ? Math.max(0, orAkivaValue - orAkivaMortBal) : 0;
+    // No reset to 0: a shortfall the portfolio can't cover stays on the books as debt,
+    // so later surpluses repay it first instead of wealth rebuilding from a clean slate.
+    // shortcut: debt compounds at the portfolio's return rate, upgrade to a loan rate if depleted scenarios need precision
     const dep = liquid <= 0;
-    if (dep) liquid = 0;
     const yPenNW = yotamPensionActive ? 0 : yotamPension;
     const hPenNW = hadasPensionActive ? 0 : hadasPension;
     const totalPensionNW = yPenNW + hPenNW;

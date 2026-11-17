@@ -124,7 +124,17 @@ describe('Edge cases', () => {
     c.income.hadasNetIncomePostZinuk = 0;
     const r = simulate(c);
     expect(r.years).toHaveLength(52);
-    r.years.filter(y => y.isDepleted).forEach(y => expect(y.liquidPortfolio).toBe(0));
+    r.years.filter(y => y.isDepleted).forEach(y => expect(y.liquidPortfolio).toBeLessThanOrEqual(0));
+  });
+  it('a deficit after the portfolio runs out is carried as debt, not forgiven', () => {
+    const c = createDefaultConfig();
+    c.expenses.monthlyNonHousingExpenses = 100_000;
+    c.income.yotamNetIncomePostZinuk = 0;
+    c.income.hadasNetIncomePostZinuk = 0;
+    const { years } = simulate(c);
+    const i = years.findIndex(y => y.isDepleted);
+    expect(years[i + 1].annualCashflow).toBeLessThan(0);
+    expect(years[i + 1].liquidPortfolio).toBeLessThan(years[i].liquidPortfolio);
   });
 
   it('keren merges at 47', () => {
