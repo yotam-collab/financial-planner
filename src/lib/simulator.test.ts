@@ -340,3 +340,24 @@ describe("Mother's contribution for the unit's rent", () => {
     expect(base.years[0].monthlyRentalIncomeFromUnit).toBeGreaterThan(0);
   });
 });
+
+describe('what the screen shows adds up', () => {
+  const base = createDefaultConfig();
+  const configs = [
+    base,
+    { ...base, zinukEndAge: 44, assets: { ...base.assets, orAkivaKeep: true } },
+    { ...base, zinukEndAge: 60, pensionStartAge: 60, hadasPensionStartAge: 60, housePurchaseYear: null },
+  ];
+  it('income rows sum to the total, and income minus expenses is the cashflow', () => {
+    for (const c of configs) for (const y of simulate(c).years) {
+      const rows = y.monthlyZinukIncome + y.monthlyAltIncome - y.monthlyPensionContribution + y.monthlyPensionIncome
+        + y.monthlyRentalIncomeFromUnit + y.monthlySolarIncome + y.monthlyOrAkivaNet;
+      expect(Math.abs(rows + y.monthly4pctWithdrawal - y.monthlySustainableIncome)).toBeLessThanOrEqual(4);
+      expect(Math.abs((rows - y.monthlyExpenses) * 12 - y.annualCashflow)).toBeLessThanOrEqual(60);
+    }
+  });
+  it('reports the mortgage payment in every year it is paid', () => {
+    const c = { ...base, housePurchaseYear: 1 };
+    expect(simulate(c).years.filter(y => y.monthlyMortgagePayment > 0).length).toBe(c.house.mortgageTerm);
+  });
+});

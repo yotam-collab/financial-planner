@@ -531,6 +531,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // Owners also pay upkeep a renter doesn't (repairs, building insurance), CPI-linked.
     const mHousing = ownsHome ? mortPayment + cpi * (house.monthlyMaintenance ?? 0) : nomRent;
     const mExp = nomNH + mHousing;
+    const mortPaid = ownsHome ? mortPayment : 0; // mortPayment is zeroed at the end of the final paying year
     // Sustainable-withdrawal reference (configurable; Morningstar 2025: ~3.0-3.3%
     // for a 40-year horizon, classic Bengen 4% for 30 years)
     const swr = market.withdrawalRate ?? 0.04;
@@ -697,7 +698,7 @@ function runCore(config: ScenarioConfig): YearResult[] {
       pension: Math.round(totalPensionNW),
       monthlyPensionPayout: Math.round(totalPensionPayout),
       homeEquity: Math.round(hEq), mortgageBalance: Math.round(mortBal),
-      monthlyMortgagePayment: Math.round(mortPayment), homeValue: Math.round(homeVal),
+      monthlyMortgagePayment: Math.round(mortPaid), homeValue: Math.round(homeVal),
       netWorth: Math.round(nw),
       annualIncome: Math.round(mSustainable * 12),
       annualExpenses: Math.round(mExp * 12),
@@ -710,6 +711,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
       monthlyAltIncome: Math.round(mAlt),
       monthlyRentalIncomeFromUnit: Math.round(nomRentalUnit),
       monthlySolarIncome: Math.round(nomSolar),
+      monthlyOrAkivaNet: Math.round(mOrAkivaNet),
+      monthlyPensionContribution: Math.round(yotamIncome + hadasIncome - totalSpendable),
       yotamMonthlyIncome: Math.round(yotamIncome),
       hadasMonthlyIncome: Math.round(hadasIncome),
       yotamPensionPayoutMonthly: Math.round(yotamPensionPayout),

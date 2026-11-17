@@ -44,7 +44,8 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
   const totalEarnedIncome = (y.yotamMonthlyIncome ?? 0) + (y.hadasMonthlyIncome ?? 0);
   const totalPassiveIncome = y.monthlyRentalIncomeFromUnit + y.monthlySolarIncome;
   const totalPension = y.monthlyPensionIncome;
-  const totalAllIncome = totalEarnedIncome + totalPassiveIncome + totalPension;
+  // Every row below is in this sum, so the surplus equals what the simulation moves in or out of savings
+  const totalAllIncome = totalEarnedIncome - y.monthlyPensionContribution + totalPassiveIncome + y.monthlyOrAkivaNet + totalPension;
   const cashSurplus = totalAllIncome - y.monthlyExpenses;
 
   const liquidTotal = y.liquidPortfolio;
@@ -102,7 +103,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               {totalEarnedIncome > 0 && (
                 <>
                   <SectionRow label="הכנסה מעבודה" value={totalEarnedIncome} dotColor="bg-emerald-500"
-                    help="הכנסה נטו חודשית משני בני הזוג (אחרי מס, ביטוח לאומי, בריאות, הפקדות פנסיה). מוצמד למדד כל שנה. נכנס אוטומטית לתיק הנזיל אם לא מנוצל." />
+                    help="הכנסה נטו חודשית משני בני הזוג (אחרי מס, ביטוח לאומי ובריאות). הפקדות לפנסיה שמשולמות מתוך הנטו מופיעות בשורה נפרדת. מוצמד למדד כל שנה. נכנס אוטומטית לתיק הנזיל אם לא מנוצל." />
                   {y.yotamMonthlyIncome > 0 && (
                     <SubRow label={y.phase === 'zinuk' ? 'יותם · זינוק' : 'יותם · חלופית'} value={y.yotamMonthlyIncome} />
                   )}
@@ -110,6 +111,16 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
                     <SubRow label={y.phase === 'zinuk' ? 'הדס · זינוק' : 'הדס · חלופית'} value={y.hadasMonthlyIncome} />
                   )}
                 </>
+              )}
+
+              {y.monthlyPensionContribution > 0 && (
+                <SectionRow label="הפקדה לפנסיה מתוך הנטו" value={-y.monthlyPensionContribution} dotColor="bg-slate-400"
+                  help="הפקדות לפנסיה שמשולמות מתוך ההכנסה נטו שמופיעה למעלה: הדס כעוסקת מורשית, ושניכם אחרי זינוק. הכסף עובר לקרן הפנסיה ולא זמין להוצאות." />
+              )}
+
+              {y.monthlyOrAkivaNet !== 0 && (
+                <SectionRow label="דירת אור עקיבא, נטו" value={y.monthlyOrAkivaNet} dotColor="bg-cyan-500"
+                  help="שכר הדירה אחרי מס, פחות המשכנתא והוצאות האחזקה. שלילי כל עוד המשכנתא גבוהה מהשכירות." />
               )}
 
               {/* Pension */}
@@ -154,11 +165,11 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
               <SectionRow label="הוצאות (ללא דיור)" value={y.monthlyNonHousingExpense} dotColor="bg-rose-500"
                 help="הוצאות שוטפות מוצמדות למדד: אוכל, רכב+דלק, חינוך+חוגים, ביטוחים, חופשות, טלפון/אינטרנט, בריאות. לפי למ״ס: משפחה ישראלית ממוצעת ~17K, עם 4 ילדים upper-middle 33-46K." />
               <SectionRow
-                label={y.housingStatus === 'owning' ? `משכנתא · תשלום חודשי` : 'שכירות'}
+                label={y.housingStatus === 'owning' ? 'משכנתא ואחזקת הבית' : 'שכירות'}
                 value={y.monthlyHousingExpense}
                 dotColor="bg-rose-400"
                 help={y.housingStatus === 'owning'
-                  ? "תשלום משכנתא חודשי (קרן+ריבית). קבוע בערכים נומינליים — ריאלית יורד כל שנה עם האינפלציה. נעלם אחרי סוף תקופת המשכנתא. לא כולל ארנונה/אחזקה."
+                  ? "תשלום משכנתא חודשי (קרן+ריבית). קבוע בערכים נומינליים — ריאלית יורד כל שנה עם האינפלציה. נעלם אחרי סוף תקופת המשכנתא. כולל את אחזקת הבית, שמוצמדת למדד."
                   : "שכר דירה חודשי מוצמד למדד. נעלם מהיום שקונים בית (מוחלף במשכנתא)."} />
               <div className="px-4 md:px-5 py-3.5 bg-rose-50 border-t border-rose-200 flex items-center justify-between">
                 <span className="font-display text-base md:text-lg font-extrabold text-rose-800">סה״כ הוצאות</span>

@@ -177,6 +177,10 @@ export interface YearResult {
   monthlyAltIncome: number;
   monthlyRentalIncomeFromUnit: number;
   monthlySolarIncome: number;
+  /** Or Akiva apartment: rent after tax, mortgage and upkeep. Negative while the mortgage outweighs the rent */
+  monthlyOrAkivaNet: number;
+  /** Pension deposits paid out of the net income shown in the income rows */
+  monthlyPensionContribution: number;
   // Per-person income breakdown for detail view
   yotamMonthlyIncome: number;   // Yotam's current earned income this year
   hadasMonthlyIncome: number;   // Hadas's current earned income this year

@@ -137,6 +137,8 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
     const secondaryLabel = showReal ? 'נומינלי' : 'בערכי היום';
 
     const balance = pick(d.monthlyBalance, d.real?.monthlyBalance);
+    // Expenses are never zero, so this ratio is always the year's deflator
+    const toReal = d.annualExpenses ? d.real.annualExpenses / d.annualExpenses : 1;
 
     // HERO values — match the current chart metric
     const metricCfg = METRICS[metric];
@@ -242,27 +244,33 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
         {/* Income breakdown */}
         <div className="space-y-1.5 text-sm">
           {d.phase === 'zinuk' && d.monthlyZinukIncome > 0 && (
-            <RowDual label="הכנסה מזינוק" nominal={d.monthlyZinukIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-indigo-500" />
+            <RowDual label="הכנסה מזינוק" nominal={d.monthlyZinukIncome} showReal={showReal} infl={toReal} dotColor="bg-indigo-500" />
           )}
           {d.phase === 'altIncome' && d.monthlyAltIncome > 0 && (
-            <RowDual label="הכנסה חלופית" nominal={d.monthlyAltIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-emerald-500" />
+            <RowDual label="הכנסה חלופית" nominal={d.monthlyAltIncome} showReal={showReal} infl={toReal} dotColor="bg-emerald-500" />
+          )}
+          {d.monthlyPensionContribution > 0 && (
+            <RowDual label="הפקדה לפנסיה מהנטו" nominal={-d.monthlyPensionContribution} showReal={showReal} infl={toReal} dotColor="bg-slate-400" />
+          )}
+          {d.monthlyOrAkivaNet !== 0 && (
+            <RowDual label="דירת אור עקיבא, נטו" nominal={d.monthlyOrAkivaNet} showReal={showReal} infl={toReal} dotColor="bg-cyan-500" />
           )}
           <RowDual label="פוטנציאל משיכה" nominal={d.monthly4pctWithdrawal} real={d.real?.monthly4pctWithdrawal} showReal={showReal} dotColor="bg-indigo-600" />
           {d.monthlyPensionIncome > 0 && (
-            <RowDual label="קצבת פנסיה" nominal={d.monthlyPensionIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-amber-500" />
+            <RowDual label="קצבת פנסיה" nominal={d.monthlyPensionIncome} showReal={showReal} infl={toReal} dotColor="bg-amber-500" />
           )}
           {d.monthlyRentalIncomeFromUnit > 0 && (
-            <RowDual label="השכרת יחידה" nominal={d.monthlyRentalIncomeFromUnit} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-teal-500" />
+            <RowDual label="השכרת יחידה" nominal={d.monthlyRentalIncomeFromUnit} showReal={showReal} infl={toReal} dotColor="bg-teal-500" />
           )}
           {d.monthlySolarIncome > 0 && (
-            <RowDual label="הכנסה מסולארי" nominal={d.monthlySolarIncome} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} dotColor="bg-yellow-500" />
+            <RowDual label="הכנסה מסולארי" nominal={d.monthlySolarIncome} showReal={showReal} infl={toReal} dotColor="bg-yellow-500" />
           )}
         </div>
 
         {/* Sustainable + expenses */}
         <div className="mt-3 pt-3 border-t border-slate-200 space-y-1.5 text-sm">
           <RowDual label="סה״כ ברת-קיימא" nominal={d.monthlySustainableIncome} real={d.real?.monthlySustainableIncome} showReal={showReal} highlight dotColor="bg-violet-500" />
-          <RowDual label="הוצאות" nominal={d.monthlyExpenses} showReal={showReal} infl={d.real?.monthly4pctWithdrawal && d.monthly4pctWithdrawal ? d.real.monthly4pctWithdrawal / d.monthly4pctWithdrawal : 1} highlight dotColor="bg-rose-500" />
+          <RowDual label="הוצאות" nominal={d.monthlyExpenses} showReal={showReal} infl={toReal} highlight dotColor="bg-rose-500" />
           {d.monthlyDraw > 0 && (
             <RowDual label={d.liquidPortfolio < 0 ? 'נוסף לחוב' : 'נמשך מהחסכונות'} nominal={d.monthlyDraw} real={d.realMonthlyDraw} showReal={showReal} dotColor="bg-rose-400" />
           )}
@@ -465,10 +473,9 @@ export function ChartsPanel({ result, config }: Props) {
             data={data}
             margin={{ top: 42, right: 0, left: 0, bottom: 8 }}
             onClick={(e: any) => {
-              if (e?.activePayload?.[0]?.payload) {
-                const clicked = e.activePayload[0].payload as YearResult;
-                setSelectedYear(clicked);
-              }
+              // Recharts 3 reports the clicked column by index; activePayload no longer exists
+              const i = e?.activeTooltipIndex;
+              if (i != null && data[Number(i)]) setSelectedYear(data[Number(i)]);
             }}
             style={{ cursor: 'pointer' }}
           >
