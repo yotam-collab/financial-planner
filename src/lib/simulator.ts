@@ -441,7 +441,13 @@ function runCore(config: ScenarioConfig): YearResult[] {
 
     // Inflation-adjusted monthly values
     const nomRent = inflate(expenses.monthlyRent, market.inflationRate, ye);
-    const nomNH = inflate(expenses.monthlyNonHousingExpenses, market.inflationRate, ye);
+    // Held flat from 85: late-life health and care costs offset the decline (the "spending smile").
+    const realDecline = Math.pow(1 - expenses.realDeclineRate,
+      Math.max(0, Math.min(age, 85) - expenses.realDeclineStartAge));
+    const nomNH = inflate(
+      (age < zinukEndAge ? expenses.monthlyNonHousingExpenses
+        : expenses.monthlyNonHousingExpensesPostZinuk ?? expenses.monthlyNonHousingExpenses) * realDecline,
+      market.inflationRate, ye);
 
     // Yotam's income: zinuk → post-zinuk → 0 at his full retirement
     let yotamIncome = 0;

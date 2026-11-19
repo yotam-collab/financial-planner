@@ -53,6 +53,9 @@ export const DEFAULT_INCOME: IncomeConfig = {
 
 export const DEFAULT_EXPENSES: ExpenseConfig = {
   monthlyNonHousingExpenses: 26_000,
+  // Blanchett 2014 / CRR: real spending falls ~1% a year once the kids are out; 58 = oldest child is ~21
+  realDeclineRate: 0.01,
+  realDeclineStartAge: 58,
   monthlyRent: 9_500,
 };
 

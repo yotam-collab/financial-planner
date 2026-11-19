@@ -364,6 +364,38 @@ describe("Mother's money in funds with their own return", () => {
   });
 });
 
+describe('expenses after zinuk', () => {
+  it('apply from the year zinuk ends, and change nothing when unset', () => {
+    const base = simulate(createDefaultConfig()).years;
+    const c = createDefaultConfig();
+    c.expenses.monthlyNonHousingExpensesPostZinuk = c.expenses.monthlyNonHousingExpenses / 2;
+    const r = simulate(c).years;
+    r.forEach((y, i) => {
+      const expected = base[i].monthlyNonHousingExpense * (y.age < c.zinukEndAge ? 1 : 0.5);
+      expect(Math.abs(y.monthlyNonHousingExpense - expected)).toBeLessThanOrEqual(1);
+    });
+    expect(r.some(y => y.age < c.zinukEndAge) && r.some(y => y.age >= c.zinukEndAge)).toBe(true);
+  });
+});
+
+describe('real decline of expenses', () => {
+  it('starts after the start age, compounds yearly and stops at 85', () => {
+    const flat = createDefaultConfig();
+    flat.expenses.realDeclineRate = 0;
+    const c = createDefaultConfig();
+    c.expenses.realDeclineRate = 0.02;
+    c.expenses.realDeclineStartAge = 50;
+    const base = simulate(flat).years;
+    const ratio = (age: number) => {
+      const i = base.findIndex(y => y.age === age);
+      return simulate(c).years[i].monthlyNonHousingExpense / base[i].monthlyNonHousingExpense;
+    };
+    expect(ratio(50)).toBeCloseTo(1, 3);
+    expect(ratio(60)).toBeCloseTo(0.98 ** 10, 3);
+    expect(ratio(90)).toBeCloseTo(0.98 ** 35, 3);
+  });
+});
+
 describe('what the screen shows adds up', () => {
   const base = createDefaultConfig();
   const configs = [

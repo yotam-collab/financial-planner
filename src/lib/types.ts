@@ -53,7 +53,13 @@ export interface IncomeConfig {
 }
 
 export interface ExpenseConfig {
+  /** Today's values; applies until zinuk ends (and after it too, unless the next field is set) */
   monthlyNonHousingExpenses: number;
+  /** Today's values, from the year zinuk ends; unset = same as before */
+  monthlyNonHousingExpensesPostZinuk?: number;
+  /** Yearly real decline of non-housing expenses from realDeclineStartAge (0.01 = 1%); 0 = none */
+  realDeclineRate: number;
+  realDeclineStartAge: number;
   monthlyRent: number;
 }
 

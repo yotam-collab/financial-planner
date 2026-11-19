@@ -391,7 +391,9 @@ export function InputPanel({ config, setConfig }: Props) {
               value={config.house.rentalIncomeFromUnit}
               onChange={v => update('house.rentalIncomeFromUnit', v)} step={500}
               rec="3,000-5,000 ₪ — יחידת דיור בפרדס חנה"
-              note="0 = אין יחידה · מוצמד למדד · מס שכ״ד מחושב אוטומטית"
+              note={motherAmt > 0
+                ? `עובר לאמא ב-${config.house.motherRentYears ?? 20} השנים הראשונות — משפיע על הגרף רק אחריהן`
+                : '0 = אין יחידה · מוצמד למדד · מס שכ״ד מחושב אוטומטית'}
               help="הכנסה מהשכרת יחידה נפרדת בבית (מרתף, קומה, וכו׳), ברוטו. פטור ממס עד 5,654 ₪/חודש (2026, צמוד). מעל התקרה — המודל מחשב אוטומטית את המס לפי המסלול הזול (10% קבוע או פטור חלקי) ומקזז. מוצמד למדד כל שנה." />
             <NumInput label="תחזוקת בית (חודשי)"
               value={config.house.monthlyMaintenance ?? 0}
@@ -488,11 +490,26 @@ export function InputPanel({ config, setConfig }: Props) {
       </Section>
 
       <Section title="הוצאות" icon="📊" color="rose">
-        <NumInput label="הוצאות (ללא דיור)" value={config.expenses.monthlyNonHousingExpenses}
+        <NumInput label="הוצאות בתקופת זינוק (ללא דיור)" value={config.expenses.monthlyNonHousingExpenses}
           onChange={v => update('expenses.monthlyNonHousingExpenses', v)} step={1000}
           rec="22,000-26,000 ₪ — משפחה של 6 upper-middle (למ״ס 2023, מעודכן 2026)"
           note="כולל: אוכל, רכב, חוגים, ביטוחים, חופשות · לא כולל חסכונות"
           help="הוצאות חודשיות ללא דיור (שכ״ד/משכנתא/אחזקת בית). לפי למ״ס 2023: ממוצע משק בית ישראלי 14,823 ₪ (3.1 נפשות). למשפחה של 6 × מכפיל 1.65 ≈ 24.5K ₪. upper-middle עם 4 ילדים: 22-26K מאוזן, 28-33K נדיב. כולל: אוכל, רכב+דלק, חינוך+חוגים, חופשות, ביטוחים, טלפון/אינטרנט, בריאות. לא כולל: חסכון/השקעה (זה עובר לתיק)." />
+
+        <NumInput label="הוצאות אחרי זינוק (ללא דיור)"
+          value={config.expenses.monthlyNonHousingExpensesPostZinuk ?? config.expenses.monthlyNonHousingExpenses}
+          onChange={v => update('expenses.monthlyNonHousingExpensesPostZinuk', v)} step={1000}
+          note={`מגיל ${config.zinukEndAge} · בערכי היום, מוצמד למדד`}
+          help="הוצאות חודשיות ללא דיור מהשנה שבה זינוק נגמר ועד סוף התוכנית. הסכום בערכים ריאליים של היום, בדיוק כמו ההוצאות בתקופת זינוק, והמודל מצמיד אותו למדד. עד שמזינים כאן ערך, הוא זהה להוצאות בתקופת זינוק." />
+
+        <NumInput label="ירידה ריאלית שנתית בהוצאות"
+          value={Math.round(config.expenses.realDeclineRate * 1000) / 10}
+          onChange={v => update('expenses.realDeclineRate', v / 100)} step={0.5} suffix="%"
+          note="מחקרים: כ-1% בשנה מרגע שהילדים עוזבים · 0 = בלי ירידה"
+          help="לפי מחקרי הוצאות (Blanchett 2014, מרכז מחקר הפרישה של בוסטון קולג׳, סקר הוצאות משקי הבית בארה״ב): ההוצאה הריאלית לא יורדת כשהילדים גדלים. היא בשיא כשהם בני נוער, ומתחילה לרדת כשהם עוזבים את הבית, בכ-1% בשנה בממוצע. הירידה חלה על שני סכומי ההוצאות שלמעלה, ונעצרת בגיל 85 בגלל הוצאות בריאות וסיעוד. לא חלה על דיור." />
+        <NumInput label="הירידה מתחילה בגיל" value={config.expenses.realDeclineStartAge}
+          onChange={v => update('expenses.realDeclineStartAge', v)} step={1} suffix=""
+          note="ברירת מחדל 58 — הבכור/ה בן 21 בערך" />
 
         {/* Simulator button */}
         <button
