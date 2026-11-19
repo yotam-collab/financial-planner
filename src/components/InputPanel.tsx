@@ -256,6 +256,7 @@ export function InputPanel({ config, setConfig }: Props) {
 
   const motherAmt = config.house.motherContribution ?? 0;
   const motherYield = motherAmt > 0 ? (config.house.rentalIncomeFromUnit * 12) / motherAmt : 0;
+  const portfolioNomRet = (1 + config.market.realReturnRate) * (1 + config.market.inflationRate) - 1;
 
   const [expenseSimOpen, setExpenseSimOpen] = useState(false);
 
@@ -371,6 +372,13 @@ export function InputPanel({ config, setConfig }: Props) {
                 displayValue={`${config.house.motherRentYears ?? 20} שנים`}
                 note="אחרי התקופה השכירות חוזרת להכנסות המשפחה"
                 help="מספר השנים מיום הקנייה שבהן שכר הדירה של יחידת הדיור משולם לאמא (צמוד למדד). בתום התקופה ההכנסה חוזרת אליכם." />
+            )}
+            {motherAmt > 0 && (
+              <NumInput label="תשואת הקרנות של הסכום (נומינלית, נטו)"
+                value={Math.round((config.house.motherFundReturn ?? portfolioNomRet) * 1000) / 10}
+                onChange={v => update('house.motherFundReturn', v / 100)} step={0.5} suffix="%"
+                note={`שאר התיק הנזיל: ${(portfolioNomRet * 100).toFixed(1)}% נומינלי`}
+                help="הסכום של אמא נשאר מושקע בקרנות נפרדות עם תשואה משלהן, אחרי מס ודמי הצלחה. הוא נספר בתוך התיק הנזיל. המודל מוציא קודם את הכסף שלכם, ומושך מהקרנות רק כשהוא נגמר. הנחה: תשואה קבועה בכל שנה." />
             )}
 
             {/* Passive income from home */}

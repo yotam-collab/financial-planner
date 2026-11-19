@@ -341,6 +341,29 @@ describe("Mother's contribution for the unit's rent", () => {
   });
 });
 
+describe("Mother's money in funds with their own return", () => {
+  const cfg = (ret?: number) => {
+    const c = createDefaultConfig();
+    c.zinukEndAge = 47;
+    c.house.motherContribution = 1_000_000;
+    c.house.motherFundReturn = ret;
+    return c;
+  };
+  const firstDebt = (ret?: number) => simulate(cfg(ret)).years.find(y => y.liquidPortfolio < 0)?.calendarYear ?? Infinity;
+
+  it('changes nothing when the funds earn what the portfolio earns', () => {
+    const m = cfg().market;
+    const same = (1 + m.realReturnRate) * (1 + m.inflationRate) - 1;
+    expect(simulate(cfg(same)).years.map(y => y.liquidPortfolio)).toEqual(simulate(cfg()).years.map(y => y.liquidPortfolio));
+  });
+
+  it('a higher return pushes the first debt year later, a lower one pulls it earlier', () => {
+    expect(firstDebt()).toBeLessThan(Infinity);
+    expect(firstDebt(0.10)).toBeGreaterThan(firstDebt());
+    expect(firstDebt(0.03)).toBeLessThan(firstDebt());
+  });
+});
+
 describe('what the screen shows adds up', () => {
   const base = createDefaultConfig();
   const configs = [

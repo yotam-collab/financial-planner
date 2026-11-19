@@ -417,6 +417,9 @@ function runCore(config: ScenarioConfig): YearResult[] {
   let hadasPensionActive = false, hadasPensionPayoutBase = 0, hadasPensionStartYe = 0;
 
   const nomRet = (1 + market.realReturnRate) * (1 + market.inflationRate) - 1;
+  // Mother's money is counted inside `liquid`; this is the part of it still sitting in her funds.
+  let motherFund = 0;
+  const motherFundRet = house.motherFundReturn ?? nomRet;
   const nomHA = (1 + market.realHomeAppreciation) * (1 + market.inflationRate) - 1;
 
   for (let yi = 0; yi < totalYears; yi++) {
@@ -483,7 +486,8 @@ function runCore(config: ScenarioConfig): YearResult[] {
       const tot = p + nomReno + totalClosingAndFees;
       const m = p * house.mortgageLTV;
       // Mother's contribution covers part of the price; fees and renovation stay ours.
-      liquid -= (tot - m - inflate(house.motherContribution ?? 0, market.inflationRate, ye));
+      motherFund = inflate(house.motherContribution ?? 0, market.inflationRate, ye);
+      liquid -= (tot - m - motherFund);
       ownsHome = true; homeVal = p; mortPrincipal = m; mortBal = m;
       mortPayment = calcMonthlyMortgagePayment(m, house.mortgageRate, house.mortgageTerm);
       mortStartYear = year;
@@ -640,7 +644,9 @@ function runCore(config: ScenarioConfig): YearResult[] {
     // systematically overstating compounding.)
     const halfYearGrowth = 1 + nomRet / 2;
     // No clamp at 0 here: a purchase the portfolio can't fund must show up as depletion.
-    liquid = liquid * (1 + nomRet) + actualCashflow * halfYearGrowth;
+    liquid = liquid * (1 + nomRet) + actualCashflow * halfYearGrowth + motherFund * (motherFundRet - nomRet);
+    // Our own cash is spent first; her funds are drawn only once it runs out.
+    motherFund = Math.max(0, Math.min(motherFund * (1 + motherFundRet), liquid));
     if (!yotamPensionActive) {
       yotamPension = yotamPension * (1 + nomRet) + yotamContribThisYear * 12 * halfYearGrowth;
     }

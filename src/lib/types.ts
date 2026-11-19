@@ -83,6 +83,8 @@ export interface HouseConfig {
   motherContribution: number;
   /** Years from purchase during which the unit's rent is paid to her instead */
   motherRentYears: number;
+  /** Nominal net yearly return of the funds her money stays in; unset = same as the liquid portfolio */
+  motherFundReturn?: number;
 }
 
 export interface MarketConfig {
