@@ -235,7 +235,7 @@ function DetailModalContent({ year: y, config, onClose }: Props) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                = סה״כ הכנסה + {swrPct}% מהתיק − הוצאות
+                = סה״כ הכנסה + {swrPct}% מהתיק − הוצאות · בחישוב שנתי: <span className="num font-semibold">{y.monthlyBalance >= 0 ? '+' : ''}{fmt(y.monthlyBalance * 12)} ₪</span>
               </p>
             </div>
           </section>

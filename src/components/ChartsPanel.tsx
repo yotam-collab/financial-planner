@@ -221,6 +221,18 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
                 </span>
                 <span className="text-xs text-slate-400 font-bold flex-shrink-0">{secondaryLabel}</span>
               </div>
+              {metric === 'monthlyBalance' && (
+                <div className="mt-2 pt-2 border-t border-slate-300/50">
+                  {[[heroPrimary, primaryLabel], [heroSecondary, secondaryLabel]].map(([v, label]) => (
+                    <div key={label} className="flex items-baseline justify-between gap-2">
+                      <span className="num text-xs font-semibold text-slate-600" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {(v as number) >= 0 ? '+' : ''}{((v as number) * 12).toLocaleString('he-IL')} ₪
+                      </span>
+                      <span className="text-xs text-slate-400 font-bold flex-shrink-0">בשנה · {label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -283,6 +295,7 @@ function makeChartTooltip(showReal: boolean, metric: MetricType) {
             <span className="text-xs text-slate-600 font-semibold">יתרה חודשית</span>
             <span className={`num text-sm font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
               {balance >= 0 ? '+' : ''}{balance.toLocaleString('he-IL')} ₪
+              <span className="block text-xs font-normal text-slate-500">{balance >= 0 ? '+' : ''}{(balance * 12).toLocaleString('he-IL')} ₪ בשנה</span>
             </span>
           </div>
         )}
