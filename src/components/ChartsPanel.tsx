@@ -503,7 +503,7 @@ export function ChartsPanel({ result, config }: Props) {
           <ComposedChart
             data={data}
             stackOffset="sign"
-            margin={{ top: 42, right: 0, left: 0, bottom: 8 }}
+            margin={{ top: 70, right: 0, left: 0, bottom: 8 }}
             onClick={(e: any) => {
               // Recharts 3 reports the clicked column by index; activePayload no longer exists
               const i = e?.activeTooltipIndex;
@@ -549,12 +549,13 @@ export function ChartsPanel({ result, config }: Props) {
               const retYear = retAge != null ? startY + (retAge - config.startAge) : null;
               return (
                 <>
+                  {/* Labels say what the line is; the year is on the axis. A row each, so close lines never overlap */}
                   <ReferenceLine
                     x={zinukYear}
                     stroke="#4a3294"
                     strokeWidth={2}
                     strokeDasharray="6 4"
-                    label={{ value: `${zinukYear}`, position: 'top', fontSize: 14, fill: '#4a3294', fontWeight: 700 }}
+                    label={{ value: 'סיום זינוק', position: 'top', offset: 23, fontSize: 13, fill: '#4a3294', fontWeight: 700 }}
                   />
                   {config.fullRetirementAge <= config.endAge && (
                     <ReferenceLine
@@ -562,43 +563,25 @@ export function ChartsPanel({ result, config }: Props) {
                       stroke="#e88d2a"
                       strokeWidth={2}
                       strokeDasharray="6 4"
-                      label={{ value: `${fullRetYear}`, position: 'top', fontSize: 14, fill: '#e88d2a', fontWeight: 700 }}
+                      label={{ value: 'פרישה מלאה · יותם', position: 'top', offset: 7, fontSize: 13, fill: '#e88d2a', fontWeight: 700 }}
                     />
                   )}
-                  {retYear != null && metric === 'monthlyBalance' && retYear !== zinukYear && (
+                  {retYear != null && metric === 'monthlyBalance' && (
                     <ReferenceLine
                       x={retYear}
                       stroke="#10b981"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `${retYear}`, position: 'insideTopLeft', fontSize: 14, fill: '#10b981', fontWeight: 800 }}
+                      label={{ value: 'איזון מזינוק', position: 'top', offset: 55, fontSize: 13, fill: '#10b981', fontWeight: 800 }}
                     />
                   )}
-                  {retYear != null && metric === 'monthlyBalance' && retYear === zinukYear && (
-                    <ReferenceLine
-                      x={retYear}
-                      stroke="#10b981"
-                      strokeWidth={2.5}
-                      strokeDasharray="4 3"
-                      label={{ value: `+ איזון`, position: 'insideBottomLeft', fontSize: 13, fill: '#10b981', fontWeight: 800 }}
-                    />
-                  )}
-                  {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear !== fullRetYear && (
+                  {fullRetirementYear != null && metric === 'monthlyBalance' && (
                     <ReferenceLine
                       x={fullRetirementYear}
                       stroke="#8457d9"
                       strokeWidth={2.5}
                       strokeDasharray="4 3"
-                      label={{ value: `${fullRetirementYear}`, position: 'insideBottom', fontSize: 14, fill: '#8457d9', fontWeight: 800 }}
-                    />
-                  )}
-                  {fullRetirementYear != null && metric === 'monthlyBalance' && fullRetirementYear === fullRetYear && (
-                    <ReferenceLine
-                      x={fullRetirementYear}
-                      stroke="#8457d9"
-                      strokeWidth={2.5}
-                      strokeDasharray="4 3"
-                      label={{ value: `+ איזון לפרישה`, position: 'insideBottom', fontSize: 13, fill: '#8457d9', fontWeight: 800 }}
+                      label={{ value: 'איזון לפרישה מלאה', position: 'top', offset: 39, fontSize: 13, fill: '#8457d9', fontWeight: 800 }}
                     />
                   )}
                 </>
@@ -695,7 +678,7 @@ export function ChartsPanel({ result, config }: Props) {
       <div className="mt-4 pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm text-slate-600 font-medium">
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           <LegendItem color="#4a3294">הפסקת הכנסה מזינוק</LegendItem>
-          <LegendItem color="#e88d2a">פרישה מלאה</LegendItem>
+          <LegendItem color="#e88d2a">פרישה מלאה · יותם</LegendItem>
           {metric === 'netWorth' && [['#4f46e5', 'תיק נזיל'], ['#10b981', 'נדל״ן'], ['#f59e0b', 'פנסיה'], ['#f43f5e', 'חוב, לא מקוזז']].map(([c, t]) => (
             <span key={t} className="flex items-center gap-2 font-semibold">
               <span className="w-3 h-3 rounded-sm" style={{ background: c }} />{t}
