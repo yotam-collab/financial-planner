@@ -436,7 +436,8 @@ export function ChartsPanel({ result, config }: Props) {
     if (i > 0 && data[i - 1].liquidPortfolio < 0) debtRuns[debtRuns.length - 1][1] = d.calendarYear;
     else debtRuns.push([d.calendarYear, d.calendarYear]);
   });
-  const retAge = result.earliestRetirementAge;
+  // The green line marks balance (no red year), not the earlier exit that leans on the savings
+  const retAge = result.earliestNoRedYearAge;
   const fullRetirementYear = result.earliestFullRetirementYear;
   const metricCfg = METRICS[metric];
   const dataKey = showReal ? metricCfg.realKey : metricCfg.nominalKey;

@@ -230,7 +230,10 @@ export interface YearResult {
 
 export interface SimulationResult {
   years: YearResult[];
+  /** Earliest zinuk exit where the savings never run out, drawing from them allowed */
   earliestRetirementAge: number | null;
+  /** Earliest zinuk exit with no year where expenses exceed the sustainable income */
+  earliestNoRedYearAge: number | null;
   /** Earliest calendar year in which BOTH Yotam and Hadas can fully retire and stay solvent. */
   earliestFullRetirementYear: number | null;
   depletionAge: number | null;

@@ -800,8 +800,9 @@ function runCore(config: ScenarioConfig): YearResult[] {
  * Criterion: monthly balance (sustainable income - expenses) >= 0 in EVERY
  * post-zinuk year. This matches what the chart displays.
  * Also requires portfolio not to deplete.
+ * allowDrawdown drops the first criterion: red years are fine as long as the savings never run out.
  */
-export function findEarliestRetirementAge(config: ScenarioConfig): number | null {
+export function findEarliestRetirementAge(config: ScenarioConfig, allowDrawdown = false): number | null {
   for (let quitAge = config.startAge; quitAge <= config.endAge; quitAge++) {
     // Keep the invariant fullRetirementAge >= zinukEndAge (the UI enforces it too);
     // otherwise zinuk income would continue past the intended full-retirement age.
@@ -814,7 +815,7 @@ export function findEarliestRetirementAge(config: ScenarioConfig): number | null
     // Post-zinuk years must have non-negative balance (matches chart)
     const postZinukYears = years.filter(y => y.phase !== 'zinuk');
     if (postZinukYears.length === 0) continue;
-    if (postZinukYears.some(y => y.monthlyBalance < 0)) continue;
+    if (!allowDrawdown && postZinukYears.some(y => y.monthlyBalance < 0)) continue;
     // Also check portfolio doesn't deplete
     if (years.some(y => y.isDepleted)) continue;
     return quitAge;
@@ -855,7 +856,8 @@ export function findEarliestFullRetirementYear(config: ScenarioConfig): number |
 }
 
 export function simulate(config: ScenarioConfig): SimulationResult {
-  const earliestRetirementAge = findEarliestRetirementAge(config);
+  const earliestRetirementAge = findEarliestRetirementAge(config, true);
+  const earliestNoRedYearAge = findEarliestRetirementAge(config);
   const earliestFullRetirementYear = findEarliestFullRetirementYear(config);
   const years = runCore(config);
   const dep = years.find(y => y.isDepleted);
@@ -868,6 +870,7 @@ export function simulate(config: ScenarioConfig): SimulationResult {
   return {
     years,
     earliestRetirementAge,
+    earliestNoRedYearAge,
     earliestFullRetirementYear,
     depletionAge: dep?.age ?? null,
     scenarioLabel: label,

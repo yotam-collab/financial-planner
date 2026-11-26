@@ -317,6 +317,13 @@ describe('Equilibrium detection', () => {
     // Higher zinuk income → bigger liquid portfolio → earlier retirement
     expect(age2!).toBeLessThanOrEqual(age1!);
   });
+  it('allowing drawdown never gives a later age, and that age keeps the savings above zero', () => {
+    const c = createDefaultConfig();
+    const lenient = findEarliestRetirementAge(c, true)!;
+    expect(lenient).toBeLessThanOrEqual(findEarliestRetirementAge(c)!);
+    expect(simulate({ ...c, zinukEndAge: lenient }).depletionAge).toBeNull();
+    expect(simulate(c).earliestRetirementAge).toBe(lenient);
+  });
   it('higher return → earlier retirement', () => {
     const c1 = createDefaultConfig(); c1.market.realReturnRate = 0.04;
     const c2 = createDefaultConfig(); c2.market.realReturnRate = 0.08;

@@ -15,10 +15,11 @@ const VERDICT: Record<Tone, string> = {
 const DOT: Record<Tone, string> = { good: 'bg-emerald-500', warn: 'bg-amber-500', bad: 'bg-rose-500' };
 
 export function SummaryCard({ result }: Props) {
-  const { earliestRetirementAge, earliestFullRetirementYear, depletionAge, years } = result;
+  const { earliestRetirementAge, earliestNoRedYearAge, earliestFullRetirementYear, depletionAge, years } = result;
 
   // The earliest possible exit: searched over every exit age, so the zinuk slider does not move it
   const earliest = earliestRetirementAge ? years.find(y => y.age === earliestRetirementAge) : null;
+  const noRed = earliestNoRedYearAge ? years.find(y => y.age === earliestNoRedYearAge) : null;
   const earliestFull = earliestFullRetirementYear
     ? years.find(y => y.calendarYear === earliestFullRetirementYear)
     : null;
@@ -63,6 +64,21 @@ export function SummaryCard({ result }: Props) {
             בנתונים האלה אין גיל שבו הכסף מספיק עד גיל <span className="num">{last.age}</span>
           </p>
         )}
+        {earliest && (
+          <p className="text-sm text-white/80 leading-snug">
+            גם אם מושכים מההשקעות בדרך, הן לא נגמרות עד גיל <span className="num">{last.age}</span>.
+          </p>
+        )}
+        <p className="text-sm md:text-base font-medium drop-shadow-[0_1px_6px_rgba(20,10,45,0.5)]">
+          {noRed ? (
+            <>
+              בלי שנה אדומה (ההוצאות לא עולות על מה שהתיק מממן לאורך זמן): גיל{' '}
+              <span className="num font-bold">{noRed.age}</span>, שנת <span className="num font-bold">{noRed.calendarYear}</span>
+            </>
+          ) : (
+            'בלי שנה אדומה: אין גיל כזה.'
+          )}
+        </p>
         {earliestFull && (
           <p className="text-sm md:text-base font-medium drop-shadow-[0_1px_6px_rgba(20,10,45,0.5)]">
             פרישה מלאה של שניכם אפשרית משנת <span className="num font-bold">{earliestFull.calendarYear}</span>{' '}
